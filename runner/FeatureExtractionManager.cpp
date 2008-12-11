@@ -544,7 +544,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
         }
 
         int pp = progress;
-        progress = ((i - startFrame) * 100) / (endFrame - startFrame);
+        progress = int(((i - startFrame) * 100.0) / (endFrame - startFrame) + 0.1);
         if (progress > pp) extractionProgress.setProgress(progress);
     }
     
