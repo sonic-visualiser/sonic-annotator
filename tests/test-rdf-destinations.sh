@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mypath=`dirname $0`
-r=$mypath/../sonic-annotator
+r=$mypath/../runner/sonic-annotator
 
 infile1=$mypath/audio/3clicks8.wav
 infile2=$mypath/audio/6clicks8.wav

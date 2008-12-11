@@ -584,10 +584,10 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
         writeSummaries(audioSource, plugin);
     }
 
+    extractionProgress.done();
+
     finish();
     
-    extractionProgress.setProgress(100);
-
     TempDirectory::getInstance()->cleanup();
 }
 

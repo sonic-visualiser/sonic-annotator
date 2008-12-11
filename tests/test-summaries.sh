@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mypath=`dirname $0`
-r=$mypath/../sonic-annotator
+r=$mypath/../runner/sonic-annotator
 
 infile=$mypath/audio/3clicks8.wav
 tmpfile=$mypath/tmp_1_$$
@@ -62,7 +62,7 @@ cmp -s $tmpfile ${sexpected}.csv || \
 $r -t $stransform -w rdf --rdf-stdout $infile > $tmpfile 2>/dev/null || \
     fail "Fails to run transform $stransform with RDF output"
 
-rapper -i turtle $tmpfile -o turtle 2>/dev/null | grep -v '^@prefix :' > $tmpcanonical ||
+rapper -i turtle $tmpfile -o turtle 2>/dev/null | grep -v '^@prefix :' | grep -v 'file:/' > $tmpcanonical ||
     fail "Fails to produce parseable RDF/TTL for transform $stransform"
 
 cmp -s $tmpcanonical ${sexpected}.n3 || \

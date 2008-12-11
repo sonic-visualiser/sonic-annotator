@@ -15,11 +15,9 @@
     vamp:sample_rate "44100"^^xsd:float ;
     a vamp:Transform .
 
-<file:///work/runner/tests/audio/3clicks8.wav>
     a mo:AudioFile .
 
 :signal_1
-    mo:available_as <file:///work/runner/tests/audio/3clicks8.wav> ;
     mo:time [
         tl:onTimeLine :signal_timeline_1 ;
         a tl:Interval
