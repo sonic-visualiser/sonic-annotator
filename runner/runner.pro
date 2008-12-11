@@ -8,8 +8,6 @@ SV_UNIT_PACKAGES = vamp vamp-hostsdk samplerate mad id3tag oggz fishsound sndfil
 
 load(../sv.prf)
 
-LIBPATH += /usr/local/lib
-
 CONFIG += sv qt thread warn_on stl rtti exceptions console
 QT += xml network
 QT -= gui
