@@ -1,0 +1,7 @@
+<transform
+    id="vamp:vamp-example-plugins:percussiononsets:onsets"
+    stepSize="512"
+    blockSize="1024">
+  <parameter name="sensitivity" value="60"/>
+  <parameter name="threshold" value="2.6"/>
+</transform>

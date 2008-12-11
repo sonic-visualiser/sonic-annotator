@@ -1,0 +1,77 @@
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#>.
+@prefix vamp:   <http://www.vamp-plugins.org/ontology/> .
+@prefix vampex: <http://www.vamp-plugins.org/examples/> .
+@prefix qvp:    <http://vamp-plugins.org/plugin/qm-vamp-plugins/>.
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix dc:     <http://purl.org/dc/elements/1.1/> .
+@prefix af:     <http://purl.org/ontology/af/> .
+@prefix foaf:   <http://xmlns.com/foaf/0.1/> .
+@prefix cc:     <http://web.resource.org/cc/> .
+@prefix thisplug: <http://vamp-plugins.org/plugin/qm-vamp-plugins/qm-keydetector#> .
+@prefix :       <> .
+
+<>  a   vamp:PluginDescription ;
+    foaf:maker          <http://chrissutton.org/me> ;
+    foaf:primaryTopic   qvp:qm-keydetector .
+
+qvp:qm-keydetector a   vamp:Plugin ;
+    dc:title                "Key Detector" ;
+    dc:description          "";
+    foaf:maker              :katynoland, :chrislandone ; 
+#    cc:license              <http://creativecommons.org/licenses/BSD/> ; what is the license for QM Vamp plugins ?
+    vamp:identifier         "qm-keydetector" ; # The Vamp identifier for the plugin
+    vamp:vamp_API_version   vamp:version_v1.1b ; # Made up - this plugin doesn't actually specify it
+    owl:versionInfo         "2" ;
+    vamp:input_domain       vamp:TimeDomain ;
+
+    vamp:parameter_descriptor   thisplug:pd1 ;
+    vamp:parameter_descriptor   thisplug:pd2 ;
+    vamp:output_descriptor      thisplug:od1 ;
+    vamp:output_descriptor      thisplug:od2 ;
+    vamp:output_descriptor      thisplug:od3 .
+
+:katynoland a foaf:Person;
+    foaf:name "Katy Noland" .
+:chrislandone a foaf:Person;
+    foaf:name "Christian Landone" .
+    
+# Note : any need for these to have proper URIs ?
+thisplug:pd1    a       vamp:ParameterDescriptor ;
+    vamp:identifier     "tuning" ;
+    dc:title            "Tuning Frequency" ;
+    dc:format           "Hz" ;
+    vamp:minValue       420 ; #might be useful when interpreting plugin output
+    vamp:maxValue       460 ;
+    vamp:defaultValue   440 .
+
+thisplug:pd2    a       vamp:ParameterDescriptor ;
+    vamp:identifier     "length" ;
+    dc:title            "Window Length" ;
+    vamp:minValue       1 ; #might be useful when interpreting plugin output
+    vamp:maxValue       30 ;
+    vamp:defaultValue   10 .
+    
+thisplug:od1    a       vamp:OutputDescriptor ;
+    vamp:identifier     "tonic" ;
+    dc:title            "Tonic Pitch" ;
+    vamp:fixed_bin_count "true" ;
+    vamp:bin_count      1 ;
+    vamp:sample_type    vamp:OneSamplePerStep .
+
+
+thisplug:od2    a       vamp:OutputDescriptor ;
+    vamp:identifier     "mode" ;
+    dc:title            "Key Mode" ;
+    vamp:fixed_bin_count "true" ;
+    vamp:bin_count      1 ;
+    vamp:bin_names      "Major = 0, Minor = 1" ; # might need a rethink
+    vamp:sample_type    vamp:OneSamplePerStep .
+
+thisplug:od3    a       vamp:OutputDescriptor ;
+    vamp:identifier     "key" ;
+    dc:title            "Key" ;
+    vamp:fixed_bin_count "true" ;
+    vamp:bin_count      1 ;
+    vamp:sample_type    vamp:OneSamplePerStep ;
+    vamp:computes_feature_type  <http://purl.org/NET/c4dm/keys.owl#Key> .

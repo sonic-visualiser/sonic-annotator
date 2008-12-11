@@ -1,0 +1,13 @@
+
+PREFIX : <file:///work/runner/transforms/test.n3#>
+
+SELECT ?result ?mand
+
+FROM <file:///work/runner/transforms/test.n3>
+
+WHERE {
+  ?result :mand ?mand .
+  OPTIONAL { ?result :opt1 ?opt1 } .
+  OPTIONAL { ?result :opt2 ?opt2 } .
+}
+

@@ -1,0 +1,159 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix mo: <http://purl.org/ontology/mo/> .
+@prefix af: <http://purl.org/ontology/af/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix event: <http://purl.org/NET/c4dm/event.owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix tl: <http://purl.org/NET/c4dm/timeline.owl#> .
+@prefix vamp: <http://purl.org/ontology/vamp/> .
+
+:transform_0_onsets
+    vamp:output <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets_output_onsets> ;
+    vamp:plugin <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets> ;
+    vamp:sample_rate "44100"^^xsd:float ;
+    a vamp:Transform .
+
+<file:///work/runner/tests/audio/3clicks8.wav>
+    a mo:AudioFile .
+
+:signal_1
+    mo:available_as <file:///work/runner/tests/audio/3clicks8.wav> ;
+    mo:time [
+        tl:onTimeLine :signal_timeline_1 ;
+        a tl:Interval
+    ] ;
+    a mo:Signal .
+
+:event_2
+    event:time [
+        tl:at "PT0.777868480S"^^xsd:duration ;
+        tl:onTimeLine :signal_timeline_1 ;
+        a tl:Instant
+    ] ;
+    vamp:computed_by :transform_0_onsets ;
+    a af:Onset .
+
+:event_3
+    event:time [
+        tl:at "PT1.648616780S"^^xsd:duration ;
+        tl:onTimeLine :signal_timeline_1 ;
+        a tl:Instant
+    ] ;
+    vamp:computed_by :transform_0_onsets ;
+    a af:Onset .
+
+:event_4
+    event:time [
+        tl:at "PT2.414875283S"^^xsd:duration ;
+        tl:onTimeLine :signal_timeline_1 ;
+        a tl:Instant
+    ] ;
+    vamp:computed_by :transform_0_onsets ;
+    a af:Onset .
+
+:transform_5_detectionfunction
+    vamp:block_size "4096"^^xsd:int ;
+    vamp:output <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets_output_detectionfunction> ;
+    vamp:plugin <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets> ;
+    vamp:sample_rate "44100"^^xsd:float ;
+    vamp:step_size "2048"^^xsd:int ;
+    vamp:summary_type "mean" ;
+    a vamp:Transform .
+
+:event_type_6
+    dc:description "Broadband energy rise detection function" ;
+    dc:format "" ;
+    dc:title "Detection Function" ;
+    rdfs:subClassOf event:Event .
+
+:event_7
+    event:time [
+        tl:beginsAt "PT0.000000000S"^^xsd:duration ;
+        tl:duration "PT5.201269840S"^^xsd:duration ;
+        tl:onTimeLine :signal_timeline_1 ;
+        a tl:Interval
+    ] ;
+    af:feature "668.509" ;
+    vamp:computed_by :transform_5_detectionfunction ;
+    a :event_type_6 ;
+    rdfs:label "(mean value, continuous-time average)" .
+
+:transform_8_detectionfunction
+    vamp:block_size "1024"^^xsd:int ;
+    vamp:output <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets_output_detectionfunction> ;
+    vamp:plugin <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets> ;
+    vamp:sample_rate "44100"^^xsd:float ;
+    vamp:step_size "512"^^xsd:int ;
+    vamp:summary_type "mean" ;
+    a vamp:Transform .
+
+:event_type_9
+    dc:description "Broadband energy rise detection function" ;
+    dc:format "" ;
+    dc:title "Detection Function" ;
+    rdfs:subClassOf event:Event .
+
+:event_10
+    event:time [
+        tl:beginsAt "PT0.000000000S"^^xsd:duration ;
+        tl:duration "PT5.201269840S"^^xsd:duration ;
+        tl:onTimeLine :signal_timeline_1 ;
+        a tl:Interval
+    ] ;
+    af:feature "162.123" ;
+    vamp:computed_by :transform_8_detectionfunction ;
+    a :event_type_9 ;
+    rdfs:label "(mean value, continuous-time average)" .
+
+:transform_11_detectionfunction
+    vamp:output <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets_output_detectionfunction> ;
+    vamp:plugin <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets> ;
+    vamp:sample_rate "44100"^^xsd:float ;
+    vamp:summary_type "median" ;
+    a vamp:Transform .
+
+:event_type_12
+    dc:description "Broadband energy rise detection function" ;
+    dc:format "" ;
+    dc:title "Detection Function" ;
+    rdfs:subClassOf event:Event .
+
+:event_13
+    event:time [
+        tl:beginsAt "PT0.000000000S"^^xsd:duration ;
+        tl:duration "PT5.201269840S"^^xsd:duration ;
+        tl:onTimeLine :signal_timeline_1 ;
+        a tl:Interval
+    ] ;
+    af:feature "168" ;
+    vamp:computed_by :transform_11_detectionfunction ;
+    a :event_type_12 ;
+    rdfs:label "(median value, continuous-time average)" .
+
+:transform_14_detectionfunction
+    vamp:output <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets_output_detectionfunction> ;
+    vamp:plugin <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets> ;
+    vamp:sample_rate "44100"^^xsd:float ;
+    vamp:summary_type "mode" ;
+    a vamp:Transform .
+
+:event_type_15
+    dc:description "Broadband energy rise detection function" ;
+    dc:format "" ;
+    dc:title "Detection Function" ;
+    rdfs:subClassOf event:Event .
+
+:event_16
+    event:time [
+        tl:beginsAt "PT0.000000000S"^^xsd:duration ;
+        tl:duration "PT5.201269840S"^^xsd:duration ;
+        tl:onTimeLine :signal_timeline_1 ;
+        a tl:Interval
+    ] ;
+    af:feature "0" ;
+    vamp:computed_by :transform_14_detectionfunction ;
+    a :event_type_15 ;
+    rdfs:label "(modal value, continuous-time average)" .
+

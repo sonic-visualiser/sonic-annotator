@@ -1,0 +1,5 @@
+<transform
+    id="vamp:vamp-example-plugins:percussiononsets:onsets"
+    stepSize="345"
+    blockSize="512"
+   />

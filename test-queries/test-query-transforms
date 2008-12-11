@@ -1,0 +1,21 @@
+
+PREFIX vamp: <http://purl.org/ontology/vamp/>
+
+SELECT ?transform ?plugin ?output ?program
+       ?step_size ?block_size ?window_type
+       ?sample_rate ?start ?duration
+
+FROM <file:///work/runner/transforms/percussiononsets.n3>
+
+WHERE {
+  ?transform a vamp:Transform ;
+             vamp:plugin ?plugin .
+  OPTIONAL { ?transform vamp:output ?output } .
+  OPTIONAL { ?transform vamp:program ?program } .
+  OPTIONAL { ?transform vamp:step_size ?step_size } .
+  OPTIONAL { ?transform vamp:block_size ?block_size } .
+  OPTIONAL { ?transform vamp:window_type ?window_type } .
+  OPTIONAL { ?transform vamp:sample_rate ?sample_rate } .
+  OPTIONAL { ?transform vamp:start ?start } .
+  OPTIONAL { ?transform vamp:duration ?duration }
+}

@@ -1,0 +1,15 @@
+
+PREFIX vamp: <http://purl.org/ontology/vamp/>
+PREFIX examples: <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#>
+
+SELECT ?plugin ?library_id ?plugin_id
+FROM <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins>
+
+WHERE {
+      ?plugin a vamp:Plugin .
+      ?plugin vamp:identifier ?plugin_id .
+      OPTIONAL { ?library a vamp:PluginLibrary .
+            ?library vamp:identifier ?library_id .
+	          ?library vamp:available_plugin ?plugin . }
+}
+

@@ -1,0 +1,18 @@
+
+PREFIX vamp: <http://purl.org/ontology/vamp/>
+PREFIX examples: <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#>
+
+SELECT ?output_id ?output_type ?feature_type ?event_type ?unit
+FROM <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins>
+
+WHERE {
+      ?plugin a vamp:Plugin .
+      ?plugin vamp:identifier "percussiononsets" .
+      ?plugin vamp:output_descriptor ?output .
+      ?output vamp:identifier ?output_id .
+      ?output a ?output_type .
+      OPTIONAL { ?output vamp:computes_feature_type ?feature_type } .
+      OPTIONAL { ?output vamp:computes_event_type ?event_type } .
+      OPTIONAL { ?output vamp:unit ?unit } .
+}
+

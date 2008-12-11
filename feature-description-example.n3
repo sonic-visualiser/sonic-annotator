@@ -1,0 +1,82 @@
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix mo: <http://purl.org/ontology/mo/> .
+@prefix af: <http://purl.org/ontology/af/> .
+@prefix event: <http://purl.org/NET/c4dm/event.owl#> .
+@prefix tl: <http://purl.org/NET/c4dm/timeline.owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix : <#> .
+
+
+# Describe the signal we're annotating, and associate it with a
+# timeline (the timeline is named as :base_timeline but never given
+# any attributes in this document).  Any feature that is associated
+# with the same timeline will be taken as derived from this signal.
+
+:audio_signal a mo:Signal ;
+        mo:available_as <file:///path/to/myfile.wav> ;
+        mo:time :signal_interval .
+
+:signal_interval a tl:Interval ;
+                 tl:onTimeLine :base_timeline ;
+                 tl:beginsAt "PT0"^^xsd:duration .
+
+
+# A sparse feature event.
+
+:event0 a af:Onset ;
+        event:time :time0 .
+
+:time0 a tl:Instant ;
+       tl:onTimeLine :base_timeline ;
+       tl:at "PT0.185759637S"^^xsd:duration .
+
+# Alternatively we could write that with a blank node.
+
+:event1 a af:Onset ;
+        event:time [
+                   a tl:Instant ;
+                   tl:onTimeLine :base_timeline ;
+                   tl:at "PT0.510839002S"^^xsd:duration ;
+                   ] .
+
+
+# For a dense feature, we need an appropriately sampled, windowed timeline.
+
+:feature_timeline a tl:DiscreteTimeLine .
+
+:feature_timeline_map a tl:UniformSamplingWindowingMap ;
+               tl:rangeTimeLine :feature_timeline ;
+               tl:domainTimeLine :base_timeline ;
+               tl:sampleRate "44100"^^xsd:int ;
+               tl:windowLength "1024"^^xsd:int ;
+               tl:hopSize "512"^^xsd:int .
+
+
+# ... and an interval, defined in terms of hops (the discrete steps of
+# the windowed timeline).
+
+:feature_interval a tl:Interval ;
+                  tl:onTimeLine :feature_timeline ;
+                  tl:beginsAt "0"^^xsd:int ;
+                  tl:duration "5634"^^xsd:int .
+
+
+# Then our feature is a signal that is on the interval we just
+# described.  We associate it explicitly with the original audio
+# signal, although presumably we could leave the association implicit,
+# to be derived from the relationships between timelines, just as it
+# is for the sparse features above.
+
+:audio_signal af:signal_feature :feature1 .
+
+:feature_signal_type rdfs:subClassOf af:DetectionFunction ;
+          dc:title "Detection Function from Simple Percussion Onset Detector" .
+
+:feature1 a :feature_signal_type ;
+          mo:time :feature_interval ;
+          af:dimensions "12 12345" ;
+          af:value "0 0 0 0 0 0 0 1 2 3 1 24 236 123213 (etc)" .
+

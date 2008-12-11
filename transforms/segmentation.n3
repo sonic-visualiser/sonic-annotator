@@ -1,0 +1,13 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix vamp: <http://purl.org/ontology/vamp/>.
+@prefix qmp: <http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#>.
+@prefix : <#>.
+
+:transform0 a vamp:Transform;
+	vamp:plugin qmp:qm-segmenter;
+	vamp:output qmp:qm-segmenter_output_segmentation;
+	vamp:step_size "";
+ 	vamp:block_size "";
+	vamp:window_type "".
+
+

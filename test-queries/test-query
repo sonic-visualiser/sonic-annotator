@@ -1,0 +1,17 @@
+
+PREFIX vamp: <http://purl.org/ontology/vamp/>
+PREFIX examples: <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#>
+
+SELECT ?transform ?library ?library_id ?plugin
+FROM <file:///work/runner/transforms/percussiononsets.n3>
+FROM <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins>
+
+WHERE {
+      ?transform a vamp:Transform .
+      ?transform vamp:plugin ?plugin .
+      ?plugin a vamp:Plugin .
+      ?library a vamp:PluginLibrary .
+      ?library vamp:identifier ?library_id .
+      ?library vamp:available_plugin ?plugin .
+}
+

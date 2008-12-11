@@ -1,0 +1,23 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix vamp: <http://purl.org/ontology/vamp/>.
+@prefix examples: <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#>.
+@prefix : <#>.
+
+:transform0 a vamp:Transform;
+	vamp:plugin examples:percussiononsets;
+	vamp:output examples:percussiononsets_output_detectionfunction;
+#	vamp:step_size "256";
+# 	vamp:block_size "512";
+	vamp:window_type "Hanning";
+	vamp:parameter_binding :param0 ;
+	vamp:parameter_binding :param1 .
+
+:param0 a vamp:ParameterBinding;
+	vamp:parameter [ vamp:identifier "sensitivity" ];
+	vamp:value "60".
+
+:param1 a vamp:ParameterBinding;
+	vamp:parameter examples:percussiononsets_param_threshold;
+	vamp:value "2".
+
+

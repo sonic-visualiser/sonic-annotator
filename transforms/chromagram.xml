@@ -1,0 +1,7 @@
+<transform id="vamp:qm-vamp-plugins:qm-chromagram" program="" stepSize="0" blockSize="0" windowType="hanning" startTime="0.000000000" duration="0.000000000" sampleRate="0" >
+  <parameter name="bpo" value="12"/>
+  <parameter name="maxpitch" value="96"/>
+  <parameter name="minpitch" value="12"/>
+  <parameter name="normalized" value="1"/>
+  <parameter name="tuning" value="440"/>
+</transform>

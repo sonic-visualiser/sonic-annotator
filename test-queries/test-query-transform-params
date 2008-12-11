@@ -1,0 +1,13 @@
+PREFIX vamp: <http://purl.org/ontology/vamp/>
+
+SELECT ?transform ?param_id ?param_value
+
+FROM <file:///work/runner/transforms/percussiononsets.n3>
+
+WHERE {
+   ?transform vamp:parameter_binding ?binding . 
+   ?binding vamp:parameter ?param .
+   ?param vamp:identifier ?param_id .
+   ?binding vamp:value ?param_value .
+ }
+

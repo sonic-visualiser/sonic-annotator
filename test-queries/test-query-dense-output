@@ -1,0 +1,16 @@
+
+PREFIX vamp: <http://purl.org/ontology/vamp/>
+PREFIX mo: <http://purl.org/ontology/mo/>
+PREFIX af: <http://purl.org/ontology/af/>
+
+SELECT ?signal_source ?feature_signal_type ?value
+FROM <file:///share/music/wav/12-You Look So Fine.n3>
+
+WHERE {
+      ?signal mo:available_as ?signal_source .
+      ?signal a mo:Signal .
+      ?signal af:signal_feature ?feature .
+      ?feature a ?feature_signal_type.
+      ?feature af:value ?value .
+}
+

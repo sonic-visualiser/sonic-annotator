@@ -1,0 +1,1 @@
+<transform id="vamp:vamp-example-plugins:spectralcentroid" program="" stepSize="512" blockSize="1024" windowType="hanning" startTime="0.000000000" duration="0.000000000" sampleRate="22050" />

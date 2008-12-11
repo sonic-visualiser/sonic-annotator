@@ -1,0 +1,32 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix vamp: <http://purl.org/ontology/vamp/>.
+@prefix examples: <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#>.
+@prefix : <#>.
+
+:transform0 a vamp:Transform; # 8
+	vamp:plugin examples:percussiononsets ;
+	vamp:output examples:percussiononsets_output_detectionfunction ;
+	vamp:summary_type "mean" .
+
+:transform1 a vamp:Transform; # 11
+	vamp:plugin examples:percussiononsets ;
+	vamp:output examples:percussiononsets_output_detectionfunction ;
+	vamp:summary_type "median" .
+
+:transform2 a vamp:Transform; # 0
+	vamp:plugin examples:percussiononsets ;
+	vamp:output examples:percussiononsets_output_onsets .
+
+:transform3 a vamp:Transform; # 14
+	vamp:plugin examples:percussiononsets ;
+	vamp:output examples:percussiononsets_output_detectionfunction ;
+	vamp:summary_type "mode" .
+
+:transform4 a vamp:Transform; # 23
+	vamp:plugin examples:percussiononsets ;
+	vamp:output examples:percussiononsets_output_detectionfunction ;
+	vamp:step_size 2048 ;
+	vamp:block_size 4096 ;
+	vamp:summary_type "mean" .
+
+ 
