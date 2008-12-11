@@ -21,8 +21,8 @@ QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -DNO_TIMING -O3
 
 # To do a static build with gcc on Linux
 #
-linux-g++:LIBS += -Wl,-Bstatic
-linux-g++:DEFINES += BUILD_STATIC
+#linux-g++:LIBS += -Wl,-Bstatic
+#linux-g++:DEFINES += BUILD_STATIC
 
 
 LIBPATH += /usr/local/lib
