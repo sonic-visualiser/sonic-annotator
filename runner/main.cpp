@@ -30,6 +30,8 @@ using std::endl;
 using std::vector;
 using std::string;
 
+#include "../version.h"
+
 #include "base/Exceptions.h"
 #include "base/TempDirectory.h"
 
@@ -138,7 +140,7 @@ void usage(QString myname)
     set<string> writers = FeatureWriterFactory::getWriterTags();
         
     cerr << endl;
-    cerr << "Sonic Annotator" << endl;
+    cerr << "Sonic Annotator v" << RUNNER_VERSION << endl;
     cerr << "A utility for batch feature extraction from audio files." << endl;
     cerr << "Mark Levy, Chris Sutton and Chris Cannam, Queen Mary, University of London." << endl;
     cerr << "Copyright 2007-2008 Queen Mary, University of London." << endl;

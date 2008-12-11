@@ -1,0 +1,173 @@
+ 
+###
+### BEGIN CONFIGURABLE STUFF
+###
+
+CONFIG += release
+
+
+# Put your favourite optimization flags here.
+#
+# Don't use -ffast-math -- it does make things faster, but it
+# prevents isnan and isinf from working, and we need those.
+#
+# SV benefits a bit from SSE, but not from SSE2 (it doesn't do
+# very much in double precision).
+# 
+# Always define NDEBUG and NO_TIMING for release builds.
+# 
+QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -DNO_TIMING -O3
+#linux-g++:QMAKE_CXXFLAGS_RELEASE += -march=pentium3 -msse -mmmx -ftree-vectorize -fomit-frame-pointer
+
+# To do a static build with gcc on Linux
+#
+linux-g++:LIBS += -Wl,-Bstatic
+linux-g++:DEFINES += BUILD_STATIC
+
+
+LIBPATH += /usr/local/lib
+INCLUDEPATH += /usr/local/include
+
+DEFINES += NO_SV_GUI # avoid inclusion of widgets/ in transform library (bad!)
+
+
+# These are testable on platforms with pkg-config.  If you don't have
+# pkg-config, edit the "If you don't have pkg-config" block below (see
+# comments).
+#
+PKGCONFIG_PACKAGES = vamp vamp-hostsdk oggz fishsound mad id3tag fftw3 fftw3f sndfile samplerate lrdf redland rasqal raptor 
+
+
+# No pkg-config test for QuickTime.  This library is optional, for
+# audio file import.  Note that if you compile in support for either
+# or both of libmad and libsndfile as well as for QuickTime, libmad
+# and libsndfile will be used in preference to QuickTime where
+# applicable.  For licensing reasons you may not redistribute binaries
+# of Sonic Visualiser built with QuickTime support, except for
+# platforms which include QuickTime as a standard part of the platform
+# (i.e. OS/X).
+#
+#DEFINES += HAVE_QUICKTIME
+#LIBS += -framework QuickTime
+
+
+!system(pkg-config --atleast-pkgconfig-version=0) {
+
+    # If you don't have pkg-config, or want to overrule it, comment
+    # out (or install) any of the following that you lack.  If you
+    # have pkg-config, you should be able to ignore all this provided
+    # the right symbols are defined in PKGCONFIG_PACKAGES above.
+    #
+    DEFINES += HAVE_OGGZ          # Optional -- to import .ogg files
+    DEFINES += HAVE_FISHSOUND     # Optional -- to import .ogg files
+    DEFINES += HAVE_MAD           # Optional -- to import .mp3 files
+    DEFINES += HAVE_ID3TAG        # Optional -- to import .mp3 file tags
+    DEFINES += HAVE_FFTW3F        # Optional -- but SV will be slower without it
+    DEFINES += HAVE_FFTW3         # Optional -- used by Rubber Band
+    #
+    LIBS    += -loggz -lfishsound
+    LIBS    += -lmad -lid3tag
+    LIBS    += -lfftw3f
+    LIBS    += -lfftw3
+
+    # These ones are mandatory.
+    # If you don't have them, you'll have to find them.
+    #
+    DEFINES += HAVE_VAMP         # Required -- for analysis plugins
+    DEFINES += HAVE_VAMP_HOSTSDK # Required -- for analysis plugins
+    DEFINES += HAVE_SNDFILE      # Required -- to import and export .wav files
+    DEFINES += HAVE_SAMPLERATE   # Required -- for resampling
+    DEFINES += HAVE_RASQAL       # Required -- for RDF
+    DEFINES += HAVE_REDLAND      # Required -- for RDF
+    #
+    LIBS    += -lvamp-hostsdk -lsndfile -lrdf -lrasqal -lraptor -lsamplerate
+
+}
+
+###
+### END CONFIGURABLE STUFF
+###
+
+system(pkg-config --atleast-pkgconfig-version=0) {
+
+    # If you have pkg-config, this block should locate all packages
+    # for you provided they have .pc files and are listed in
+    # PKGCONFIG_PACKAGES.
+    #
+    for(PKG, PKGCONFIG_PACKAGES) {
+        contains(SV_UNIT_PACKAGES, $$PKG) {
+            system(pkg-config --exists $$PKG) {
+                VERSION = $$system(pkg-config --modversion $$PKG)
+                PACKAGE_SYMBOL = $$system(echo $$PKG | tr '[a-z-]' '[A-Z_]' | tr '.' '_')
+                VERSION_SYMBOL = $$PACKAGE_SYMBOL'_VERSION'
+                DEFINES += HAVE_$$PACKAGE_SYMBOL
+                QMAKE_CXXFLAGS += -D"'"$$VERSION_SYMBOL='"'$$VERSION'"'"'"
+                QMAKE_CXXFLAGS +=  $$system(pkg-config --cflags $$PKG)
+                LIBS += $$system(pkg-config --libs $$PKG)
+                message("Using pkg-config package $$PKG with version $$VERSION")
+            } else {
+                message("WARNING: Failed to find pkg-config package $$PKG")
+            }
+        }
+    }
+}
+
+contains(SV_UNIT_PACKAGES, oggz) {
+    contains(DEFINES, HAVE_OGGZ) {
+        contains(DEFINES, HAVE_FISHSOUND) {
+            message("Including .ogg file import")
+        } else {
+            message("WARNING: .ogg file import will not be included")
+        }
+    } else {
+        message("WARNING: .ogg file import will not be included")
+    }
+}
+
+contains(SV_UNIT_PACKAGES, mad) {
+    contains(DEFINES, HAVE_MAD) {
+        message("Including .mp3 file import")
+    } else {
+        message("WARNING: .mp3 file import will not be included")
+    }
+}
+
+contains(SV_UNIT_PACKAGES, id3tag) {
+    contains(DEFINES, HAVE_ID3TAG) {
+        message("Including .mp3 file tag support")
+    } else {
+        message("WARNING: .mp3 file tag support will not be included")
+    }
+}
+
+contains(SV_UNIT_PACKAGES, fftw3f) {
+    contains(DEFINES, HAVE_FFTW3F) {
+ 	message("Using FFTW3f")
+    } else {
+	message("WARNING: FFTW3f not available, using slower FFT implementation")
+    }
+}
+
+contains(SV_UNIT_PACKAGES, vamp):!contains(DEFINES, HAVE_VAMP):error("Vamp plugin API required")
+contains(SV_UNIT_PACKAGES, vamp-hostsdk):!contains(DEFINES, HAVE_VAMP_HOSTSDK):error("Vamp plugin host SDK required")
+contains(SV_UNIT_PACKAGES, sndfile):!contains(DEFINES, HAVE_SNDFILE):error("sndfile library required")
+contains(SV_UNIT_PACKAGES, samplerate):!contains(DEFINES, HAVE_SAMPLERATE):error("libsamplerate required")
+contains(SV_UNIT_PACKAGES, rasqal):!contains(DEFINES, HAVE_RASQAL):error("Rasqal RDF query library required")
+contains(SV_UNIT_PACKAGES, redland):!contains(DEFINES, HAVE_REDLAND):error("Redland RDF datastore required")
+
+VERSION_CFLAGS += -D"'"SVNREV='"'$$system(svnversion -n .)'"'"'"
+
+QMAKE_CXXFLAGS_DEBUG += -DBUILD_DEBUG $$VERSION_CFLAGS
+QMAKE_CXXFLAGS_RELEASE += -DBUILD_RELEASE $$VERSION_CFLAGS
+
+LIBS -= -lpthread
+
+linux-g++ {
+    contains(DEFINES, BUILD_STATIC) {
+    	LIBS += -lFLAC -lxml2
+    }
+}
+
+# Restore dynamic linkage, in case we went static earlier
+linux-g++:LIBS += -Wl,-Bdynamic -lpthread -ldl
+

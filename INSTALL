@@ -1,0 +1,64 @@
+
+To compile from source
+----------------------
+
+First, please consider getting one of the ready-to-run binary
+distributions available from http://www.omras2.org/SonicAnnotator .
+
+The following additional libraries are required or optional when
+building Sonic Annotator:
+
+REQUIRED	Vamp Plugin SDK		http://www.vamp-plugins.org/
+
+REQUIRED	Qt4 Free Edition	http://www.trolltech.com/
+REQUIRED	libsndfile		http://www.mega-nerd.com/libsndfile/
+REQUIRED	libsamplerate		http://www.mega-nerd.com/SRC/
+REQUIRED	FFTW3			http://www.fftw.org/
+REQUIRED	Redland RDF libraries   http://librdf.org/
+
+Optional	MAD mp3 decoder		http://www.underbit.com/products/mad/
+Optional	Oggz and fishsound	http://www.annodex.net/software/libraries.html
+
+The Redland RDF libraries include the Raptor RDF parser library,
+Rasqal RDF query library, and librdf, the Redland RDF datastore (which
+depends on both of those).  Sonic Annotator uses Rasqal and Redland
+directly, and so indirectly also requires Raptor.  For best
+performance it's strongly recommended that you build with Redland
+1.0.8 or newer.
+
+If you happen to be using a Debian-based Linux, you probably want to
+apt-get install the following packages: libqt4-dev libsndfile1-dev
+libsamplerate0-dev fftw3-dev libmad0-dev liboggz1-dev
+libfishsound1-dev liblrdf0-dev librdf0-dev .
+
+If you are building on a Unix-like system that supports pkg-config and
+uses it for all appropriate libraries (such as a modern Linux
+distribution) then you should be able to just run "qmake" (being
+careful to ensure it is the Qt 4 version of qmake you are running, and
+not a Qt 3 version).
+
+If you do not have pkg-config, you should first edit the file sv.prf
+and comment out any of the optional HAVE_* lines (in the section
+starting "If you don't have pkg-config...") for library dependencies
+that you aren't using.  Then run the Qt 4 "qmake" command.  This will
+create the proper Makefile.
+
+(If you're on the Mac and you have Qt3 installed as well, you must
+export QMAKESPEC=macx-g++ before you do this, or Qt will get confused.)
+
+Then type "make".  The program will then either build, or not build.
+If it builds, the result will be a binary file in
+runner/sonic-annotator (on Linux) or runner/release/Sonic
+Annotator.exe (on Win32), or a bundle in runner/Sonic Annotator.app.
+There should be nothing to install apart from the executable itself
+and any of the above listed third-party shared libraries that are not
+already installed.
+
+
+Qt Library Version Requirements
+-------------------------------
+
+Sonic Annotator requires Qt version 4.3 or newer.  It can not be
+built with Qt3 or with Qt 4.0.x, 4.1.x, or 4.2.x.
+
+

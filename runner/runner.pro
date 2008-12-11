@@ -6,7 +6,7 @@ SV_UNIT_PACKAGES = vamp vamp-hostsdk samplerate mad id3tag oggz fishsound sndfil
 #linux-g++:LIBS += -Wl,-Bstatic
 #linux-g++:DEFINES += BUILD_STATIC
 
-load(../sonic-visualiser/sv.prf)
+load(../sv.prf)
 
 LIBPATH += /usr/local/lib
 
@@ -28,9 +28,9 @@ win32-x-g++:QMAKE_LFLAGS += -Wl,-subsystem,console
 
 TARGET = sonic-annotator
 
-DEPENDPATH += . ../sonic-visualiser i18n main
-INCLUDEPATH += . ../sonic-visualiser main
-LIBPATH = ../sonic-visualiser/audioio ../sonic-visualiser/data ../sonic-visualiser/plugin ../sonic-visualiser/rdf ../sonic-visualiser/transform ../sonic-visualiser/base ../sonic-visualiser/system $$LIBPATH
+DEPENDPATH += . .. i18n main
+INCLUDEPATH += . .. main
+LIBPATH = ../audioio ../data ../plugin ../rdf ../transform ../base ../system $$LIBPATH
 
 QMAKE_CXXFLAGS_RELEASE += -fmessage-length=80 -fdiagnostics-show-location=every-line
 
@@ -39,13 +39,13 @@ contains(DEFINES, BUILD_STATIC):LIBS -= -ljack
 #LIBS = -lsvaudioio -lsvdata -lsvtransform -lsvplugin -lsvrdf -lsvbase -lsvsystem  $$LIBS
 LIBS = -lsvdata -lsvtransform -lsvplugin -lsvrdf -lsvdata -lsvbase -lsvsystem  $$LIBS
 
-PRE_TARGETDEPS += ../sonic-visualiser/audioio/libsvaudioio.a \
-                  ../sonic-visualiser/data/libsvdata.a \
-                  ../sonic-visualiser/transform/libsvtransform.a \
-                  ../sonic-visualiser/plugin/libsvplugin.a \
-                  ../sonic-visualiser/rdf/libsvrdf.a \
-                  ../sonic-visualiser/base/libsvbase.a \
-                  ../sonic-visualiser/system/libsvsystem.a
+PRE_TARGETDEPS += ../audioio/libsvaudioio.a \
+                  ../data/libsvdata.a \
+                  ../transform/libsvtransform.a \
+                  ../plugin/libsvplugin.a \
+                  ../rdf/libsvrdf.a \
+                  ../base/libsvbase.a \
+                  ../system/libsvsystem.a
 
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
