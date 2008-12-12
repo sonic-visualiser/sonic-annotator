@@ -367,9 +367,9 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
 {
     if (m_plugins.empty()) return;
 
-    ProgressPrinter printer("Retrieving audio data...");
+    ProgressPrinter retrievalProgress("Retrieving audio data...");
 
-    FileSource source(audioSource, &printer);
+    FileSource source(audioSource, &retrievalProgress);
     if (!source.isAvailable()) {
         cerr << "ERROR: File or URL \"" << audioSource.toStdString()
              << "\" could not be located" << endl;
@@ -399,7 +399,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
     }
 
     AudioFileReader *reader =
-        AudioFileReaderFactory::createReader(source, m_sampleRate, &printer);
+        AudioFileReaderFactory::createReader(source, m_sampleRate, &retrievalProgress);
     
     if (!reader) {
         cerr << "ERROR: File or URL \"" << audioSource.toStdString()
@@ -408,7 +408,9 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
     }
 
     size_t channels = reader->getChannelCount();
-    
+
+    retrievalProgress.done();
+
     cerr << "Opened " << channels << "-channel file or URL \"" << audioSource.toStdString() << "\"" << endl;
 
     // reject file if it has too few channels, plugin will handle if it has too many
