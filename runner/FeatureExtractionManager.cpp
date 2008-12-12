@@ -19,6 +19,7 @@
 #include <vamp-hostsdk/PluginBufferingAdapter.h>
 #include <vamp-hostsdk/PluginInputDomainAdapter.h>
 #include <vamp-hostsdk/PluginSummarisingAdapter.h>
+#include <vamp-hostsdk/PluginWrapper.h>
 #include <vamp-hostsdk/PluginLoader.h>
 
 #include <iostream>
@@ -32,6 +33,7 @@ using Vamp::HostExt::PluginChannelAdapter;
 using Vamp::HostExt::PluginBufferingAdapter;
 using Vamp::HostExt::PluginInputDomainAdapter;
 using Vamp::HostExt::PluginSummarisingAdapter;
+using Vamp::HostExt::PluginWrapper;
 
 #include "data/fileio/FileSource.h"
 #include "data/fileio/AudioFileReader.h"
@@ -255,6 +257,29 @@ bool FeatureExtractionManager::addFeatureExtractor
             cerr << "NOTE: Loaded and initialised plugin " << plugin
                  << " for transform \""
                  << transform.getIdentifier().toStdString() << "\"" << endl;
+
+        } else {
+
+            if (transform.getStepSize() == 0 || transform.getBlockSize() == 0) {
+
+                PluginWrapper *pw = dynamic_cast<PluginWrapper *>(plugin);
+                if (pw) {
+                    PluginBufferingAdapter *pba =
+                        pw->getWrapper<PluginBufferingAdapter>();
+                    if (pba) {
+                        size_t actualStepSize = 0;
+                        size_t actualBlockSize = 0;
+                        pba->getActualStepAndBlockSizes(actualStepSize,
+                                                        actualBlockSize);
+                        if (transform.getStepSize() == 0) {
+                            transform.setStepSize(actualStepSize);
+                        }
+                        if (transform.getBlockSize() == 0) {
+                            transform.setBlockSize(actualBlockSize);
+                        }
+                    }
+                }
+            }
         }
 
         if (transform.getOutput() == "") {
