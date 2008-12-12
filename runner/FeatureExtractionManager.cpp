@@ -254,8 +254,7 @@ bool FeatureExtractionManager::addFeatureExtractor
                 m_pluginOutputIndices[outputs[i].identifier] = i;
             }
 
-            cerr << "NOTE: Loaded and initialised plugin " << plugin
-                 << " for transform \""
+            cerr << "NOTE: Loaded and initialised plugin for transform \""
                  << transform.getIdentifier().toStdString() << "\"" << endl;
 
         } else {
@@ -572,6 +571,8 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
         progress = int(((i - startFrame) * 100.0) / (endFrame - startFrame) + 0.1);
         if (progress > pp) extractionProgress.setProgress(progress);
     }
+
+    delete reader;
     
     for (PluginMap::iterator pi = m_plugins.begin();
          pi != m_plugins.end(); ++pi) { 
