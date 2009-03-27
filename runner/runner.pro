@@ -6,7 +6,7 @@ SV_UNIT_PACKAGES = vamp vamp-hostsdk samplerate mad id3tag oggz fishsound sndfil
 #linux-g++:LIBS += -Wl,-Bstatic
 #linux-g++:DEFINES += BUILD_STATIC
 
-load(../sv.prf)
+load(../prf/sv.prf)
 
 CONFIG += sv qt thread warn_on stl rtti exceptions console
 QT += xml network
