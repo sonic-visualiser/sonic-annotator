@@ -17,6 +17,7 @@
     vamp:step_size "512"^^xsd:int ;
     a vamp:Transform .
 
+    mo:encodes :signal_1 ;
     a mo:AudioFile .
 
 :signal_1
@@ -25,6 +26,9 @@
         a tl:Interval
     ] ;
     a mo:Signal .
+
+:signal_timeline_1
+    a tl:Timeline .
 
 :event_2
     event:time [

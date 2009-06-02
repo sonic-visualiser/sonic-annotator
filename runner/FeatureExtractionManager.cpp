@@ -516,7 +516,9 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
                 FeatureWriter::TrackMetadata m;
                 m.title = reader->getTitle();
                 m.maker = reader->getMaker();
-                writers[j]->setTrackMetadata(audioSource, m);
+                if (m.title != "" && m.maker != "") {
+                    writers[j]->setTrackMetadata(audioSource, m);
+                }
             }
         }
     }
