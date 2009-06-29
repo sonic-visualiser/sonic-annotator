@@ -550,8 +550,9 @@ int main(int argc, char **argv)
         }
     }
 
-#ifdef HAVE_FFTW3
     QSettings settings;
+
+#ifdef HAVE_FFTW3
     settings.beginGroup("FFTWisdom");
     QString wisdom = settings.value("wisdom").toString();
     if (wisdom != "") {
@@ -559,6 +560,14 @@ int main(int argc, char **argv)
     }
     settings.endGroup();
 #endif
+
+    settings.beginGroup("RDF");
+    if (!settings.contains("rdf-indices")) {
+        QStringList list;
+        list << "http://www.vamp-plugins.org/rdf/plugins/index.txt";
+        settings.setValue("rdf-indices", list);
+    }
+    settings.endGroup();
 
     FeatureExtractionManager manager;
 
