@@ -1,0 +1,39 @@
+
+Changes in Sonic Annotator 1.3 since the previous release 1.2:
+
+Front-end changes:
+
+ - A new --force front-end option (distinct from the --csv-force and
+ --rdf-force back-end options) has been added, which makes Sonic
+ Annotator continue to process subsequent audio files instead of
+ exiting after an error, if multiple audio files have been specified.
+
+RDF back-end (feature writer) changes:
+
+ - The RDF writer now conforms more correctly with the Music Ontology
+ in the way it relates signal, track, and track metadata.  Signals
+ that have available metadata now gain a Track resource to associate
+ that metadata with, instead of hanging it directly from the Signal
+ resource; also the audio file now encodes the signal rather than the
+ signal being available as the audio file (matching the domain
+ specification of the Music Ontology).  Note that this new resource
+ structure will not be properly read by versions of Sonic Visualiser
+ prior to 1.6 (should importing the data into Sonic Visualiser be of
+ interest to you).
+
+ - The --rdf-signal-uri option has been removed and replaced with the
+ more meaningful set of options --rdf-audiofile-uri, --rdf-track-uri,
+ and --rdf-maker-uri.
+
+ - A new --rdf-network option is available, to cause Sonic Annotator
+ to try to retrieve RDF descriptions for plugins from the network
+ where those descriptions are not available locally.  Use of this
+ option is recommended, but it is not the default because of the
+ possible performance implication (even though the results are mostly
+ cached, there may be some network access involved).
+
+ - The RDF writer now writes the computed_by property for signal
+ features.
+
+ - Plugin and output URIs in the resulting RDF are now percent-encoded.
+
