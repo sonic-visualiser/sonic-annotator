@@ -577,7 +577,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
         if (progress > pp) extractionProgress.setProgress(progress);
     }
 
-    std::cerr << "FeatureExtractionManager: deleting audio file reader" << std::endl;
+//    std::cerr << "FeatureExtractionManager: deleting audio file reader" << std::endl;
 
     delete reader;
     

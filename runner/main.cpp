@@ -725,11 +725,18 @@ int main(int argc, char **argv)
         std::cerr << "Extracting features for: \"" << i->toStdString() << "\"" << std::endl;
         try {
             manager.extractFeatures(*i);
-        } catch (std::exception e) {
+        } catch (const std::exception &e) {
             cerr << "ERROR: Failed to process file \"" << i->toStdString()
                  << "\": " << e.what() << endl;
-            if (force) continue;
-            else break;
+            if (force) {
+                // print a note only if we have more files to process
+                QStringList::const_iterator j = i;
+                if (++j != sources.end()) {
+                    cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
+                }
+            } else {
+                break;
+            }
         }
     }
     
