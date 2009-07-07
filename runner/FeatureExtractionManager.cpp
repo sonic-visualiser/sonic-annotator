@@ -22,6 +22,8 @@
 #include <vamp-hostsdk/PluginWrapper.h>
 #include <vamp-hostsdk/PluginLoader.h>
 
+#include "base/Exceptions.h"
+
 #include <iostream>
 
 using namespace std;
@@ -373,7 +375,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
     if (!source.isAvailable()) {
         cerr << "ERROR: File or URL \"" << audioSource.toStdString()
              << "\" could not be located" << endl;
-        exit(1);
+        throw FileNotFound(audioSource);
     }
     
     source.waitForData();
@@ -389,7 +391,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
         } else {
             cerr << "ERROR: Playlist \"" << audioSource.toStdString()
                  << "\" could not be opened" << endl;
-            exit(1);
+            throw FileNotFound(audioSource);
         }
     }
 
@@ -402,9 +404,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
         AudioFileReaderFactory::createReader(source, m_sampleRate, &retrievalProgress);
     
     if (!reader) {
-        cerr << "ERROR: File or URL \"" << audioSource.toStdString()
-             << "\" could not be opened" << endl;
-        exit(1);
+        throw FailedToOpenFile(audioSource);
     }
 
     size_t channels = reader->getChannelCount();
@@ -415,9 +415,10 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
 
     // reject file if it has too few channels, plugin will handle if it has too many
     if ((int)channels < m_channels) {
-        //!!! should not be terminating here!
-        cerr << "ERROR: File or URL \"" << audioSource.toStdString() << "\" has less than " << m_channels << " channels" << endl;
-        exit(1);
+        throw FileOperationFailed
+            (audioSource,
+             QString("read sufficient channels (found %1, require %2)")
+             .arg(channels).arg(m_channels));
     }
     
     // allocate audio buffers

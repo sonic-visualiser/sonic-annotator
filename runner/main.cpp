@@ -143,7 +143,7 @@ void usage(QString myname)
     cerr << "Sonic Annotator v" << RUNNER_VERSION << endl;
     cerr << "A utility for batch feature extraction from audio files." << endl;
     cerr << "Mark Levy, Chris Sutton and Chris Cannam, Queen Mary, University of London." << endl;
-    cerr << "Copyright 2007-2008 Queen Mary, University of London." << endl;
+    cerr << "Copyright 2007-2009 Queen Mary, University of London." << endl;
     cerr << endl;
     cerr << "This program is free software.  You may redistribute copies of it under the" << endl;
     cerr << "terms of the GNU General Public License <http://www.gnu.org/licenses/gpl.html>." << endl;
@@ -245,6 +245,8 @@ void usage(QString myname)
     cerr << "                      directory, search the tree starting at that directory" << endl;
     cerr << "                      for all supported audio files and take all of those as" << endl;
     cerr << "                      input instead." << endl;
+    cerr << endl;
+    cerr << "  -f, --force         Continue with subsequent files following an error." << endl;
     cerr << endl;
     cerr << "Housekeeping options:" << endl;
     cerr << endl;
@@ -360,6 +362,7 @@ int main(int argc, char **argv)
     set<string> requestedTransformListFiles;
     set<string> requestedDefaultTransforms;
     set<string> requestedSummaryTypes;
+    bool force = false;
 //!!!    bool multiplex = false;
     bool recursive = false;
     bool list = false;
@@ -487,6 +490,9 @@ int main(int argc, char **argv)
 */
         } else if (arg == "-r" || arg == "--recursive") {
             recursive = true;
+            continue;
+        } else if (arg == "-f" || arg == "--force") {
+            force = true;
             continue;
         } else if (arg == "-l" || arg == "--list") {
             list = true;
@@ -719,10 +725,11 @@ int main(int argc, char **argv)
         std::cerr << "Extracting features for: \"" << i->toStdString() << "\"" << std::endl;
         try {
             manager.extractFeatures(*i);
-        } catch (FailedToOpenFile f) {
-            cerr << "ERROR: Failed to open output file for feature writer: "
-                 << f.what() << endl;
-            break;
+        } catch (std::exception e) {
+            cerr << "ERROR: Failed to process file \"" << i->toStdString()
+                 << "\": " << e.what() << endl;
+            if (force) continue;
+            else break;
         }
     }
     
