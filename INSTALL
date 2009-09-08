@@ -27,9 +27,9 @@ performance it's strongly recommended that you build with Redland
 1.0.8 or newer.
 
 If you happen to be using a Debian-based Linux, you probably want to
-apt-get install the following packages: libqt4-dev libsndfile1-dev
-libsamplerate0-dev fftw3-dev libmad0-dev liboggz1-dev
-libfishsound1-dev liblrdf0-dev librdf0-dev .
+apt-get install the following packages: libqt4-dev libsndfile1-dev \
+libsamplerate0-dev fftw3-dev libmad0-dev liboggz1-dev \
+libfishsound1-dev liblrdf0-dev librdf0-dev libbz2-dev libasound2-dev .
 
 If you are building on a Unix-like system that supports pkg-config and
 uses it for all appropriate libraries (such as a modern Linux

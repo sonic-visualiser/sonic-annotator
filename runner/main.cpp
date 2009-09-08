@@ -728,6 +728,8 @@ int main(int argc, char **argv)
         } catch (const std::exception &e) {
             cerr << "ERROR: Failed to process file \"" << i->toStdString()
                  << "\": " << e.what() << endl;
+            cerr << "NOTE: If you want to continue with processing any further files after an" << endl
+                 << "error like this, use the --force option" << endl;
             if (force) {
                 // print a note only if we have more files to process
                 QStringList::const_iterator j = i;

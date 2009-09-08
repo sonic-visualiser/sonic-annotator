@@ -44,6 +44,8 @@ public:
     
     virtual void finish() { }
 
+    virtual QString getWriterTag() const { return "audiodb"; }
+
 private:
     string catalogueId;
     string baseDir;
