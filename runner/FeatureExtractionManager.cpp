@@ -203,9 +203,12 @@ bool FeatureExtractionManager::addFeatureExtractor
             size_t pluginStepSize = plugin->getPreferredStepSize();
             size_t pluginBlockSize = plugin->getPreferredBlockSize();
 
+            PluginInputDomainAdapter *pida = 0;
+
             // adapt the plugin for buffering, channels, etc.
             if (plugin->getInputDomain() == Plugin::FrequencyDomain) {
-                plugin = new PluginInputDomainAdapter(plugin);
+                pida = new PluginInputDomainAdapter(plugin);
+                plugin = pida;
             }
 
             PluginBufferingAdapter *pba = new PluginBufferingAdapter(plugin);
@@ -257,7 +260,17 @@ bool FeatureExtractionManager::addFeatureExtractor
             }
 
             cerr << "NOTE: Loaded and initialised plugin for transform \""
-                 << transform.getIdentifier().toStdString() << "\"" << endl;
+                 << transform.getIdentifier().toStdString()
+                 << "\" with plugin step size " << actualStepSize
+                 << " and block size " << actualBlockSize
+                 << " (adapter step and block size " << m_blockSize << ")"
+                 << endl;
+
+            if (pida) {
+                cerr << "NOTE: PluginInputDomainAdapter timestamp adjustment is "
+
+                     << pida->getTimestampAdjustment() << endl;
+            }
 
         } else {
 
