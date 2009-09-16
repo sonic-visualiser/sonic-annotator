@@ -208,6 +208,7 @@ bool FeatureExtractionManager::addFeatureExtractor
             // adapt the plugin for buffering, channels, etc.
             if (plugin->getInputDomain() == Plugin::FrequencyDomain) {
                 pida = new PluginInputDomainAdapter(plugin);
+                pida->setProcessTimestampMethod(PluginInputDomainAdapter::ShiftData);
                 plugin = pida;
             }
 
