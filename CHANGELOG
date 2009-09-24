@@ -1,5 +1,32 @@
 
-Changes in Sonic Annotator 1.3 since the previous release 1.2:
+Changes in Sonic Annotator 0.4 since the previous release 0.3:
+
+Build changes:
+
+ - Sonic Annotator now requires the Vamp plugin SDK v2.1 or newer.
+
+Front-end changes:
+
+ - More useful diagnostics are now available when a plugin fails to
+ load or run
+ - Frequency-domain plugins now use the PluginInputDomainAdapter's
+ new ShiftData processing method, ensuring that the first block
+ received by the plugin is the one centred on 0 rather than starting
+ at 0: we think this is a better match for normal usage expectations.
+
+CSV back-end (feature writer) changes:
+
+ - The CSV writer now closes its output files properly when it
+ finishes writing to each one, rather than leaving them all open
+ until the end and risk running out of file descriptors.  This was
+ already the behaviour of the RDF writer, the CSV one has just been
+ updated to match it.
+ - The behaviour of the CSV writer has also been changed to match
+ that of the RDF writer in handling file write failures (it now
+ continues processing only if --force is given).
+
+
+Changes in Sonic Annotator 0.3 since the previous release 0.2:
 
 Front-end changes:
 
