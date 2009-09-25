@@ -720,6 +720,8 @@ int main(int argc, char **argv)
         }
     }
 
+    bool good = true;
+
     for (QStringList::const_iterator i = sources.begin();
          i != sources.end(); ++i) {
         std::cerr << "Extracting features for: \"" << i->toStdString() << "\"" << std::endl;
@@ -737,6 +739,7 @@ int main(int argc, char **argv)
                     cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
                 }
             } else {
+                good = false;
                 break;
             }
         }
@@ -756,7 +759,8 @@ int main(int argc, char **argv)
 
     TempDirectory::getInstance()->cleanup();
     
-    return 0;
+    if (good) return 0;
+    else return 1;
 }
 
 

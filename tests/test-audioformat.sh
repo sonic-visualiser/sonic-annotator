@@ -10,10 +10,7 @@ tmpfile2=$mypath/tmp_2_$$
 
 trap "rm -f $tmpfile1 $tmpfile2" 0
 
-fail() {
-    echo "Test failed: $1"
-    exit 1
-}
+. test-include.sh
 
 for extension in wav ogg mp3 ; do
 
@@ -36,10 +33,10 @@ for extension in wav ogg mp3 ; do
 	fail "Fails to run transform $transform against audio file $infile"
 
     if [ "$extension" = "wav" ]; then
-	cmp -s $tmpfile2 $expected || \
+	csvcompare $tmpfile2 $expected || \
 	    fail "Output mismatch for transform $transform with audio file $infile"
     else
-	cmp -s $tmpfile2 $expected || \
+	csvcompare $tmpfile2 $expected || \
 	    ( echo "NOTE: Output mismatch for transform $transform with audio file $infile" ; \
 	      echo "This may be the result of differences in the audio file decoder, so I am not" ; \
 	      echo "failing the test, but I recommend that you check the results." )

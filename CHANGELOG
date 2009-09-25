@@ -7,12 +7,16 @@ Build changes:
 
 Front-end changes:
 
+ - Frequency-domain plugins now use the PluginInputDomainAdapter's new
+ ShiftData processing method, ensuring that the first block received
+ by the plugin is the one centred on 0 rather than starting at 0.
+ Unfortunately, the old behaviour omitted a timing compensation step,
+ and this fix actually changes the results from some plugin processes:
+ the previous behaviour was not always in line with the Vamp plugin
+ specification.
+
  - More useful diagnostics are now available when a plugin fails to
- load or run
- - Frequency-domain plugins now use the PluginInputDomainAdapter's
- new ShiftData processing method, ensuring that the first block
- received by the plugin is the one centred on 0 rather than starting
- at 0: we think this is a better match for normal usage expectations.
+ load or run.
 
 CSV back-end (feature writer) changes:
 

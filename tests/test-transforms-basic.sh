@@ -10,10 +10,7 @@ tmpfile2=$mypath/tmp_2_$$
 
 trap "rm -f $tmpfile1 $tmpfile2" 0
 
-fail() {
-    echo "Test failed: $1"
-    exit 1
-}
+. test-include.sh
 
 $r --skeleton $testplug > $tmpfile1 2>/dev/null || \
     fail "Fails to run with --skeleton $testplug"
@@ -21,7 +18,7 @@ $r --skeleton $testplug > $tmpfile1 2>/dev/null || \
 $r -t $tmpfile1 -w csv --csv-stdout $infile > $tmpfile2 2>/dev/null || \
     fail "Fails to run with -t $tmpfile -w csv --csv-stdout $infile"
 
-cmp -s $tmpfile2 $mypath/expected/transforms-basic-skeleton-1.csv || \
+csvcompare $tmpfile2 $mypath/expected/transforms-basic-skeleton-1.csv || \
     fail "Output mismatch for transforms-basic-skeleton-1.csv"
 
 for suffix in \
@@ -47,7 +44,7 @@ for suffix in \
 	$r -t $transform -w csv --csv-stdout $infile > $tmpfile2 2>/dev/null || \
 	    fail "Fails to run transform $transform"
 
-	cmp -s $tmpfile2 $expected || \
+	csvcompare $tmpfile2 $expected || \
 	    fail "Output mismatch for transform $transform"
     done
 done

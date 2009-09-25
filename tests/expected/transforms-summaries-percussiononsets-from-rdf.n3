@@ -32,7 +32,7 @@
 
 :event_2
     event:time [
-        tl:at "PT0.777868480S"^^xsd:duration ;
+        tl:at "PT0.777868481S"^^xsd:duration ;
         tl:onTimeLine :signal_timeline_1 ;
         a tl:Instant
     ] ;
@@ -58,11 +58,11 @@
     a af:Onset .
 
 :transform_5_detectionfunction
-    vamp:block_size "1024"^^xsd:int ;
+    vamp:block_size "4096"^^xsd:int ;
     vamp:output <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets_output_detectionfunction> ;
     vamp:plugin <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets> ;
     vamp:sample_rate "44100"^^xsd:float ;
-    vamp:step_size "512"^^xsd:int ;
+    vamp:step_size "2048"^^xsd:int ;
     vamp:summary_type "mean" ;
     a vamp:Transform .
 
@@ -79,7 +79,7 @@
         tl:onTimeLine :signal_timeline_1 ;
         a tl:Interval
     ] ;
-    af:feature "162.123" ;
+    af:feature "677.241" ;
     vamp:computed_by :transform_5_detectionfunction ;
     a :event_type_6 ;
     rdfs:label "(mean value, continuous-time average)" .
@@ -90,7 +90,7 @@
     vamp:plugin <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets> ;
     vamp:sample_rate "44100"^^xsd:float ;
     vamp:step_size "512"^^xsd:int ;
-    vamp:summary_type "median" ;
+    vamp:summary_type "mean" ;
     a vamp:Transform .
 
 :event_type_9
@@ -106,10 +106,10 @@
         tl:onTimeLine :signal_timeline_1 ;
         a tl:Interval
     ] ;
-    af:feature "168" ;
+    af:feature "162.585" ;
     vamp:computed_by :transform_8_detectionfunction ;
     a :event_type_9 ;
-    rdfs:label "(median value, continuous-time average)" .
+    rdfs:label "(mean value, continuous-time average)" .
 
 :transform_11_detectionfunction
     vamp:block_size "1024"^^xsd:int ;
@@ -117,7 +117,7 @@
     vamp:plugin <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets> ;
     vamp:sample_rate "44100"^^xsd:float ;
     vamp:step_size "512"^^xsd:int ;
-    vamp:summary_type "mode" ;
+    vamp:summary_type "median" ;
     a vamp:Transform .
 
 :event_type_12
@@ -133,18 +133,18 @@
         tl:onTimeLine :signal_timeline_1 ;
         a tl:Interval
     ] ;
-    af:feature "0" ;
+    af:feature "168" ;
     vamp:computed_by :transform_11_detectionfunction ;
     a :event_type_12 ;
-    rdfs:label "(modal value, continuous-time average)" .
+    rdfs:label "(median value, continuous-time average)" .
 
 :transform_14_detectionfunction
-    vamp:block_size "4096"^^xsd:int ;
+    vamp:block_size "1024"^^xsd:int ;
     vamp:output <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets_output_detectionfunction> ;
     vamp:plugin <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#percussiononsets> ;
     vamp:sample_rate "44100"^^xsd:float ;
-    vamp:step_size "2048"^^xsd:int ;
-    vamp:summary_type "mean" ;
+    vamp:step_size "512"^^xsd:int ;
+    vamp:summary_type "mode" ;
     a vamp:Transform .
 
 :event_type_15
@@ -160,8 +160,8 @@
         tl:onTimeLine :signal_timeline_1 ;
         a tl:Interval
     ] ;
-    af:feature "668.509" ;
+    af:feature "0" ;
     vamp:computed_by :transform_14_detectionfunction ;
     a :event_type_15 ;
-    rdfs:label "(mean value, continuous-time average)" .
+    rdfs:label "(modal value, continuous-time average)" .
 
