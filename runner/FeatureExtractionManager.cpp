@@ -383,6 +383,8 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
 {
     if (m_plugins.empty()) return;
 
+    testOutputFiles(audioSource);
+
     ProgressPrinter retrievalProgress("Retrieving audio data...");
 
     FileSource source(audioSource, &retrievalProgress);
@@ -429,6 +431,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
 
     // reject file if it has too few channels, plugin will handle if it has too many
     if ((int)channels < m_channels) {
+        delete reader;
         throw FileOperationFailed
             (audioSource,
              QString("read sufficient channels (found %1, require %2)")
@@ -440,6 +443,24 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
     for (int c = 0; c < m_channels; ++c) {
         data[c] = new float[m_blockSize];
     }
+    
+    struct LifespanMgr { // unintrusive hack introduced to ensure
+                         // destruction on exceptions
+        AudioFileReader *m_r;
+        int m_c;
+        float **m_d;
+        LifespanMgr(AudioFileReader *r, int c, float **d) :
+            m_r(r), m_c(c), m_d(d) { }
+        ~LifespanMgr() { destroy(); }
+        void destroy() {
+            if (!m_r) return;
+            delete m_r;
+            for (int i = 0; i < m_c; ++i) delete[] m_d[i];
+            delete[] m_d;
+            m_r = 0;
+        }
+    };
+    LifespanMgr lifemgr(reader, m_channels, data);
 
     size_t frameCount = reader->getFrameCount();
     
@@ -593,7 +614,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
 
 //    std::cerr << "FeatureExtractionManager: deleting audio file reader" << std::endl;
 
-    delete reader;
+    lifemgr.destroy(); // deletes reader, data
     
     for (PluginMap::iterator pi = m_plugins.begin();
          pi != m_plugins.end(); ++pi) { 
@@ -718,6 +739,23 @@ void FeatureExtractionManager::writeFeatures(QString audioSource,
             writers[j]->write
                 (audioSource, transform, desc, fsi->second,
                  Transform::summaryTypeToString(summaryType).toStdString());
+        }
+    }
+}
+
+void FeatureExtractionManager::testOutputFiles(QString audioSource)
+{
+    for (PluginMap::iterator pi = m_plugins.begin();
+         pi != m_plugins.end(); ++pi) {
+
+        for (TransformWriterMap::iterator ti = pi->second.begin();
+             ti != pi->second.end(); ++ti) {
+        
+            vector<FeatureWriter *> &writers = ti->second;
+
+            for (int i = 0; i < (int)writers.size(); ++i) {
+                writers[i]->testOutputFile(audioSource, ti->first.getIdentifier());
+            }
         }
     }
 }

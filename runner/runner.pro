@@ -28,17 +28,15 @@ TARGET = sonic-annotator
 
 DEPENDPATH += . .. i18n main
 INCLUDEPATH += . .. main
-LIBPATH = ../audioio ../data ../plugin ../rdf ../transform ../base ../system $$LIBPATH
+LIBPATH = ../data ../plugin ../rdf ../transform ../base ../system $$LIBPATH
 
 QMAKE_CXXFLAGS_RELEASE += -fmessage-length=80 -fdiagnostics-show-location=every-line
 
 contains(DEFINES, BUILD_STATIC):LIBS -= -ljack
 
-#LIBS = -lsvaudioio -lsvdata -lsvtransform -lsvplugin -lsvrdf -lsvbase -lsvsystem  $$LIBS
 LIBS = -lsvdata -lsvtransform -lsvplugin -lsvrdf -lsvdata -lsvbase -lsvsystem  $$LIBS
 
-PRE_TARGETDEPS += ../audioio/libsvaudioio.a \
-                  ../data/libsvdata.a \
+PRE_TARGETDEPS += ../data/libsvdata.a \
                   ../transform/libsvtransform.a \
                   ../plugin/libsvplugin.a \
                   ../rdf/libsvrdf.a \

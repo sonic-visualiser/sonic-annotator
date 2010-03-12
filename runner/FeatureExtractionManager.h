@@ -97,6 +97,8 @@ private:
                        const Vamp::Plugin::FeatureSet &,
                        Transform::SummaryType summaryType =
                        Transform::NoSummary);
+
+    void testOutputFiles(QString audioSource);
     void finish();
 
     int m_blockSize;

@@ -1,6 +1,6 @@
 
 TEMPLATE = subdirs
 
-SUBDIRS = audioio base data plugin rdf system transform runner
+SUBDIRS = base data plugin rdf system transform runner
 
 
