@@ -429,7 +429,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
 
     cerr << "Opened " << channels << "-channel file or URL \"" << audioSource.toStdString() << "\"" << endl;
 
-    // reject file if it has too few channels, plugin will handle if it has too many
+    // reject file if it has too few channels
     if ((int)channels < m_channels) {
         delete reader;
         throw FileOperationFailed
@@ -574,24 +574,40 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
         // leave it to the plugin adapter because the same plugin
         // adapter may have to serve for input files with various
         // numbers of channels (so the adapter is simply configured
-        // with a fixed channel count, generally 1).
+        // with a fixed channel count).
 
         int rc = reader->getChannelCount();
 
-        for (int j = 0; j < m_blockSize; ++j) {
-            for (int c = 0; c < m_channels; ++c) {
-                int index;
-                if (c < rc) {
+        // m_channels is the number of channels we need for the plugin
+
+        int index;
+        int fc = (int)frames.size();
+        if (m_channels == 1) { // only case in which we can sensibly mix down
+            for (int j = 0; j < m_blockSize; ++j) {
+                data[0][j] = 0.f;
+            }
+            for (int c = 0; c < rc; ++c) {
+                for (int j = 0; j < m_blockSize; ++j) {
                     index = j * rc + c;
-                    data[c][j] = 0.f;
-                } else {
-                    index = j * rc + (c % rc);
-                }
-                if (index < (int)frames.size()) {
-                    data[c][j] += frames[index];
+                    if (index < fc) data[0][j] += frames[index];
                 }
             }
-        }    
+            for (int j = 0; j < m_blockSize; ++j) {
+                data[0][j] /= rc;
+            }
+        } else {                
+            for (int c = 0; c < m_channels; ++c) {
+                for (int j = 0; j < m_blockSize; ++j) {
+                    data[c][j] = 0.f;
+                }
+                if (c < rc) {
+                    for (int j = 0; j < m_blockSize; ++j) {
+                        index = j * rc + c;
+                        if (index < fc) data[c][j] += frames[index];
+                    }
+                }
+            }
+        }                
 
         Vamp::RealTime timestamp = Vamp::RealTime::frame2RealTime
             (i, m_sampleRate);
