@@ -1,4 +1,18 @@
 
+Changes in Sonic Annotator 0.5 since the previous release 0.4:
+
+Build changes:
+
+ - Remove unused audioio library and avoid its dependencies
+
+Front-end changes:
+
+ - Avoid leaking file descriptors on exceptions
+ - Fix embarrassing bug that caused failure to mix down to mono
+ properly for single-channel plugins with multi-channel input files
+ - Fail sooner if the output file is not writable (i.e. don't wait
+ until the first data is available for writing)
+
 Changes in Sonic Annotator 0.4 since the previous release 0.3:
 
 Build changes:
