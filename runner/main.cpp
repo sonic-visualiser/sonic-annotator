@@ -23,6 +23,7 @@
 #include <QString>
 #include <QFileInfo>
 #include <QDir>
+#include <QSet>
 
 using std::cout;
 using std::cerr;
@@ -587,17 +588,6 @@ int main(int argc, char **argv)
         }
     }
     
-    // the manager dictates the sample rate and number of channels
-    // to work at - files with too few channels are rejected,
-    // too many channels are handled as usual by the Vamp plugin
-
-    //!!! Review this: although we probably do want to fix the channel
-    // count here, we don't necessarily want to fix the rate: it's
-    // specified in the Transform file.
-
-    manager.setDefaultSampleRate(44100);
-    manager.setChannels(1);
-    
     vector<FeatureWriter *> writers;
 
     for (set<string>::const_iterator i = requestedWriterTags.begin();
@@ -682,27 +672,6 @@ int main(int argc, char **argv)
         }
     }
 
-    bool haveFeatureExtractor = false;
-    
-    for (set<string>::const_iterator i = requestedTransformFiles.begin();
-         i != requestedTransformFiles.end(); ++i) {
-        if (manager.addFeatureExtractorFromFile(i->c_str(), writers)) {
-            haveFeatureExtractor = true;
-        }
-    }
-
-    for (set<string>::const_iterator i = requestedDefaultTransforms.begin();
-         i != requestedDefaultTransforms.end(); ++i) {
-        if (manager.addDefaultFeatureExtractor(i->c_str(), writers)) {
-            haveFeatureExtractor = true;
-        }
-    }
-
-    if (!haveFeatureExtractor) {
-        cerr << myname.toStdString() << ": no feature extractors added" << endl;
-        exit(2);
-    }
-
     QStringList sources;
     if (!recursive) {
         sources = otherArgs;
@@ -721,17 +690,16 @@ int main(int argc, char **argv)
     }
 
     bool good = true;
+    QSet<QString> badSources;
 
     for (QStringList::const_iterator i = sources.begin();
          i != sources.end(); ++i) {
-        std::cerr << "Extracting features for: \"" << i->toStdString() << "\"" << std::endl;
         try {
-            manager.extractFeatures(*i);
+            manager.addSource(*i);
         } catch (const std::exception &e) {
+            badSources.insert(*i);
             cerr << "ERROR: Failed to process file \"" << i->toStdString()
                  << "\": " << e.what() << endl;
-            cerr << "NOTE: If you want to continue with processing any further files after an" << endl
-                 << "error like this, use the --force option" << endl;
             if (force) {
                 // print a note only if we have more files to process
                 QStringList::const_iterator j = i;
@@ -739,8 +707,60 @@ int main(int argc, char **argv)
                     cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
                 }
             } else {
+                cerr << "NOTE: If you want to continue with processing any further files after an" << endl
+                     << "error like this, use the --force option" << endl;
                 good = false;
                 break;
+            }
+        }
+    }
+
+    if (good) {
+    
+        bool haveFeatureExtractor = false;
+    
+        for (set<string>::const_iterator i = requestedTransformFiles.begin();
+             i != requestedTransformFiles.end(); ++i) {
+            if (manager.addFeatureExtractorFromFile(i->c_str(), writers)) {
+                haveFeatureExtractor = true;
+            }
+        }
+
+        for (set<string>::const_iterator i = requestedDefaultTransforms.begin();
+             i != requestedDefaultTransforms.end(); ++i) {
+            if (manager.addDefaultFeatureExtractor(i->c_str(), writers)) {
+                haveFeatureExtractor = true;
+            }
+        }
+
+        if (!haveFeatureExtractor) {
+            cerr << myname.toStdString() << ": no feature extractors added" << endl;
+            good = false;
+        }
+    }
+
+    if (good) {
+        for (QStringList::const_iterator i = sources.begin();
+             i != sources.end(); ++i) {
+            if (badSources.contains(*i)) continue;
+            std::cerr << "Extracting features for: \"" << i->toStdString() << "\"" << std::endl;
+            try {
+                manager.extractFeatures(*i);
+            } catch (const std::exception &e) {
+                cerr << "ERROR: Feature extraction failed for \"" << i->toStdString()
+                     << "\": " << e.what() << endl;
+                if (force) {
+                    // print a note only if we have more files to process
+                    QStringList::const_iterator j = i;
+                    if (++j != sources.end()) {
+                        cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
+                    }
+                } else {
+                    cerr << "NOTE: If you want to continue with processing any further files after an" << endl
+                         << "error like this, use the --force option" << endl;
+                    good = false;
+                    break;
+                }
             }
         }
     }

@@ -20,6 +20,8 @@
 #include <set>
 #include <string>
 
+#include <QMap>
+
 #include <vamp-hostsdk/Plugin.h>
 #include <vamp-hostsdk/PluginSummarisingAdapter.h>
 #include <transform/Transform.h>
@@ -31,6 +33,7 @@ using std::pair;
 using std::map;
 
 class FeatureWriter;
+class AudioFileReader;
 
 class FeatureExtractionManager
 {
@@ -54,6 +57,7 @@ public:
     bool addDefaultFeatureExtractor(TransformId transformId,
                                     const vector<FeatureWriter*> &writers);
 
+    void addSource(QString audioSource);
     void extractFeatures(QString audioSource);
 
 private:
@@ -105,6 +109,8 @@ private:
     int m_defaultSampleRate;
     int m_sampleRate;
     int m_channels;
+
+    QMap<QString, AudioFileReader *> m_readyReaders;
     
     void print(Transform transform) const;
 };
