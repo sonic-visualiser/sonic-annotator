@@ -1,0 +1,16 @@
+syntax: glob
+Makefile
+*/Makefile
+o/*
+*/o/*
+*/tmp_obj/*
+*/tmp_moc/*
+doc/html/
+*.o
+*.so
+*.so.*
+*.a
+*.wav
+*~
+*.orig
+*.rej

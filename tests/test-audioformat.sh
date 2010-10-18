@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mypath=`dirname $0`
-r=$mypath/../runner/sonic-annotator
+r=$mypath/../sonic-annotator
 
 inbase=$mypath/audio/3clicks
 testplug=vamp:vamp-example-plugins:percussiononsets
