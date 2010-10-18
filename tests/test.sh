@@ -10,6 +10,7 @@ for x in \
     as-advertised \
     rdf-writer \
     rdf-destinations \
+    csv-destinations \
     summaries \
     ; do
 
