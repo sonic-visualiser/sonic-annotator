@@ -9,6 +9,9 @@ infile2=$mypath/audio/6clicks8.wav
 outfile1=$mypath/audio/3clicks8.n3
 outfile2=$mypath/audio/6clicks8.n3
 
+infile1dot=$mypath/audio/3.clicks.8.wav
+outfile1dot=$mypath/audio/3.clicks.8.n3
+
 outfile3=$mypath/audio/3clicks8_vamp_vamp-example-plugins_percussiononsets_onsets.n3
 outfile4=$mypath/audio/3clicks8_vamp_vamp-example-plugins_percussiononsets_detectionfunction.n3
 outfile5=$mypath/audio/6clicks8_vamp_vamp-example-plugins_percussiononsets_onsets.n3
@@ -17,7 +20,7 @@ outfile6=$mypath/audio/6clicks8_vamp_vamp-example-plugins_percussiononsets_detec
 testplug=vamp:vamp-example-plugins:percussiononsets
 tmpttl=$mypath/tmp_1_$$.ttl
 
-trap "rm -f $tmpttl $outfile1 $outfile2 $outfile3 $outfile4 $outfile5 $outfile6" 0
+trap "rm -f $tmpttl $outfile1 $outfile2 $outfile3 $outfile4 $outfile5 $outfile6 $infile1dot $outfile1dot" 0
 
 fail() {
     echo "Test failed: $1"
@@ -45,6 +48,20 @@ $r -t $transformpfx-onsets.n3 -w rdf $infile1 2>/dev/null || \
     fail "Fails to run with $ctx"
 
 check_rdf $outfile1 "$ctx"
+
+
+ctx="onsets transform, one audio file with dots in filename, default RDF writer destination"
+
+rm -f $outfile1
+
+cp $infile1 $infile1dot
+
+$r -t $transformpfx-onsets.n3 -w rdf $infile1dot 2>/dev/null || \
+    fail "Fails to run with $ctx"
+
+check_rdf $outfile1dot "$ctx"
+
+rm -f $infile1dot $outfile1dot
 
 
 ctx="onsets and df transforms, one audio file, default RDF writer destination"
