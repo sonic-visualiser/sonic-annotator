@@ -651,6 +651,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource)
 
         int index;
         int fc = (int)frames.size();
+
         if (m_channels == 1) { // only case in which we can sensibly mix down
             for (int j = 0; j < m_blockSize; ++j) {
                 data[0][j] = 0.f;

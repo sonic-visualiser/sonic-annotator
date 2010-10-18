@@ -157,7 +157,7 @@ void usage(QString myname)
     cerr << "         " << myname.toStdString()
          << " -s <transform>" << endl;
     cerr << "         " << myname.toStdString()
-         << " [-lh]" << endl;
+         << " [-lhv]" << endl;
     cerr << endl;
     cerr << "Where <audio> is an audio file or URL to use as input: either a local file" << endl;
     cerr << "path, local \"file://\" URL, or remote \"http://\" or \"ftp://\" URL." << endl;
@@ -256,11 +256,12 @@ void usage(QString myname)
     cerr << "  -s, --skeleton <I>  Generate a skeleton transform file for transform id <I>" << endl;
     cerr << "                      and write it to standard output." << endl;
     cerr << endl;
+    cerr << "  -v, --version       Show the version number and exit." << endl;
     cerr << "  -h, --help          Show this help." << endl;
 
     cerr << endl;
-    cerr << "If no -w (or --writer) options are supplied, either the -l -s or -h option (or" << endl;
-    cerr << "long equivalent) must be given instead." << endl;
+    cerr << "If no -w (or --writer) options are supplied, either the -l -s -v or -h option" << endl;
+    cerr << "(or long equivalent) must be given instead." << endl;
 
     for (set<string>::const_iterator i = writers.begin();
          i != writers.end(); ++i) {
@@ -383,6 +384,11 @@ int main(int argc, char **argv)
         
         if (arg == "-h" || arg == "--help" || arg == "-?") {
             usage(myname);
+        }
+
+        if (arg == "-v" || arg == "--version") {
+            std::cout << RUNNER_VERSION << std::endl;
+            return 0;
         }
 
         if (arg == "-w" || arg == "--writer") {
