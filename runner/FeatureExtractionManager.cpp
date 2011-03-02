@@ -457,9 +457,36 @@ void FeatureExtractionManager::addSource(QString audioSource)
     }
 }
 
-void FeatureExtractionManager::extractFeatures(QString audioSource)
+void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
 {
     if (m_plugins.empty()) return;
+
+    if (QFileInfo(audioSource).suffix().toLower() == "m3u") {
+        FileSource source(audioSource);
+        PlaylistFileReader reader(source);
+        if (reader.isOK()) {
+            vector<QString> files = reader.load();
+            for (int i = 0; i < (int)files.size(); ++i) {
+                try {
+                    extractFeatures(files[i], force);
+                } catch (const std::exception &e) {
+                    if (!force) throw;
+                    cerr << "ERROR: Feature extraction failed for playlist entry \""
+                         << files[i].toStdString()
+                         << "\": " << e.what() << endl;
+                    // print a note only if we have more files to process
+                    if (++i != files.size()) {
+                        cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
+                    }
+                }
+            }
+            return;
+        } else {
+            cerr << "ERROR: Playlist \"" << audioSource.toStdString()
+                 << "\" could not be opened" << endl;
+            throw FileNotFound(audioSource);
+        }
+    }
 
     testOutputFiles(audioSource);
 

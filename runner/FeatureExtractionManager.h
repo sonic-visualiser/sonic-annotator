@@ -57,8 +57,15 @@ public:
     bool addDefaultFeatureExtractor(TransformId transformId,
                                     const vector<FeatureWriter*> &writers);
 
+    // Make a note of an audio or playlist file which will be passed
+    // to extractFeatures later.  Amongst other things, this may
+    // initialise the default sample rate and channel count
     void addSource(QString audioSource);
-    void extractFeatures(QString audioSource);
+
+    // Extract features from the given audio or playlist file.  If the
+    // file is a playlist and force is true, continue extracting even
+    // if a file in the playlist fails.
+    void extractFeatures(QString audioSource, bool force);
 
 private:
     // A plugin may have many outputs, so we can have more than one

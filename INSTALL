@@ -47,12 +47,11 @@ create the proper Makefile.
 export QMAKESPEC=macx-g++ before you do this, or Qt will get confused.)
 
 Then type "make".  The program will then either build, or not build.
-If it builds, the result will be a binary file in
-runner/sonic-annotator (on Linux) or runner/release/Sonic
-Annotator.exe (on Win32), or a bundle in runner/Sonic Annotator.app.
-There should be nothing to install apart from the executable itself
-and any of the above listed third-party shared libraries that are not
-already installed.
+If it builds, the result will be a binary file in sonic-annotator (on
+Linux) or release/Sonic Annotator.exe (on Win32), or a bundle in
+sonic-annotator.app.  There should be nothing to install apart from
+the executable itself and any of the above listed third-party shared
+libraries that are not already installed.
 
 
 Qt Library Version Requirements

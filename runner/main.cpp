@@ -751,7 +751,7 @@ int main(int argc, char **argv)
             if (badSources.contains(*i)) continue;
             std::cerr << "Extracting features for: \"" << i->toStdString() << "\"" << std::endl;
             try {
-                manager.extractFeatures(*i);
+                manager.extractFeatures(*i, force);
             } catch (const std::exception &e) {
                 cerr << "ERROR: Feature extraction failed for \"" << i->toStdString()
                      << "\": " << e.what() << endl;
