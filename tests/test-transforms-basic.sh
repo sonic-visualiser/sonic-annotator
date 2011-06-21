@@ -28,6 +28,9 @@ for suffix in \
     -set-parameters \
     -set-step-and-block-size \
     -set-sample-rate \
+    -df-windowtype-default \
+    -df-windowtype-hanning \
+    -df-windowtype-hamming \
     ; do
 
     for type in xml n3 ; do 
@@ -36,10 +39,10 @@ for suffix in \
 	expected=$mypath/expected/transforms-basic-percussiononsets$suffix.csv
 
 	test -f $transform || \
-	    fail "Internal error: no transforms file for suffix $suffix"
+	    fail "Internal error: no transforms file for suffix $suffix (looking for $transform)"
 
 	test -f $expected || \
-	    fail "Internal error: no expected output file for suffix $suffix"
+	    fail "Internal error: no expected output file for suffix $suffix (looking for $expected)"
 
 	$r -t $transform -w csv --csv-stdout $infile > $tmpfile2 2>/dev/null || \
 	    fail "Fails to run transform $transform"

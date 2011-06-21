@@ -116,6 +116,30 @@ bool FeatureExtractionManager::setSummaryTypes(const set<string> &names,
     return true;
 }
 
+static PluginInputDomainAdapter::WindowType
+convertWindowType(WindowType t)
+{
+    switch (t) {
+    case RectangularWindow:
+        return PluginInputDomainAdapter::RectangularWindow;
+    case BartlettWindow:
+        return PluginInputDomainAdapter::BartlettWindow;
+    case HammingWindow:
+        return PluginInputDomainAdapter::HammingWindow;
+    case HanningWindow:
+        return PluginInputDomainAdapter::HanningWindow;
+    case BlackmanWindow:
+        return PluginInputDomainAdapter::BlackmanWindow;
+    case NuttallWindow:
+        return PluginInputDomainAdapter::NuttallWindow;
+    case BlackmanHarrisWindow:
+        return PluginInputDomainAdapter::BlackmanHarrisWindow;
+    default:
+        cerr << "ERROR: Unknown or unsupported window type \"" << t << "\", using Hann (\"" << HanningWindow << "\")" << endl;
+        return PluginInputDomainAdapter::HanningWindow;
+    }
+}
+
 bool FeatureExtractionManager::addFeatureExtractor
 (Transform transform, const vector<FeatureWriter*> &writers)
 {
@@ -210,8 +234,13 @@ bool FeatureExtractionManager::addFeatureExtractor
 
             // adapt the plugin for buffering, channels, etc.
             if (plugin->getInputDomain() == Plugin::FrequencyDomain) {
+
                 pida = new PluginInputDomainAdapter(plugin);
                 pida->setProcessTimestampMethod(PluginInputDomainAdapter::ShiftData);
+
+                PluginInputDomainAdapter::WindowType wtype =
+                    convertWindowType(transform.getWindowType());
+                pida->setWindowType(wtype);
                 plugin = pida;
             }
 
