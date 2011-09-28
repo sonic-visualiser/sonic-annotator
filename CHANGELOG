@@ -4,6 +4,7 @@ Changes in Sonic Annotator 0.6 since the previous release 0.5:
 Build changes:
 
  - Switch to modular SV-libraries build using svcore library
+ - We now require Vamp plugin SDK v2.3
  - Add autoconf configure script
 
 Front-end changes:
@@ -11,6 +12,7 @@ Front-end changes:
  - Pick up default sample rate and channel count from the first
  audio file, where not specified in the transform, instead of using
  hard coded defaults
+ - Make it possible to specify the window shape in transform
  - Fix the --csv-one-file option which did not work in 0.5
  - Fix --force option when using playlists
  - Add -v option to print version number and exit

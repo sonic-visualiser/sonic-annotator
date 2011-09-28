@@ -1,5 +1,5 @@
 
-AC_INIT([Sonic Annotator], [0.6hg], cannam@all-day-breakfast.com)
+AC_INIT([Sonic Annotator], [0.6], cannam@all-day-breakfast.com)
 
 AC_CONFIG_SRCDIR(runner/main.cpp)
 
