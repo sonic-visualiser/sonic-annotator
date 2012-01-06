@@ -31,12 +31,20 @@ for suffix in \
     -df-windowtype-default \
     -df-windowtype-hanning \
     -df-windowtype-hamming \
+    -multiple-outputs \
     ; do
 
     for type in xml n3 ; do 
 
 	transform=$mypath/transforms/transforms-basic-percussiononsets$suffix.$type
 	expected=$mypath/expected/transforms-basic-percussiononsets$suffix.csv
+
+	if [ ! -f $transform ]; then
+	    if [ $type = "xml" ]; then
+		continue # not everything can be expressed in the XML
+			 # format, e.g. the multiple output test can't
+	    fi
+	fi
 
 	test -f $transform || \
 	    fail "Internal error: no transforms file for suffix $suffix (looking for $transform)"
