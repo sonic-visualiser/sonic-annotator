@@ -3,14 +3,18 @@ To compile from source
 ----------------------
 
 First, please consider getting one of the ready-to-run binary
-distributions available from http://www.omras2.org/SonicAnnotator .
+distributions available from
+
+  http://code.soundsoftware.ac.uk/projects/sonic-annotator/files
 
 The following additional libraries are required or optional when
 building Sonic Annotator:
 
-REQUIRED	Vamp Plugin SDK		http://www.vamp-plugins.org/
+REQUIRED	Sonic Visualiser Core Library, svcore
+		http://code.soundsoftware.ac.uk/projects/svcore
 
-REQUIRED	Qt4 Free Edition	http://www.trolltech.com/
+REQUIRED	Vamp Plugin SDK         http://www.vamp-plugins.org/
+REQUIRED	Qt4 Free Edition        http://qt.nokia.com/
 REQUIRED	libsndfile		http://www.mega-nerd.com/libsndfile/
 REQUIRED	libsamplerate		http://www.mega-nerd.com/SRC/
 REQUIRED	FFTW3			http://www.fftw.org/
