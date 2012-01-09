@@ -757,11 +757,44 @@ void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
 //    std::cerr << "FeatureExtractionManager: deleting audio file reader" << std::endl;
 
     lifemgr.destroy(); // deletes reader, data
-    
+        
+    // In order to ensure our results are written to the output in a
+    // fixed order (and not one that depends on the pointer value of
+    // each plugin on the heap in any given run of the program) we
+    // take the plugins' entries from the plugin map and sort them
+    // into a new, temporary map that is indexed by the first
+    // transform for each plugin. We then iterate over than instead of
+    // over m_plugins in order to get the right ordering.
+
+    // This is not the most elegant way to do this -- it would be more
+    // elegant to impose an ordering directly on the plugins that are
+    // used as keys to m_plugins. But the plugin type comes from the
+    // Vamp SDK, so this change is more localised.
+
+    // Thanks to Matthias for this.
+
+    // Not the same as PluginMap::value_type (which has const key)
+    typedef pair<PluginMap::key_type, PluginMap::mapped_type> PluginMapEntry;
+    typedef map<Transform, PluginMapEntry> TransformOrderedPluginMap;
+    TransformOrderedPluginMap orderedPlugins;
+
     for (PluginMap::iterator pi = m_plugins.begin();
          pi != m_plugins.end(); ++pi) { 
+        Transform firstForPlugin = (pi->second).begin()->first;
+        orderedPlugins[firstForPlugin] = PluginMapEntry(pi->first, pi->second);
+    }
 
-        Plugin *plugin = pi->first;
+    for (TransformOrderedPluginMap::iterator superPi = orderedPlugins.begin();
+         superPi != orderedPlugins.end(); ++superPi) {
+
+        // The value we extract from this map is just the same as the
+        // value_type we get from iterating over our PluginMap
+        // directly -- but we happen to get them in the right order
+        // now because the map iterator is ordered by the Transform
+        // key type ordering
+        PluginMapEntry pi = superPi->second;
+
+        Plugin *plugin = pi.first;
         Plugin::FeatureSet featureSet = plugin->getRemainingFeatures();
 
         if (!m_summariesOnly) {
