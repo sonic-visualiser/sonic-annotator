@@ -6,10 +6,11 @@ r=$mypath/../sonic-annotator
 infile=$mypath/audio/3clicks8.wav
 tmpfile=$mypath/tmp_1_$$
 tmpcanonical=$mypath/tmp_2_$$
+expcanonical=$mypath/tmp_exp_2_$$
 tmpcmp1=$mypath/tmp_3_$$
 tmpcmp2=$mypath/tmp_4_$$
 
-trap "rm -f $tmpfile $tmpcanonical $tmpcmp1 $tmpcmp2" 0
+trap "rm -f $tmpfile $tmpcanonical $expcanonical $tmpcmp1 $tmpcmp2" 0
 
 . test-include.sh
 
@@ -77,8 +78,11 @@ $r -t $stransform -w rdf --rdf-stdout $infile > $tmpfile 2>/dev/null || \
 rapper -i turtle $tmpfile -o turtle 2>/dev/null | grep -v '^@prefix :' | grep -v 'file:/' > $tmpcanonical ||
     fail "Fails to produce parseable RDF/TTL for transform $stransform"
 
-compare $tmpcanonical ${sexpected}.n3 || \
-    faildiff "Output mismatch for canonicalised version of transform $stransform" $tmpcanonical ${sexpected}.n3
+rapper -i turtle ${sexpected}.n3 -o turtle 2>/dev/null | grep -v '^@prefix :' | grep -v 'file:/' > $expcanonical ||
+    fail "Internal error: Failed to canonicalise expected output file $expected.n3"
+
+compare $tmpcanonical $expcanonical || \
+    faildiff "Output mismatch for canonicalised version of transform $stransform" $tmpcanonical $expcanonical
 
 exit 0
 

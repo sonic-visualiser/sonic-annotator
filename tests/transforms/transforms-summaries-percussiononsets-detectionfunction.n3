@@ -3,26 +3,26 @@
 @prefix examples: <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#>.
 @prefix : <#>.
 
-:transform0 a vamp:Transform; # 8
+:transform0 a vamp:Transform;
 	vamp:plugin examples:percussiononsets ;
 	vamp:output examples:percussiononsets_output_detectionfunction ;
 	vamp:summary_type "mean" .
 
-:transform1 a vamp:Transform; # 11
+:transform1 a vamp:Transform;
 	vamp:plugin examples:percussiononsets ;
 	vamp:output examples:percussiononsets_output_detectionfunction ;
 	vamp:summary_type "median" .
 
-:transform2 a vamp:Transform; # 0
+:transform2 a vamp:Transform;
 	vamp:plugin examples:percussiononsets ;
 	vamp:output examples:percussiononsets_output_onsets .
 
-:transform3 a vamp:Transform; # 14
+:transform3 a vamp:Transform;
 	vamp:plugin examples:percussiononsets ;
 	vamp:output examples:percussiononsets_output_detectionfunction ;
 	vamp:summary_type "mode" .
 
-:transform4 a vamp:Transform; # 23
+:transform4 a vamp:Transform;
 	vamp:plugin examples:percussiononsets ;
 	vamp:output examples:percussiononsets_output_detectionfunction ;
 	vamp:step_size 2048 ;
