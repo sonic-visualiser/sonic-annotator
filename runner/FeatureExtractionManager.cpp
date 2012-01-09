@@ -773,18 +773,16 @@ void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
 
     // Thanks to Matthias for this.
 
-    // Not the same as PluginMap::value_type (which has const key)
-    typedef pair<PluginMap::key_type, PluginMap::mapped_type> PluginMapEntry;
-    typedef map<Transform, PluginMapEntry> TransformOrderedPluginMap;
-    TransformOrderedPluginMap orderedPlugins;
+    typedef map<Transform, PluginMap::value_type> OrderedPluginMap;
+    OrderedPluginMap orderedPlugins;
 
     for (PluginMap::iterator pi = m_plugins.begin();
          pi != m_plugins.end(); ++pi) { 
         Transform firstForPlugin = (pi->second).begin()->first;
-        orderedPlugins[firstForPlugin] = PluginMapEntry(pi->first, pi->second);
+        orderedPlugins.insert(OrderedPluginMap::value_type(firstForPlugin, *pi));
     }
 
-    for (TransformOrderedPluginMap::iterator superPi = orderedPlugins.begin();
+    for (OrderedPluginMap::iterator superPi = orderedPlugins.begin();
          superPi != orderedPlugins.end(); ++superPi) {
 
         // The value we extract from this map is just the same as the
@@ -792,7 +790,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
         // directly -- but we happen to get them in the right order
         // now because the map iterator is ordered by the Transform
         // key type ordering
-        PluginMapEntry pi = superPi->second;
+        PluginMap::value_type pi = superPi->second;
 
         Plugin *plugin = pi.first;
         Plugin::FeatureSet featureSet = plugin->getRemainingFeatures();
