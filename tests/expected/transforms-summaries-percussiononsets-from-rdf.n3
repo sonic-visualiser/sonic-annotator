@@ -18,6 +18,7 @@
     vamp:step_size "512"^^xsd:int ;
     a vamp:Transform .
 
+<file://example.wav>
     mo:encodes :signal_1 ;
     a mo:AudioFile .
 
