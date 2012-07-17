@@ -1,4 +1,15 @@
 
+Changes in Sonic Annotator 0.7 since the previous release 0.6:
+
+Build changes:
+
+ - Support 64-bit builds on OS/X (using CoreAudio instead of
+   obsolete QuickTime audio file reader)
+
+ - Simplify RDF reading and fix some bugs. Now requires Dataquay
+   (http://breakfastquay.com/dataquay/) rather than using Redland
+   directly. Release builds use Sord/Serd rather than Redland
+
 Changes in Sonic Annotator 0.6 since the previous release 0.5:
 
 Build changes:
