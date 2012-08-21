@@ -20,10 +20,10 @@ win32-x-g++:QMAKE_LFLAGS += -Wl,-subsystem,console
 
 TARGET = sonic-annotator
 
-DEPENDPATH += . ../svcore
-INCLUDEPATH += . ../svcore
+DEPENDPATH += . svcore
+INCLUDEPATH += . svcore
 
-LIBPATH = ../svcore $$LIBPATH
+QMAKE_LIBDIR = svcore $$QMAKE_LIBDIR
 
 QMAKE_CXXFLAGS_RELEASE += -fmessage-length=80 -fdiagnostics-show-location=every-line
 
@@ -34,7 +34,7 @@ contains(DEFINES, BUILD_STATIC):LIBS -= -ljack
 
 LIBS = -lsvcore $$LIBS
 
-PRE_TARGETDEPS += ../svcore/libsvcore.a
+PRE_TARGETDEPS += svcore/libsvcore.a
 
 HEADERS += \
 	runner/AudioDBFeatureWriter.h \

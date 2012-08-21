@@ -111,10 +111,10 @@ AC_SUBST(CXX)
 
 AC_SUBST(QMAKE_CONFIG)
 
-AC_SUBST(CODENAME)
+AC_CONFIG_SUBDIRS([svcore])
+AC_CONFIG_FILES([config.pri version.h])
 
-AC_OUTPUT([config.pri])
-AC_OUTPUT([version.h])
+AC_OUTPUT
 
 if ! $QMAKE -r; then
    AC_MSG_ERROR([qmake failed: Command was "$QMAKE -r"])
