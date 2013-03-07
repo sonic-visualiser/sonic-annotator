@@ -1,4 +1,8 @@
 
+Changes in Sonic Annotator 0.7.1 since the previous release 0.7:
+
+ - Fix incorrect samplerate in reading m4a files on OS/X
+
 Changes in Sonic Annotator 0.7 since the previous release 0.6:
 
 Build changes:
