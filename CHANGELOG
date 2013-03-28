@@ -1,7 +1,8 @@
 
-Changes in Sonic Annotator 0.7.1 since the previous release 0.7:
+Changes in Sonic Annotator 0.8 since the previous release 0.7:
 
  - Fix incorrect samplerate in reading m4a files on OS/X
+ - Fix incorrect handling of FixedSampleRate outputs (Vamp SDK fix)
 
 Changes in Sonic Annotator 0.7 since the previous release 0.6:
 
