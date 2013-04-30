@@ -4,7 +4,7 @@ include(config.pri)
 
 CONFIG += qt thread warn_on stl rtti exceptions console
 QT += xml network
-QT -= gui
+QT -= gui widgets
 
 # Using the "console" CONFIG flag above should ensure this happens for
 # normal Windows builds, but the console feature doesn't get picked up
@@ -32,7 +32,13 @@ MOC_DIR = o
 
 contains(DEFINES, BUILD_STATIC):LIBS -= -ljack
 
-LIBS = -lsvcore $$LIBS
+MY_LIBS = -Lsvcore -Ldataquay -lsvcore -ldataquay
+
+linux* {
+MY_LIBS = -Wl,-Bstatic $$MY_LIBS -Wl,-Bdynamic
+}
+
+LIBS = $$MY_LIBS $$LIBS
 
 PRE_TARGETDEPS += svcore/libsvcore.a
 
@@ -48,4 +54,8 @@ SOURCES += \
 	runner/FeatureExtractionManager.cpp \
         runner/AudioDBFeatureWriter.cpp \
         runner/FeatureWriterFactory.cpp
+
+!win32 {
+    QMAKE_POST_LINK=/bin/bash tests/test.sh
+}
 
