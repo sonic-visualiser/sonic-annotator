@@ -4,6 +4,7 @@ mypath=`dirname $0`
 r=$mypath/../sonic-annotator
 
 testplug=vamp:vamp-example-plugins:percussiononsets
+testplug2=vamp:vamp-test-plugin:vamp-test-plugin
 
 fail() {
     echo "Test failed: $1"
@@ -24,6 +25,9 @@ $r --list >/dev/null 2>&1 || \
 
 $r --list 2>/dev/null | grep -q $testplug || \
     fail "Fails to print $testplug in plugin list (if you haven't got it, install it -- it's needed for other tests)"
+
+$r --list 2>/dev/null | grep -q $testplug2 || \
+    fail "Fails to print $testplug2 in plugin list (if you haven't got it, install it -- it's needed for other tests)"
 
 $r --skeleton $testplug >/dev/null || \
     fail "Fails to run with --skeleton $testplug"

@@ -16,3 +16,10 @@ csvcompare() {
     return $rv
 }
 
+csvcompare_ignorefirst() {
+    # a bit like the above, but ignoring first column (and without temp files)
+    out=`cat "$1" "$2" | cut -d, -f2- | perl -p -e 's/(\d+\.\d{6})\d+/$1/' | sort | uniq -c | grep -v ' 2 '`
+    return `[ -z "$out" ]`
+}
+
+

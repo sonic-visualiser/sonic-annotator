@@ -9,6 +9,7 @@ for x in \
     helpfulflags \
     transforms-basic \
     audioformat \
+    vamp-test-plugin \
     as-advertised \
     rdf-writer \
     rdf-destinations \
