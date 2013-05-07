@@ -82,7 +82,6 @@ SV_MODULE_REQUIRED([samplerate],[samplerate >= 0.1.2],[samplerate.h],[samplerate
 SV_MODULE_REQUIRED([vamp],[vamp >= 2.1],[vamp/vamp.h],[],[])
 SV_MODULE_REQUIRED([vamphostsdk],[vamp-hostsdk >= 2.3.1],[vamp-hostsdk/PluginLoader.h],[vamp-hostsdk],[libvamphostsdk_v_2_3_1_present])
 SV_MODULE_REQUIRED([rubberband],[rubberband],[rubberband/RubberBandStretcher.h],[rubberband],[rubberband_new])
-SV_MODULE_REQUIRED([dataquay],[dataquay >= 0.9],[dataquay/Uri.h],[dataquay],[dataquay_v_0_9_present])
 
 SV_MODULE_OPTIONAL([liblo],[],[lo/lo.h],[lo],[lo_address_new])
 SV_MODULE_OPTIONAL([portaudio_2_0],[portaudio-2.0 >= 19],[portaudio.h],[portaudio],[Pa_IsFormatSupported])
@@ -103,6 +102,7 @@ AC_SUBST(CUT)
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
 AC_SUBST(CXXFLAGS_MINIMAL)
+AC_SUBST(LDFLAGS)
 AC_SUBST(HAVES)
 AC_SUBST(LIBS)
 
