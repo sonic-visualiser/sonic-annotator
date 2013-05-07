@@ -21,7 +21,7 @@ win32-x-g++:QMAKE_LFLAGS += -Wl,-subsystem,console
 TARGET = sonic-annotator
 
 DEPENDPATH += . svcore
-INCLUDEPATH += . svcore
+INCLUDEPATH += . dataquay svcore
 
 QMAKE_LIBDIR = svcore $$QMAKE_LIBDIR
 
