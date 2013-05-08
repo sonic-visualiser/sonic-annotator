@@ -2,11 +2,14 @@
 
 mypath=`dirname $0`
 
+
+
 for x in \
     supportprogs \
     helpfulflags \
     transforms-basic \
     audioformat \
+    vamp-test-plugin \
     as-advertised \
     rdf-writer \
     rdf-destinations \
@@ -15,7 +18,7 @@ for x in \
     ; do
 
     echo -n "$x: "
-    if bash $mypath/test-$x.sh; then
+    if ( cd $mypath ; bash ./test-$x.sh ); then
 	echo test succeeded
     else
 	echo "*** Test FAILED"
