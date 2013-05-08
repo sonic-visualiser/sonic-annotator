@@ -5160,10 +5160,10 @@ fi
 
 
 SV_MODULE_MODULE=vamphostsdk
-SV_MODULE_VERSION_TEST="vamp-hostsdk >= 2.3.1"
+SV_MODULE_VERSION_TEST="vamp-hostsdk >= 2.5"
 SV_MODULE_HEADER=vamp-hostsdk/PluginLoader.h
 SV_MODULE_LIB=vamp-hostsdk
-SV_MODULE_FUNC=libvamphostsdk_v_2_3_1_present
+SV_MODULE_FUNC=libvamphostsdk_v_2_5_present
 SV_MODULE_HAVE=HAVE_$(echo vamphostsdk | tr 'a-z' 'A-Z')
 SV_MODULE_FAILED=1
 if test -n "$vamphostsdk_LIBS" ; then
@@ -6855,6 +6855,7 @@ fi
       fi
    fi
 fi
+
 
 
 
