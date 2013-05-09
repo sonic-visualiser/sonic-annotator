@@ -11,3 +11,7 @@ DEFINES += USE_SORD
 QMAKE_CXXFLAGS += -I/usr/local/include/sord-0 -I/usr/local/include/serd-0 -I/usr/include/sord-0 -I/usr/include/serd-0
 EXTRALIBS += -lsord-0 -lserd-0
 
+win32-g++: {
+    INCLUDEPATH += ../sv-dependency-builds/win32-mingw/include
+    LIBS += -L../../sv-dependency-builds/win32-mingw/lib
+}

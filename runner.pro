@@ -1,6 +1,23 @@
 TEMPLATE = app
 
-include(config.pri)
+win32-g++ {
+    INCLUDEPATH += sv-dependency-builds/win32-mingw/include
+    LIBS += -Lsv-dependency-builds/win32-mingw/lib
+}
+win32-msvc* {
+    INCLUDEPATH += sv-dependency-builds/win32-msvc/include
+    LIBS += -Lsv-dependency-builds/win32-msvc/lib
+}
+
+exists(config.pri) {
+    include(config.pri)
+}
+win* {
+    !exists(config.pri) {
+        DEFINES += HAVE_BZ2 HAVE_FFTW3 HAVE_FFTW3F HAVE_SNDFILE HAVE_SAMPLERATE HAVE_VAMP HAVE_VAMPHOSTSDK HAVE_DATAQUAY HAVE_MAD HAVE_ID3TAG 
+        LIBS += -lbz2 -lvamp-hostsdk -lfftw3 -lfftw3f -lsndfile -lFLAC -logg -lvorbis -lvorbisenc -lvorbisfile -logg -lmad -lid3tag -lsamplerate -lz -lsord-0 -lserd-0 -lwinmm -lws2_32
+    }
+}
 
 CONFIG += qt thread warn_on stl rtti exceptions console
 QT += xml network
