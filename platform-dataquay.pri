@@ -1,5 +1,7 @@
 
-include(./config.pri)
+exists(./config.pri) {
+    include(./config.pri)
+}
 
 CONFIG += staticlib
 

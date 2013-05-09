@@ -55,9 +55,13 @@ linux* {
 MY_LIBS = -Wl,-Bstatic $$MY_LIBS -Wl,-Bdynamic
 }
 
+win* {
+MY_LIBS = -Lsvcore/release -Ldataquay/release $$MY_LIBS
+}
+
 LIBS = $$MY_LIBS $$LIBS
 
-PRE_TARGETDEPS += svcore/libsvcore.a
+#PRE_TARGETDEPS += svcore/libsvcore.a
 
 HEADERS += \
 	runner/AudioDBFeatureWriter.h \
