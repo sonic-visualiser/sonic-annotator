@@ -20,12 +20,12 @@ Credits
 Sonic Annotator was developed at the Centre for Digital Music,
 Queen Mary, University of London.
 
-  http://www.elec.qmul.ac.uk/digitalmusic/
+  http://c4dm.eecs.qmul.ac.uk/
 
 The main program is by Mark Levy, Chris Cannam, and Chris Sutton.
 Sonic Annotator incorporates library code from the Sonic Visualiser
 application by Chris Cannam.  Code copyright 2005-2007 Chris Cannam,
-copyright 2006-2011 Queen Mary, University of London, except where
+copyright 2006-2013 Queen Mary, University of London, except where
 indicated in the individual source files.
 
 This work was funded by the Engineering and Physical Sciences Research
@@ -39,30 +39,18 @@ included with this distribution for more information.
 
 Sonic Annotator may also make use of the following libraries:
 
- * Qt4 -- Copyright Nokia Corporation, distributed under the GPL
+ * Qt5 -- Copyright Digia Oyj, distributed under the LGPL
  * Ogg decoder -- Copyright CSIRO Australia, BSD license
  * MAD mp3 decoder -- Copyright Underbit Technologies Inc, GPL
  * libsamplerate -- Copyright Erik de Castro Lopo, GPL
  * libsndfile -- Copyright Erik de Castro Lopo, LGPL
  * FFTW3 -- Copyright Matteo Frigo and MIT, GPL
- * Vamp plugin SDK -- Copyright Chris Cannam, BSD license
- * Redland RDF libraries -- Copyright Dave Beckett and the University of Bristol, LGPL/Apache license
+ * Vamp plugin SDK -- Copyright Chris Cannam and QMUL, BSD license
+ * Dataquay -- Copyright Breakfast Quay, BSD license
+ * Sord and Serd -- Copyright David Robillard, BSD license
 
 (Some distributions of Sonic Annotator may have one or more of these
 libraries statically linked.)  Many thanks to their authors.
-
-Sonic Annotator can also use QuickTime for audio file import on OS/X.
-For licensing reasons, you may not distribute binaries of Sonic
-Annotator with QuickTime support included for any platform that does
-not include QuickTime as part of the platform itself (see section 3 of
-version 2 of the GNU General Public License).
-
-
-Compiling Sonic Annotator
---------------------------
-
-If you are planning to compile Sonic Annotator from source code,
-please read the file INSTALL.
 
 
 A Quick Tutorial
