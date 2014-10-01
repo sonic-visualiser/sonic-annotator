@@ -1,0 +1,13 @@
+<transform
+    id="vamp:vamp-example-plugins:percussiononsets:detectionfunction"
+    pluginVersion="2"
+    program=""
+    stepSize="512"
+    blockSize="1024"
+    windowType="hanning"
+    startTime="2.000000000"
+    duration="2.000000000"
+    sampleRate="0">
+  <parameter name="sensitivity" value="40"/>
+  <parameter name="threshold" value="3"/>
+</transform>
