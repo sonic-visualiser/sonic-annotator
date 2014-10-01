@@ -4,6 +4,7 @@ mypath=`dirname $0`
 r=$mypath/../sonic-annotator
 
 infile=$mypath/audio/3clicks8.wav
+infile2=$mypath/audio/6clicks8.wav
 tmpfile=$mypath/tmp_1_$$
 tmpcanonical=$mypath/tmp_2_$$
 expcanonical=$mypath/tmp_exp_2_$$
@@ -77,6 +78,12 @@ $r -t $stransform -w csv --csv-stdout --summary-only $infile > $tmpfile 2>/dev/n
 
 compare $tmpfile ${expected}-from-rdf-summaries-only.csv || \
     faildiff "Output mismatch for transform $stransform with summary-only" $tmpfile ${expected}-from-rdf-summaries-only.csv
+
+$r -t $transform -w csv --csv-stdout --summary-only -S median --segments 0,9.9 $infile2 > $tmpfile 2>/dev/null || \
+    fail "Fails to run transform $stransform with CSV output and segments"
+
+compare $tmpfile ${expected}-segments.csv || \
+    faildiff "Output mismatch for transform $stransform with segments" $tmpfile ${expected}-segments.csv
 
 $r -t $stransform -w rdf --rdf-stdout $infile > $tmpfile 2>/dev/null || \
     fail "Fails to run transform $stransform with RDF output"
