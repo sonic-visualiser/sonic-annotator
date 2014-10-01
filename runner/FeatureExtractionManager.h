@@ -61,12 +61,17 @@ public:
     // Make a note of an audio or playlist file which will be passed
     // to extractFeatures later.  Amongst other things, this may
     // initialise the default sample rate and channel count
-    void addSource(QString audioSource);
+    void addSource(QString audioSource, bool willMultiplex);
 
     // Extract features from the given audio or playlist file.  If the
     // file is a playlist and force is true, continue extracting even
     // if a file in the playlist fails.
     void extractFeatures(QString audioSource, bool force);
+
+    // Extract features from the given audio files, multiplexing into
+    // a single "file" whose individual channels are mixdowns of the
+    // supplied sources.
+    void extractFeaturesMultiplexed(QStringList sources);
 
 private:
     // A plugin may have many outputs, so we can have more than one
@@ -101,6 +106,10 @@ private:
     SummaryNameSet m_summaries;
     bool m_summariesOnly;
     Vamp::HostExt::PluginSummarisingAdapter::SegmentBoundaries m_boundaries;
+
+    AudioFileReader *prepareReader(QString audioSource);
+
+    void extractFeaturesFor(AudioFileReader *reader, QString audioSource);
 
     void writeSummaries(QString audioSource, Vamp::Plugin *);
 

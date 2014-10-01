@@ -233,15 +233,12 @@ void usage(QString myname)
     cerr << "                      Summarise in segments, with segment boundaries" << endl;
     cerr << "                      at A, B, ... seconds." << endl;
     cerr << endl;
-
-/*!!! This feature not implemented yet (sniff)
     cerr << "  -m, --multiplex     If multiple input audio files are given, use mono" << endl;
     cerr << "                      mixdowns of all files as the input channels for a single" << endl;
     cerr << "                      invocation of each transform, instead of running the" << endl;
-    cerr << "                      transform against all files separately." << endl;
+    cerr << "                      transform against all files separately. The first file" << endl;
+    cerr << "                      will be used for output reference name and sample rate." << endl;
     cerr << endl;
-*/
-
     cerr << "  -r, --recursive     If any of the <audio> arguments is found to be a local" << endl;
     cerr << "                      directory, search the tree starting at that directory" << endl;
     cerr << "                      for all supported audio files and take all of those as" << endl;
@@ -365,7 +362,7 @@ int main(int argc, char **argv)
     set<string> requestedDefaultTransforms;
     set<string> requestedSummaryTypes;
     bool force = false;
-//!!!    bool multiplex = false;
+    bool multiplex = false;
     bool recursive = false;
     bool list = false;
     bool summaryOnly = false;
@@ -488,13 +485,9 @@ int main(int argc, char **argv)
                     }
                 }
             }
-/*!!!
         } else if (arg == "-m" || arg == "--multiplex") {
             multiplex = true;
-            cerr << myname.toStdString()
-                 << ": WARNING: Multiplex argument not yet implemented" << endl; //!!!
             continue;
-*/
         } else if (arg == "-r" || arg == "--recursive") {
             recursive = true;
             continue;
@@ -702,7 +695,7 @@ int main(int argc, char **argv)
     for (QStringList::const_iterator i = sources.begin();
          i != sources.end(); ++i) {
         try {
-            manager.addSource(*i);
+            manager.addSource(*i, multiplex);
         } catch (const std::exception &e) {
             badSources.insert(*i);
             cerr << "ERROR: Failed to process file \"" << i->toStdString()
@@ -747,26 +740,41 @@ int main(int argc, char **argv)
     }
 
     if (good) {
-        for (QStringList::const_iterator i = sources.begin();
-             i != sources.end(); ++i) {
-            if (badSources.contains(*i)) continue;
-            std::cerr << "Extracting features for: \"" << i->toStdString() << "\"" << std::endl;
+        QStringList goodSources;
+        foreach (QString source, sources) {
+            if (!badSources.contains(source)) {
+                goodSources.push_back(source);
+            }
+        }
+        if (multiplex) {
             try {
-                manager.extractFeatures(*i, force);
+                manager.extractFeaturesMultiplexed(goodSources);
             } catch (const std::exception &e) {
-                cerr << "ERROR: Feature extraction failed for \"" << i->toStdString()
-                     << "\": " << e.what() << endl;
-                if (force) {
-                    // print a note only if we have more files to process
-                    QStringList::const_iterator j = i;
-                    if (++j != sources.end()) {
-                        cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
+                cerr << "ERROR: Feature extraction failed: "
+                     << e.what() << endl;
+            }
+        } else {
+            for (QStringList::const_iterator i = goodSources.begin();
+                 i != goodSources.end(); ++i) {
+                std::cerr << "Extracting features for: \"" << i->toStdString()
+                          << "\"" << std::endl;
+                try {
+                    manager.extractFeatures(*i, force);
+                } catch (const std::exception &e) {
+                    cerr << "ERROR: Feature extraction failed for \""
+                         << i->toStdString() << "\": " << e.what() << endl;
+                    if (force) {
+                        // print a note only if we have more files to process
+                        QStringList::const_iterator j = i;
+                        if (++j != sources.end()) {
+                            cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
+                        }
+                    } else {
+                        cerr << "NOTE: If you want to continue with processing any further files after an" << endl
+                             << "error like this, use the --force option" << endl;
+                        good = false;
+                        break;
                     }
-                } else {
-                    cerr << "NOTE: If you want to continue with processing any further files after an" << endl
-                         << "error like this, use the --force option" << endl;
-                    good = false;
-                    break;
                 }
             }
         }
