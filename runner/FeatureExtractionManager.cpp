@@ -373,25 +373,37 @@ bool FeatureExtractionManager::addDefaultFeatureExtractor
 bool FeatureExtractionManager::addFeatureExtractorFromFile
 (QString transformXmlFile, const vector<FeatureWriter*> &writers)
 {
-    RDFTransformFactory factory
-        (QUrl::fromLocalFile(QFileInfo(transformXmlFile).absoluteFilePath())
-         .toString());
-    ProgressPrinter printer("Parsing transforms RDF file");
-    std::vector<Transform> transforms = factory.getTransforms(&printer);
-    if (!factory.isOK()) {
-        cerr << "WARNING: FeatureExtractionManager::addFeatureExtractorFromFile: Failed to parse transforms file: " << factory.getErrorString().toStdString() << endl;
-        if (factory.isRDF()) {
-            return false; // no point trying it as XML
-        }
+    bool tryRdf = true;
+
+    if (transformXmlFile.endsWith(".xml") || transformXmlFile.endsWith(".XML")) {
+        // We don't support RDF-XML (and nor does the underlying
+        // parser library) so skip the RDF parse if the filename
+        // suggests XML, to avoid puking out a load of errors from
+        // feeding XML to a Turtle parser
+        tryRdf = false;
     }
-    if (!transforms.empty()) {
-        bool success = true;
-        for (int i = 0; i < (int)transforms.size(); ++i) {
-            if (!addFeatureExtractor(transforms[i], writers)) {
-                success = false;
+
+    if (tryRdf) {
+        RDFTransformFactory factory
+            (QUrl::fromLocalFile(QFileInfo(transformXmlFile).absoluteFilePath())
+             .toString());
+        ProgressPrinter printer("Parsing transforms RDF file");
+        std::vector<Transform> transforms = factory.getTransforms(&printer);
+        if (!factory.isOK()) {
+            cerr << "WARNING: FeatureExtractionManager::addFeatureExtractorFromFile: Failed to parse transforms file: " << factory.getErrorString().toStdString() << endl;
+            if (factory.isRDF()) {
+                return false; // no point trying it as XML
             }
         }
-        return success;
+        if (!transforms.empty()) {
+            bool success = true;
+            for (int i = 0; i < (int)transforms.size(); ++i) {
+                if (!addFeatureExtractor(transforms[i], writers)) {
+                    success = false;
+                }
+            }
+            return success;
+        }
     }
 
     QFile file(transformXmlFile);
