@@ -30,5 +30,13 @@ expected=$mypath/expected/transforms-summaries-percussiononsets-playlist
 csvcompare $tmpfile $expected.csv || \
     fail "Output mismatch for transform $transform with summaries and playlist input"
 
+# Same here, just so we can use the same output comparison file as above
+$r -t $transform -w csv --csv-stdout $mypath/audio/3clicks8.wav $mypath/audio/6clicks8.wav --summary-only 2>/dev/null | sed 's,^"\.*/[^"]*/,",' > $tmpfile || \
+    fail "Fails to run transform $transform with 2-file input"
+
+expected=$mypath/expected/transforms-summaries-percussiononsets-playlist
+csvcompare $tmpfile $expected.csv || \
+    fail "Output mismatch for transform $transform with summaries and 2-file input"
+
 
 
