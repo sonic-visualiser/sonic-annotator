@@ -45,8 +45,9 @@ public:
     void setDefaultSampleRate(int sampleRate);
 
     bool setSummaryTypes(const set<string> &summaryTypes,
-                         bool summariesOnly,
                          const Vamp::HostExt::PluginSummarisingAdapter::SegmentBoundaries &boundaries);
+
+    void setSummariesOnly(bool summariesOnly);
 
     bool addFeatureExtractor(Transform transform,
                              const vector<FeatureWriter*> &writers);

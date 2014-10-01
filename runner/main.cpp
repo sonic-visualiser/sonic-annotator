@@ -586,13 +586,14 @@ int main(int argc, char **argv)
 
     if (!requestedSummaryTypes.empty()) {
         if (!manager.setSummaryTypes(requestedSummaryTypes,
-                                     summaryOnly,
                                      boundaries)) {
             cerr << myname.toStdString()
                  << ": failed to set requested summary types" << endl;
             exit(1);
         }
     }
+
+    manager.setSummariesOnly(summaryOnly);
     
     vector<FeatureWriter *> writers;
 

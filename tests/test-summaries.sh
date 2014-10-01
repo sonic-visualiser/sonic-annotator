@@ -72,6 +72,12 @@ $r -t $stransform -w csv --csv-stdout $infile > $tmpfile 2>/dev/null || \
 compare $tmpfile ${sexpected}.csv || \
     faildiff "Output mismatch for transform $stransform" $tmpfile ${sexpected}.csv
 
+$r -t $stransform -w csv --csv-stdout --summary-only $infile > $tmpfile 2>/dev/null || \
+    fail "Fails to run transform $stransform with CSV output and summary-only"
+
+compare $tmpfile ${expected}-from-rdf-summaries-only.csv || \
+    faildiff "Output mismatch for transform $stransform with summary-only" $tmpfile ${expected}-from-rdf-summaries-only.csv
+
 $r -t $stransform -w rdf --rdf-stdout $infile > $tmpfile 2>/dev/null || \
     fail "Fails to run transform $stransform with RDF output"
 

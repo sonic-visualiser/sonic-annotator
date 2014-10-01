@@ -99,9 +99,9 @@ getSummaryType(string name)
     return PluginSummarisingAdapter::UnknownSummaryType;
 }
 
-bool FeatureExtractionManager::setSummaryTypes(const set<string> &names,
-                                               bool summariesOnly,
-                                               const PluginSummarisingAdapter::SegmentBoundaries &boundaries)
+bool
+FeatureExtractionManager::setSummaryTypes(const set<string> &names,
+                                          const PluginSummarisingAdapter::SegmentBoundaries &boundaries)
 {
     for (SummaryNameSet::const_iterator i = names.begin();
          i != names.end(); ++i) {
@@ -111,9 +111,14 @@ bool FeatureExtractionManager::setSummaryTypes(const set<string> &names,
         }
     }
     m_summaries = names;
-    m_summariesOnly = summariesOnly;
     m_boundaries = boundaries;
     return true;
+}
+
+void
+FeatureExtractionManager::setSummariesOnly(bool summariesOnly)
+{
+    m_summariesOnly = summariesOnly;
 }
 
 static PluginInputDomainAdapter::WindowType
