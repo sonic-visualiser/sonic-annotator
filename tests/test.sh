@@ -15,6 +15,7 @@ for x in \
     rdf-destinations \
     csv-destinations \
     summaries \
+    multiple-audio \
     ; do
 
     echo -n "$x: "
