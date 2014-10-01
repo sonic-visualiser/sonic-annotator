@@ -144,7 +144,7 @@ void usage(QString myname)
     cerr << "Sonic Annotator v" << RUNNER_VERSION << endl;
     cerr << "A utility for batch feature extraction from audio files." << endl;
     cerr << "Mark Levy, Chris Sutton and Chris Cannam, Queen Mary, University of London." << endl;
-    cerr << "Copyright 2007-2013 Queen Mary, University of London." << endl;
+    cerr << "Copyright 2007-2014 Queen Mary, University of London." << endl;
     cerr << endl;
     cerr << "This program is free software.  You may redistribute copies of it under the" << endl;
     cerr << "terms of the GNU General Public License <http://www.gnu.org/licenses/gpl.html>." << endl;
@@ -611,13 +611,13 @@ int main(int argc, char **argv)
         map<string, string> writerArgs;
         FeatureWriter::ParameterList pl(writer->getSupportedParameters());
 
-        for (int k = 0; k < pl.size(); ++k) {
+        for (int k = 0; k < (int)pl.size(); ++k) {
             
             string argbase = pl[k].name;
             QString literal = QString("--%1-%2")
                 .arg(i->c_str()).arg(argbase.c_str());
             
-            for (int j = 0; j < otherArgs.size(); ) {
+            for (int j = 0; j < (int)otherArgs.size(); ) {
                 
                 if (otherArgs[j] != literal) {
                     ++j;
@@ -669,7 +669,7 @@ int main(int argc, char **argv)
         PlaylistFileReader reader(i->c_str());
         if (reader.isOK()) {
             vector<QString> files = reader.load();
-            for (int j = 0; j < files.size(); ++j) {
+            for (int j = 0; j < (int)files.size(); ++j) {
                 requestedTransformFiles.insert(files[j].toStdString());
             }
         } else {
@@ -771,7 +771,7 @@ int main(int argc, char **argv)
         }
     }
     
-    for (int i = 0; i < writers.size(); ++i) delete writers[i];
+    for (int i = 0; i < (int)writers.size(); ++i) delete writers[i];
 
 #ifdef HAVE_FFTW3
     settings.beginGroup("FFTWisdom");

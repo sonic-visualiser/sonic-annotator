@@ -459,7 +459,8 @@ void FeatureExtractionManager::addSource(QString audioSource)
         // (then close, and open again later with actual desired rate &c)
 
         AudioFileReader *reader =
-            AudioFileReaderFactory::createReader(source, 0, &retrievalProgress);
+            AudioFileReaderFactory::createReader(source, 0, false,
+                                                 &retrievalProgress);
     
         if (!reader) {
             throw FailedToOpenFile(audioSource);
@@ -504,7 +505,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
                          << files[i].toStdString()
                          << "\": " << e.what() << endl;
                     // print a note only if we have more files to process
-                    if (++i != files.size()) {
+                    if (++i != (int)files.size()) {
                         cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
                     }
                 }
@@ -545,7 +546,7 @@ void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
         FileSource source(audioSource, &retrievalProgress);
         source.waitForData();
         reader = AudioFileReaderFactory::createReader
-            (source, m_sampleRate, &retrievalProgress);
+            (source, m_sampleRate, false, &retrievalProgress);
         retrievalProgress.done();
     }
 

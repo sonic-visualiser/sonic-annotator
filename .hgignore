@@ -14,3 +14,4 @@ doc/html/
 *~
 *.orig
 *.rej
+cov-int
