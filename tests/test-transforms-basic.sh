@@ -25,13 +25,16 @@ for suffix in \
     -no-parameters-default-output \
     -no-parameters \
     "" \
+    -start-and-duration \
     -set-parameters \
     -set-step-and-block-size \
     -set-sample-rate \
     -df-windowtype-default \
     -df-windowtype-hanning \
     -df-windowtype-hamming \
+    -df-start-and-duration \
     -multiple-outputs \
+    -multiple-outputs-start-and-duration \
     ; do
 
     for type in xml n3 ; do 

@@ -1,0 +1,19 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix vamp: <http://purl.org/ontology/vamp/>.
+@prefix examples: <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#>.
+@prefix : <#>.
+
+:transform0 a vamp:Transform;
+	vamp:plugin examples:percussiononsets ;
+	vamp:output examples:percussiononsets_output_onsets ;
+	vamp:start "PT1.0S"^^xsd:duration ;
+	vamp:duration "PT3.0S"^^xsd:duration .
+
+:transform1 a vamp:Transform;
+	vamp:plugin examples:percussiononsets ;
+	vamp:output examples:percussiononsets_output_detectionfunction ;
+	vamp:start "PT2.0S"^^xsd:duration ;
+	vamp:duration "PT1.0S"^^xsd:duration .
+
+
+

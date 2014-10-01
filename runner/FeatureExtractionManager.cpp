@@ -604,6 +604,10 @@ void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
     
 //    cerr << "file has " << frameCount << " frames" << endl;
 
+    int earliestStartFrame = 0;
+    int latestEndFrame = frameCount;
+    bool haveExtents = false;
+
     for (PluginMap::iterator pi = m_plugins.begin();
          pi != m_plugins.end(); ++pi) {
 
@@ -617,12 +621,22 @@ void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
 
             const Transform &transform = ti->first;
 
-            //!!! we may want to set the start and duration times for extraction
-            // in the transform record (defaults of zero indicate extraction
-            // from the whole file)
-//            transform.setStartTime(RealTime::zeroTime);
-//            transform.setDuration
-//                (RealTime::frame2RealTime(reader->getFrameCount(), m_sampleRate));
+            int startFrame = RealTime::realTime2Frame
+                (transform.getStartTime(), m_sampleRate);
+            int duration = RealTime::realTime2Frame
+                (transform.getDuration(), m_sampleRate);
+            if (duration == 0) {
+                duration = frameCount - startFrame;
+            }
+
+            if (!haveExtents || startFrame < earliestStartFrame) {
+                earliestStartFrame = startFrame;
+            }
+            if (!haveExtents || startFrame + duration > latestEndFrame) {
+                latestEndFrame = startFrame + duration;
+            }
+
+            haveExtents = true;
 
             string outputId = transform.getOutput().toStdString();
             if (m_pluginOutputs[plugin].find(outputId) ==
@@ -650,33 +664,8 @@ void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
         }
     }
     
-    long startFrame = 0;
-    long endFrame = frameCount;
-
-/*!!! No -- there is no single transform to pull this stuff from --
- * the transforms may have various start and end times, need to be far
- * cleverer about this if we're going to support them
-
-    RealTime trStartRT = transform.getStartTime();
-    RealTime trDurationRT = transform.getDuration();
-
-    long trStart = RealTime::realTime2Frame(trStartRT, m_sampleRate);
-    long trDuration = RealTime::realTime2Frame(trDurationRT, m_sampleRate);
-
-    if (trStart == 0 || trStart < startFrame) {
-        trStart = startFrame;
-    }
-
-    if (trDuration == 0) {
-        trDuration = endFrame - trStart;
-    }
-    if (trStart + trDuration > endFrame) {
-        trDuration = endFrame - trStart;
-    }
-
-    startFrame = trStart;
-    endFrame = trStart + trDuration;
-*/
+    int startFrame = earliestStartFrame;
+    int endFrame = latestEndFrame;
     
     for (PluginMap::iterator pi = m_plugins.begin();
          pi != m_plugins.end(); ++pi) { 
@@ -700,10 +689,10 @@ void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
     ProgressPrinter extractionProgress("Extracting and writing features...");
     int progress = 0;
 
-    for (long i = startFrame; i < endFrame; i += m_blockSize) {
+    for (int i = startFrame; i < endFrame; i += m_blockSize) {
         
         //!!! inefficient, although much of the inefficiency may be
-        // susceptible to optimisation
+        // susceptible to compiler optimisation
         
         SampleBlock frames;
         reader->getInterleavedFrames(i, m_blockSize, frames);

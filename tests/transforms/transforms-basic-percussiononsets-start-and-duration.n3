@@ -1,0 +1,25 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix vamp: <http://purl.org/ontology/vamp/>.
+@prefix examples: <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix : <#>.
+
+:transform0 a vamp:Transform;
+	vamp:plugin examples:percussiononsets ;
+	vamp:output examples:percussiononsets_output_onsets ;
+	vamp:step_size "512";
+ 	vamp:block_size "1024";
+	vamp:parameter_binding :param0 ;
+	vamp:parameter_binding :param1 ;
+	vamp:start "PT2.0S"^^xsd:duration ;
+	vamp:duration "PT2.0S"^^xsd:duration .
+
+:param0 a vamp:ParameterBinding;
+	vamp:parameter [ vamp:identifier "sensitivity" ];
+	vamp:value "40".
+
+:param1 a vamp:ParameterBinding;
+	vamp:parameter examples:percussiononsets_param_threshold;
+	vamp:value "3".
+
+ 
