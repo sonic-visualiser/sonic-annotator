@@ -34,6 +34,7 @@ for suffix in \
     -df-windowtype-hamming \
     -df-start-and-duration \
     -multiple-outputs \
+    -multiple-outputs-start-and-duration \
     ; do
 
     for type in xml n3 ; do 
