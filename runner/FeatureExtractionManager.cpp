@@ -40,7 +40,6 @@ using Vamp::HostExt::PluginWrapper;
 #include "data/fileio/FileSource.h"
 #include "data/fileio/AudioFileReader.h"
 #include "data/fileio/AudioFileReaderFactory.h"
-#include "data/fileio/PlaylistFileReader.h"
 #include "base/TempDirectory.h"
 #include "base/ProgressPrinter.h"
 #include "transform/TransformFactory.h"
@@ -434,29 +433,6 @@ bool FeatureExtractionManager::addFeatureExtractorFromFile
 
 void FeatureExtractionManager::addSource(QString audioSource)
 {
-    if (QFileInfo(audioSource).suffix().toLower() == "m3u") {
-        ProgressPrinter retrievalProgress("Opening playlist file...");
-        FileSource source(audioSource, &retrievalProgress);
-        if (!source.isAvailable()) {
-            cerr << "ERROR: File or URL \"" << audioSource.toStdString()
-                 << "\" could not be located" << endl;
-            throw FileNotFound(audioSource);
-        }
-        source.waitForData();
-        PlaylistFileReader reader(source);
-        if (reader.isOK()) {
-            vector<QString> files = reader.load();
-            for (int i = 0; i < (int)files.size(); ++i) {
-                addSource(files[i]);
-            }
-            return;
-        } else {
-            cerr << "ERROR: Playlist \"" << audioSource.toStdString()
-                 << "\" could not be opened" << endl;
-            throw FileNotFound(audioSource);
-        }
-    }
-
     std::cerr << "Have audio source: \"" << audioSource.toStdString() << "\"" << std::endl;
 
     // We don't actually do anything with it here, unless it's the
@@ -511,33 +487,6 @@ void FeatureExtractionManager::addSource(QString audioSource)
 void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
 {
     if (m_plugins.empty()) return;
-
-    if (QFileInfo(audioSource).suffix().toLower() == "m3u") {
-        FileSource source(audioSource);
-        PlaylistFileReader reader(source);
-        if (reader.isOK()) {
-            vector<QString> files = reader.load();
-            for (int i = 0; i < (int)files.size(); ++i) {
-                try {
-                    extractFeatures(files[i], force);
-                } catch (const std::exception &e) {
-                    if (!force) throw;
-                    cerr << "ERROR: Feature extraction failed for playlist entry \""
-                         << files[i].toStdString()
-                         << "\": " << e.what() << endl;
-                    // print a note only if we have more files to process
-                    if (++i != (int)files.size()) {
-                        cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
-                    }
-                }
-            }
-            return;
-        } else {
-            cerr << "ERROR: Playlist \"" << audioSource.toStdString()
-                 << "\" could not be opened" << endl;
-            throw FileNotFound(audioSource);
-        }
-    }
 
     testOutputFiles(audioSource);
 
