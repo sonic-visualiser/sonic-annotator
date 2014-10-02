@@ -83,7 +83,17 @@ private:
     typedef map<Transform, vector<FeatureWriter *> > TransformWriterMap;
     typedef map<Vamp::Plugin *, TransformWriterMap> PluginMap;
     PluginMap m_plugins;
-        
+
+    // When we run plugins, we want to run them in a known order so as
+    // to get the same results on each run of Sonic Annotator with the
+    // same transforms. But if we just iterate through our PluginMap,
+    // we get them in an arbitrary order based on pointer
+    // address. This vector provides an underlying order for us. Note
+    // that the TransformWriterMap is consistently ordered (because
+    // the key is a Transform which has a proper ordering) so using
+    // this gives us a consistent order across the whole PluginMap
+    vector<Vamp::Plugin *> m_orderedPlugins;
+
     // And a map back from transforms to their plugins.  Note that
     // this is keyed by transform, not transform ID -- two differently
     // configured transforms with the same ID must use different

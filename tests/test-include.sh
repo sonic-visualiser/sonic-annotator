@@ -22,4 +22,23 @@ csvcompare_ignorefirst() {
     return `[ -z "$out" ]`
 }
 
+faildiff() {
+    echo "Test failed: $1"
+    if [ -n "$2" -a -n "$3" ]; then
+	echo "Output follows:"
+	echo "--"
+	cat $2
+	echo "--"
+	echo "Expected output follows:"
+	echo "--"
+	cat $3
+	echo "--"
+	echo "Diff:"
+	echo "--"
+	sdiff -w78 $2 $3
+	echo "--"
+    fi
+    exit 1
+}
+
 

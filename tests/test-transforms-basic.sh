@@ -59,7 +59,7 @@ for suffix in \
 	    fail "Fails to run transform $transform"
 
 	csvcompare $tmpfile2 $expected || \
-	    fail "Output mismatch for transform $transform"
+	    faildiff "Output mismatch for transform $transform" $tmpfile2 $expected
     done
 done
 

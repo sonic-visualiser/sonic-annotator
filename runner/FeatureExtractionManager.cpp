@@ -351,6 +351,10 @@ bool FeatureExtractionManager::addFeatureExtractor
         plugin = m_transformPluginMap[transform];
     }
 
+    if (m_plugins.find(plugin) == m_plugins.end()) {
+        m_orderedPlugins.push_back(plugin);
+    }
+
     m_plugins[plugin][transform] = writers;
 
     return true;
@@ -659,12 +663,11 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
     int latestEndFrame = frameCount;
     bool haveExtents = false;
 
-    for (PluginMap::iterator pi = m_plugins.begin();
-         pi != m_plugins.end(); ++pi) {
+    foreach (Plugin *plugin, m_orderedPlugins) {
 
-        Plugin *plugin = pi->first;
+        PluginMap::iterator pi = m_plugins.find(plugin);
 
-//        std::cerr << "Calling reset on " << plugin << std::endl;
+        std::cerr << "Calling reset on " << plugin << std::endl;
         plugin->reset();
 
         for (TransformWriterMap::iterator ti = pi->second.begin();
@@ -686,6 +689,11 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
             if (!haveExtents || startFrame + duration > latestEndFrame) {
                 latestEndFrame = startFrame + duration;
             }
+
+            cerr << "startFrame for transform " << startFrame << endl;
+            cerr << "duration for transform " << duration << endl;
+            cerr << "earliestStartFrame becomes " << earliestStartFrame << endl;
+            cerr << "latestEndFrame becomes " << latestEndFrame << endl;
 
             haveExtents = true;
 
@@ -718,8 +726,9 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
     int startFrame = earliestStartFrame;
     int endFrame = latestEndFrame;
     
-    for (PluginMap::iterator pi = m_plugins.begin();
-         pi != m_plugins.end(); ++pi) { 
+    foreach (Plugin *plugin, m_orderedPlugins) {
+
+        PluginMap::iterator pi = m_plugins.find(plugin);
 
         for (TransformWriterMap::const_iterator ti = pi->second.begin();
              ti != pi->second.end(); ++ti) {
@@ -791,10 +800,9 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
         Vamp::RealTime timestamp = Vamp::RealTime::frame2RealTime
             (i, m_sampleRate);
         
-        for (PluginMap::iterator pi = m_plugins.begin();
-             pi != m_plugins.end(); ++pi) {
+        foreach (Plugin *plugin, m_orderedPlugins) {
 
-            Plugin *plugin = pi->first;
+            PluginMap::iterator pi = m_plugins.find(plugin);
             Plugin::FeatureSet featureSet = plugin->process(data, timestamp);
 
             if (!m_summariesOnly) {
@@ -811,41 +819,9 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 
     lifemgr.destroy(); // deletes reader, data
         
-    // In order to ensure our results are written to the output in a
-    // fixed order (and not one that depends on the pointer value of
-    // each plugin on the heap in any given run of the program) we
-    // take the plugins' entries from the plugin map and sort them
-    // into a new, temporary map that is indexed by the first
-    // transform for each plugin. We then iterate over than instead of
-    // over m_plugins in order to get the right ordering.
+    foreach (Plugin *plugin, m_orderedPlugins) {
 
-    // This is not the most elegant way to do this -- it would be more
-    // elegant to impose an ordering directly on the plugins that are
-    // used as keys to m_plugins. But the plugin type comes from the
-    // Vamp SDK, so this change is more localised.
-
-    // Thanks to Matthias for this.
-
-    typedef map<Transform, PluginMap::value_type> OrderedPluginMap;
-    OrderedPluginMap orderedPlugins;
-
-    for (PluginMap::iterator pi = m_plugins.begin();
-         pi != m_plugins.end(); ++pi) { 
-        Transform firstForPlugin = (pi->second).begin()->first;
-        orderedPlugins.insert(OrderedPluginMap::value_type(firstForPlugin, *pi));
-    }
-
-    for (OrderedPluginMap::iterator superPi = orderedPlugins.begin();
-         superPi != orderedPlugins.end(); ++superPi) {
-
-        // The value we extract from this map is just the same as the
-        // value_type we get from iterating over our PluginMap
-        // directly -- but we happen to get them in the right order
-        // now because the map iterator is ordered by the Transform
-        // key type ordering
-        PluginMap::value_type pi = superPi->second;
-
-        Plugin *plugin = pi.first;
+        PluginMap::iterator pi = m_plugins.find(plugin);
         Plugin::FeatureSet featureSet = plugin->getRemainingFeatures();
 
         if (!m_summariesOnly) {
@@ -988,8 +964,9 @@ void FeatureExtractionManager::testOutputFiles(QString audioSource)
 
 void FeatureExtractionManager::finish()
 {
-    for (PluginMap::iterator pi = m_plugins.begin();
-         pi != m_plugins.end(); ++pi) {
+    foreach (Plugin *plugin, m_orderedPlugins) {
+
+        PluginMap::iterator pi = m_plugins.find(plugin);
 
         for (TransformWriterMap::iterator ti = pi->second.begin();
              ti != pi->second.end(); ++ti) {
