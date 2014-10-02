@@ -78,7 +78,7 @@ private:
     typedef map<Transform, vector<FeatureWriter *> > TransformWriterMap;
     typedef map<Vamp::Plugin *, TransformWriterMap> PluginMap;
     PluginMap m_plugins;
-        
+
     // And a map back from transforms to their plugins.  Note that
     // this is keyed by transform, not transform ID -- two differently
     // configured transforms with the same ID must use different
