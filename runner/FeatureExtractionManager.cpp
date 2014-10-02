@@ -468,9 +468,7 @@ void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex
 
         cerr << "File or URL \"" << audioSource.toStdString() << "\" opened successfully" << endl;
 
-        if (willMultiplex) {
-            ++m_channels; // channel count is simply number of sources
-        } else {
+        if (!willMultiplex) {
             if (m_channels == 0) {
                 m_channels = reader->getChannelCount();
                 cerr << "Taking default channel count of "
@@ -486,6 +484,12 @@ void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex
         }
 
         m_readyReaders[audioSource] = reader;
+    }
+
+    if (willMultiplex) {
+        ++m_channels; // channel count is simply number of sources
+        cerr << "Multiplexing, incremented target channel count to " 
+             << m_channels << endl;
     }
 }
 
@@ -573,7 +577,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
          << reader->getNativeRate() << "Hz" << endl;
     if (reader->getChannelCount() != m_channels ||
         reader->getNativeRate() != m_sampleRate) {
-        cerr << "NOTE: File will be mixed or resampled for processing: "
+        cerr << "NOTE: File will be mixed or resampled for processing, to: "
              << m_channels << "ch at " 
              << m_sampleRate << "Hz" << endl;
     }
