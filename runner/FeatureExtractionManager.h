@@ -66,7 +66,7 @@ public:
     // Extract features from the given audio or playlist file.  If the
     // file is a playlist and force is true, continue extracting even
     // if a file in the playlist fails.
-    void extractFeatures(QString audioSource, bool force);
+    void extractFeatures(QString audioSource);
 
     // Extract features from the given audio files, multiplexing into
     // a single "file" whose individual channels are mixdowns of the

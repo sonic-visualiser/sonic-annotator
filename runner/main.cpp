@@ -35,6 +35,7 @@ using std::string;
 
 #include "base/Exceptions.h"
 #include "base/TempDirectory.h"
+#include "base/ProgressPrinter.h"
 
 #include "data/fileio/AudioFileReaderFactory.h"
 #include "data/fileio/PlaylistFileReader.h"
@@ -346,6 +347,35 @@ findSourcesRecursive(QString dirname, QStringList &addTo, int &found)
     }
 }
 
+QStringList
+expandPlaylists(QStringList sources)
+{
+    QStringList expanded;
+    foreach (QString path, sources) {
+        cerr << "expandPlaylists: looking at " << path << endl;
+        if (QFileInfo(path).suffix().toLower() == "m3u") {
+            ProgressPrinter retrievalProgress("Opening playlist file...");
+            FileSource source(path, &retrievalProgress);
+            if (!source.isAvailable()) {
+                cerr << "ERROR: File or URL \"" << path.toStdString()
+                     << "\" could not be located" << endl;
+                throw FileNotFound(path);
+            }
+            source.waitForData();
+            PlaylistFileReader reader(source);
+            if (reader.isOK()) {
+                vector<QString> files = reader.load();
+                for (int i = 0; i < (int)files.size(); ++i) {
+                    expanded.push_back(files[i]);
+                }
+            }
+        } else {
+            // not a playlist
+            expanded.push_back(path);
+        }
+    }
+    return expanded;
+}
 
 int main(int argc, char **argv)
 {
@@ -689,6 +719,8 @@ int main(int argc, char **argv)
         }
     }
 
+    sources = expandPlaylists(sources);
+
     bool good = true;
     QSet<QString> badSources;
 
@@ -759,7 +791,7 @@ int main(int argc, char **argv)
                 std::cerr << "Extracting features for: \"" << i->toStdString()
                           << "\"" << std::endl;
                 try {
-                    manager.extractFeatures(*i, force);
+                    manager.extractFeatures(*i);
                 } catch (const std::exception &e) {
                     cerr << "ERROR: Feature extraction failed for \""
                          << i->toStdString() << "\": " << e.what() << endl;
