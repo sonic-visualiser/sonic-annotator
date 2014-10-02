@@ -21,73 +21,29 @@
 #include <QString>
 #include <QList>
 
-typedef std::vector<float> SampleBlock;
-
-class MultiplexedReader : public QObject
+class MultiplexedReader : public AudioFileReader
 {
     Q_OBJECT
 
 public:
+    // I take ownership of readers
     MultiplexedReader(QList<AudioFileReader *> readers);
-    virtual ~MultiplexedReader() { }
+    virtual ~MultiplexedReader();
 
-    //!!! the rest of this is currently still from AudioFileReader.h! Finish!
+    virtual QString getError() const { return m_error; }
+    virtual bool isQuicklySeekable() const { return m_quicklySeekable; }
 
-
-
-
-    bool isOK() const { return (m_channelCount > 0); }
-
-    virtual QString getError() const { return ""; }
-
-    int getFrameCount() const { return m_frameCount; }
-    int getChannelCount() const { return m_channelCount; }
-    int getSampleRate() const { return m_sampleRate; }
-
-    virtual int getNativeRate() const { return m_sampleRate; } // if resampled
-
-    /**
-     * Return true if this file supports fast seek and random
-     * access. Typically this will be true for uncompressed formats
-     * and false for compressed ones.
-     */
-    virtual bool isQuicklySeekable() const = 0;
-
-    /** 
-     * Return interleaved samples for count frames from index start.
-     * The resulting sample block will contain count *
-     * getChannelCount() samples (or fewer if end of file is reached).
-     *
-     * The subclass implementations of this function must be
-     * thread-safe -- that is, safe to call from multiple threads with
-     * different arguments on the same object at the same time.
-     */
     virtual void getInterleavedFrames(int start, int count,
-				      SampleBlock &frames) const = 0;
+				      SampleBlock &frames) const;
 
-    /**
-     * Return de-interleaved samples for count frames from index
-     * start.  Implemented in this class (it calls
-     * getInterleavedFrames and de-interleaves).  The resulting vector
-     * will contain getChannelCount() sample blocks of count samples
-     * each (or fewer if end of file is reached).
-     */
-    virtual void getDeInterleavedFrames(int start, int count,
-                                        std::vector<SampleBlock> &frames) const;
+    virtual int getDecodeCompletion() const;
 
-    // only subclasses that do not know exactly how long the audio
-    // file is until it's been completely decoded should implement this
-    virtual int getDecodeCompletion() const { return 100; } // %
+    virtual bool isUpdating() const;
 
-    virtual bool isUpdating() const { return false; }
-
-signals:
-    void frameCountChanged();
-    
 protected:
-    int m_frameCount;
-    int m_channelCount;
-    int m_sampleRate;
+    QString m_error;
+    bool m_quicklySeekable;
+    QList<AudioFileReader *> m_readers;
 };
 
 #endif

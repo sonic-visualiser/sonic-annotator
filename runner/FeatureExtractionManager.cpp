@@ -587,6 +587,7 @@ void FeatureExtractionManager::extractFeaturesMultiplexed(QStringList sources)
 AudioFileReader *
 FeatureExtractionManager::prepareReader(QString source)
 {
+    AudioFileReader *reader = 0;
     if (m_readyReaders.contains(source)) {
         reader = m_readyReaders[source];
         m_readyReaders.remove(source);
@@ -605,7 +606,7 @@ FeatureExtractionManager::prepareReader(QString source)
         retrievalProgress.done();
     }
     if (!reader) {
-        throw FailedToOpenFile(audioSource);
+        throw FailedToOpenFile(source);
     }
     return reader;
 }
