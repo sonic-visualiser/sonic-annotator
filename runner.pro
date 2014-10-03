@@ -67,14 +67,16 @@ HEADERS += \
 	runner/AudioDBFeatureWriter.h \
         runner/FeatureWriterFactory.h  \
         runner/DefaultFeatureWriter.h \
-        runner/FeatureExtractionManager.h
+        runner/FeatureExtractionManager.h \
+        runner/MultiplexedReader.h
 
 SOURCES += \
 	runner/main.cpp \
 	runner/DefaultFeatureWriter.cpp \
 	runner/FeatureExtractionManager.cpp \
         runner/AudioDBFeatureWriter.cpp \
-        runner/FeatureWriterFactory.cpp
+        runner/FeatureWriterFactory.cpp \
+        runner/MultiplexedReader.cpp
 
 !win32 {
     QMAKE_POST_LINK=/bin/bash tests/test.sh

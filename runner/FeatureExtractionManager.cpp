@@ -14,6 +14,7 @@
 */
 
 #include "FeatureExtractionManager.h"
+#include "MultiplexedReader.h"
 
 #include <vamp-hostsdk/PluginChannelAdapter.h>
 #include <vamp-hostsdk/PluginBufferingAdapter.h>
@@ -431,7 +432,7 @@ bool FeatureExtractionManager::addFeatureExtractorFromFile
     return addFeatureExtractor(transform, writers);
 }
 
-void FeatureExtractionManager::addSource(QString audioSource)
+void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex)
 {
     std::cerr << "Have audio source: \"" << audioSource.toStdString() << "\"" << std::endl;
 
@@ -467,10 +468,12 @@ void FeatureExtractionManager::addSource(QString audioSource)
 
         cerr << "File or URL \"" << audioSource.toStdString() << "\" opened successfully" << endl;
 
-        if (m_channels == 0) {
-            m_channels = reader->getChannelCount();
-            cerr << "Taking default channel count of "
-                 << reader->getChannelCount() << " from file" << endl;
+        if (!willMultiplex) {
+            if (m_channels == 0) {
+                m_channels = reader->getChannelCount();
+                cerr << "Taking default channel count of "
+                     << reader->getChannelCount() << " from file" << endl;
+            }
         }
 
         if (m_defaultSampleRate == 0) {
@@ -482,9 +485,15 @@ void FeatureExtractionManager::addSource(QString audioSource)
 
         m_readyReaders[audioSource] = reader;
     }
+
+    if (willMultiplex) {
+        ++m_channels; // channel count is simply number of sources
+        cerr << "Multiplexing, incremented target channel count to " 
+             << m_channels << endl;
+    }
 }
 
-void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
+void FeatureExtractionManager::extractFeatures(QString audioSource)
 {
     if (m_plugins.empty()) return;
 
@@ -499,13 +508,45 @@ void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
             (audioSource, "internal error: have sources and plugins, but no channel count");
     }
 
-    AudioFileReader *reader = 0;
+    AudioFileReader *reader = prepareReader(audioSource);
+    extractFeaturesFor(reader, audioSource); // Note this also deletes reader
+}
 
-    if (m_readyReaders.contains(audioSource)) {
-        reader = m_readyReaders[audioSource];
-        m_readyReaders.remove(audioSource);
-        if (reader->getChannelCount() != m_channels ||
-            reader->getSampleRate() != m_sampleRate) {
+void FeatureExtractionManager::extractFeaturesMultiplexed(QStringList sources)
+{
+    if (m_plugins.empty() || sources.empty()) return;
+
+    QString nominalSource = sources[0];
+
+    testOutputFiles(nominalSource);
+
+    if (m_sampleRate == 0) {
+        throw FileOperationFailed
+            (nominalSource, "internal error: have sources and plugins, but no sample rate");
+    }
+    if (m_channels == 0) {
+        throw FileOperationFailed
+            (nominalSource, "internal error: have sources and plugins, but no channel count");
+    }
+
+    QList<AudioFileReader *> readers;
+    foreach (QString source, sources) {
+        AudioFileReader *reader = prepareReader(source);
+        readers.push_back(reader);
+    }
+
+    AudioFileReader *reader = new MultiplexedReader(readers);
+    extractFeaturesFor(reader, nominalSource); // Note this also deletes reader
+}
+
+AudioFileReader *
+FeatureExtractionManager::prepareReader(QString source)
+{
+    AudioFileReader *reader = 0;
+    if (m_readyReaders.contains(source)) {
+        reader = m_readyReaders[source];
+        m_readyReaders.remove(source);
+        if (reader->getSampleRate() != m_sampleRate) {
             // can't use this; open it again
             delete reader;
             reader = 0;
@@ -513,23 +554,30 @@ void FeatureExtractionManager::extractFeatures(QString audioSource, bool force)
     }
     if (!reader) {
         ProgressPrinter retrievalProgress("Retrieving audio data...");
-        FileSource source(audioSource, &retrievalProgress);
-        source.waitForData();
+        FileSource fs(source, &retrievalProgress);
+        fs.waitForData();
         reader = AudioFileReaderFactory::createReader
-            (source, m_sampleRate, false, &retrievalProgress);
+            (fs, m_sampleRate, false, &retrievalProgress);
         retrievalProgress.done();
     }
-
     if (!reader) {
-        throw FailedToOpenFile(audioSource);
+        throw FailedToOpenFile(source);
     }
+    return reader;
+}
+
+void
+FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
+                                             QString audioSource)
+{
+    // Note: This also deletes reader
 
     cerr << "Audio file \"" << audioSource.toStdString() << "\": "
          << reader->getChannelCount() << "ch at " 
          << reader->getNativeRate() << "Hz" << endl;
     if (reader->getChannelCount() != m_channels ||
         reader->getNativeRate() != m_sampleRate) {
-        cerr << "NOTE: File will be mixed or resampled for processing: "
+        cerr << "NOTE: File will be mixed or resampled for processing, to: "
              << m_channels << "ch at " 
              << m_sampleRate << "Hz" << endl;
     }
