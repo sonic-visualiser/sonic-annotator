@@ -245,6 +245,8 @@ void usage(QString myname)
     cerr << "                      for all supported audio files and take all of those as" << endl;
     cerr << "                      input instead." << endl;
     cerr << endl;
+    cerr << "  -n, --normalise     Normalise input audio files to signal absolute max = 1.f." << endl;
+    cerr << endl;
     cerr << "  -f, --force         Continue with subsequent files following an error." << endl;
     cerr << endl;
     cerr << "Housekeeping options:" << endl;
@@ -394,6 +396,7 @@ int main(int argc, char **argv)
     bool force = false;
     bool multiplex = false;
     bool recursive = false;
+    bool normalise = false;
     bool list = false;
     bool summaryOnly = false;
     QString skeletonFor = "";
@@ -521,6 +524,9 @@ int main(int argc, char **argv)
         } else if (arg == "-r" || arg == "--recursive") {
             recursive = true;
             continue;
+        } else if (arg == "-n" || arg == "--normalise") {
+            normalise = true;
+            continue;
         } else if (arg == "-f" || arg == "--force") {
             force = true;
             continue;
@@ -607,6 +613,8 @@ int main(int argc, char **argv)
 
     FeatureExtractionManager manager;
 
+    manager.setNormalise(normalise);
+
     if (!requestedSummaryTypes.empty()) {
         if (!manager.setSummaryTypes(requestedSummaryTypes,
                                      boundaries)) {
@@ -617,7 +625,7 @@ int main(int argc, char **argv)
     }
 
     manager.setSummariesOnly(summaryOnly);
-    
+
     vector<FeatureWriter *> writers;
 
     for (set<string>::const_iterator i = requestedWriterTags.begin();

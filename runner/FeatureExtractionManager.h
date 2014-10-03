@@ -43,6 +43,7 @@ public:
 
     void setChannels(int channels);
     void setDefaultSampleRate(int sampleRate);
+    void setNormalise(bool normalise);
 
     bool setSummaryTypes(const set<string> &summaryTypes,
                          const Vamp::HostExt::PluginSummarisingAdapter::SegmentBoundaries &boundaries);
@@ -136,6 +137,7 @@ private:
     int m_defaultSampleRate;
     int m_sampleRate;
     int m_channels;
+    bool m_normalise;
 
     QMap<QString, AudioFileReader *> m_readyReaders;
     

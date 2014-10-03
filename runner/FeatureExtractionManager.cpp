@@ -59,7 +59,8 @@ FeatureExtractionManager::FeatureExtractionManager() :
     m_blockSize(16384),
     m_defaultSampleRate(0),
     m_sampleRate(0),
-    m_channels(0)
+    m_channels(0),
+    m_normalise(false)
 {
 }
 
@@ -82,6 +83,11 @@ void FeatureExtractionManager::setChannels(int channels)
 void FeatureExtractionManager::setDefaultSampleRate(int sampleRate)
 {
     m_defaultSampleRate = sampleRate;
+}
+
+void FeatureExtractionManager::setNormalise(bool normalise)
+{
+    m_normalise = normalise;
 }
 
 static PluginSummarisingAdapter::SummaryType
@@ -457,7 +463,8 @@ void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex
         // (then close, and open again later with actual desired rate &c)
 
         AudioFileReader *reader =
-            AudioFileReaderFactory::createReader(source, 0, false,
+            AudioFileReaderFactory::createReader(source, 0, 
+                                                 m_normalise,
                                                  &retrievalProgress);
     
         if (!reader) {
@@ -556,8 +563,9 @@ FeatureExtractionManager::prepareReader(QString source)
         ProgressPrinter retrievalProgress("Retrieving audio data...");
         FileSource fs(source, &retrievalProgress);
         fs.waitForData();
-        reader = AudioFileReaderFactory::createReader
-            (fs, m_sampleRate, false, &retrievalProgress);
+        reader = AudioFileReaderFactory::createReader(fs, m_sampleRate, 
+                                                      m_normalise,
+                                                      &retrievalProgress);
         retrievalProgress.done();
     }
     if (!reader) {
