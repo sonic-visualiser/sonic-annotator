@@ -47,25 +47,35 @@ MultiplexedReader::~MultiplexedReader()
 }
 
 void
-MultiplexedReader::getInterleavedFrames(int start, int count,
-					SampleBlock &frames) const
+MultiplexedReader::getInterleavedFrames(int start, int frameCount,
+					SampleBlock &block) const
 {
-    int nr = m_readers.size();
+    int out_chans = m_readers.size();
 
-    frames = SampleBlock(count * nr);
+    // Allocate and zero
+    block = SampleBlock(frameCount * out_chans, 0.f);
 
-    for (int ri = 0; ri < nr; ++ri) {
+    for (int out_chan = 0; out_chan < out_chans; ++out_chan) {
 
-	AudioFileReader *reader = m_readers[ri];
-	SampleBlock rs(count * reader->getChannelCount());
+	AudioFileReader *reader = m_readers[out_chan];
+	SampleBlock readerBlock;
+	reader->getInterleavedFrames(start, frameCount, readerBlock);
 
-	reader->getInterleavedFrames(start, count, rs);
+	int in_chans = reader->getChannelCount();
 
-	int nc = reader->getChannelCount();
-	for (int i = 0; i < count; ++i) {
-	    for (int c = 0; c < nc; ++c) {
-		frames[i * nr + ri] += rs[i * nc + c];
+	for (int frame = 0; frame < frameCount; ++frame) {
+
+            int out_index = frame * out_chans + out_chan;
+
+	    for (int in_chan = 0; in_chan < in_chans; ++in_chan) {
+                int in_index = frame * in_chans + in_chan;
+                if (in_index >= (int)readerBlock.size()) break;
+		block[out_index] += readerBlock[in_index];
 	    }
+
+            if (in_chans > 1) {
+                block[out_index] /= float(in_chans);
+            }
 	}
     }
 }
