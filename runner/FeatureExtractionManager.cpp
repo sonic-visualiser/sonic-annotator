@@ -453,7 +453,11 @@ void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex
         FileSource source(audioSource, &retrievalProgress);
         if (!source.isAvailable()) {
             cerr << "ERROR: File or URL \"" << audioSource.toStdString()
-                 << "\" could not be located" << endl;
+                 << "\" could not be located";
+            if (source.getErrorString() != "") {
+                cerr << ": " << source.getErrorString();
+            }
+            cerr << endl;
             throw FileNotFound(audioSource);
         }
     

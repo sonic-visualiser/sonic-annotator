@@ -354,14 +354,17 @@ expandPlaylists(QStringList sources)
 {
     QStringList expanded;
     foreach (QString path, sources) {
-        cerr << "expandPlaylists: looking at " << path << endl;
         if (QFileInfo(path).suffix().toLower() == "m3u") {
             ProgressPrinter retrievalProgress("Opening playlist file...");
             FileSource source(path, &retrievalProgress);
             if (!source.isAvailable()) {
-                cerr << "ERROR: File or URL \"" << path.toStdString()
-                     << "\" could not be located" << endl;
-                throw FileNotFound(path);
+                // Don't fail or throw an exception here, just keep
+                // the file in the list -- it will be tested again
+                // when adding it as a source and that's the proper
+                // time to fail. All we're concluding here is that it
+                // isn't a valid playlist
+                expanded.push_back(path);
+                continue;
             }
             source.waitForData();
             PlaylistFileReader reader(source);
@@ -728,7 +731,7 @@ int main(int argc, char **argv)
     }
 
     sources = expandPlaylists(sources);
-
+        
     bool good = true;
     QSet<QString> badSources;
 
