@@ -766,6 +766,27 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
         foreach (Plugin *plugin, m_orderedPlugins) {
 
             PluginMap::iterator pi = m_plugins.find(plugin);
+
+            // Skip any plugin none of whose transforms have come
+            // around yet. (Though actually, all transforms for a
+            // given plugin must have the same start time -- they can
+            // only differ in output and summary type.)
+            bool inRange = false;
+            for (TransformWriterMap::const_iterator ti = pi->second.begin();
+                 ti != pi->second.end(); ++ti) {
+                int startFrame = RealTime::realTime2Frame
+                    (ti->first.getStartTime(), m_sampleRate);
+                cerr << "plugin " << plugin << " transform " << &(ti->first) << " start frame " << startFrame << " my frame " << i << endl;
+                if (i >= startFrame || i + m_blockSize > startFrame) {
+                    inRange = true;
+                    break;
+                }
+            }
+            if (!inRange) {
+                cerr << "not in range! plugging on" << endl;
+                continue;
+            }
+
             Plugin::FeatureSet featureSet = plugin->process(data, timestamp);
 
             if (!m_summariesOnly) {
