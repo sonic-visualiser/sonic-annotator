@@ -2,8 +2,6 @@
 
 mypath=`dirname $0`
 
-
-
 for x in \
     supportprogs \
     helpfulflags \
@@ -19,7 +17,7 @@ for x in \
     ; do
 
     echo -n "$x: "
-    if ( cd $mypath ; bash ./test-$x.sh ); then
+    if ( cd $mypath/test-$x ; bash ./test-$x.sh ); then
 	echo test succeeded
     else
 	echo "*** Test FAILED"
