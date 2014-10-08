@@ -59,5 +59,25 @@ for suffix in \
     done
 done
 
+# Check we can't run with multiple transforms if one or more is missing!
+
+$r -t $mypath/transforms/percussiononsets-set-step-and-block-size.n3 \
+   -t $mypath/transforms/squiggly.n3 \
+   -t $mypath/transforms/percussiononsets-start-and-duration.n3 \
+    -w csv --csv-stdout $infile > $tmpfile2 2>/dev/null && \
+    fail "Incorrectly seems to succeed in running with a missing transform file"
+
+
+# Check we can run with multiple transforms if they're all present
+
+$r -t $mypath/transforms/percussiononsets-set-step-and-block-size.n3 \
+   -t $mypath/transforms/percussiononsets-set-parameters.xml \
+   -t $mypath/transforms/percussiononsets-start-and-duration.n3 \
+    -w csv --csv-stdout $infile > $tmpfile2 2>/dev/null || \
+    fail "Fails to run with multiple transforms"
+
+csvcompare $tmpfile2 $mypath/expected/multiple.csv || \
+    faildiff "Output mismatch for multiple transforms" $tmpfile2 $mypath/expected/multiple.csv
+
 exit 0
 
