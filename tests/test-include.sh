@@ -1,4 +1,10 @@
 
+mypath=`dirname $0`
+r=$mypath/../sonic-annotator
+
+percplug=vamp:vamp-example-plugins:percussiononsets
+testplug=vamp:vamp-test-plugin:vamp-test-plugin
+
 fail() {
     echo "Test failed: $1"
     exit 1

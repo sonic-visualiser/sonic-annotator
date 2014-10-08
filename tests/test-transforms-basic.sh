@@ -1,25 +1,21 @@
 #!/bin/bash
 
-mypath=`dirname $0`
-r=$mypath/../sonic-annotator
+. test-include.sh
 
 infile=$mypath/audio/3clicks8.wav
-testplug=vamp:vamp-example-plugins:percussiononsets
 tmpfile1=$mypath/tmp_1_$$
 tmpfile2=$mypath/tmp_2_$$
 
 trap "rm -f $tmpfile1 $tmpfile2" 0
 
-. test-include.sh
-
-$r --skeleton $testplug > $tmpfile1 2>/dev/null || \
-    fail "Fails to run with --skeleton $testplug"
+$r --skeleton $percplug > $tmpfile1 2>/dev/null || \
+    fail "Fails to run with --skeleton $percplug"
 
 $r -t $tmpfile1 -w csv --csv-stdout $infile > $tmpfile2 2>/dev/null || \
     fail "Fails to run with -t $tmpfile -w csv --csv-stdout $infile"
 
 csvcompare $tmpfile2 $mypath/expected/transforms-basic-skeleton-1.csv || \
-    fail "Output mismatch for transforms-basic-skeleton-1.csv"
+    faildiff "Output mismatch for transforms-basic-skeleton-1.csv" $tmpfile2 $mypath/expected/transforms-basic-skeleton-1.csv
 
 for suffix in \
     -no-parameters-default-output \

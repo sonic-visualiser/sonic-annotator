@@ -1,13 +1,10 @@
 #!/bin/bash
 
-mypath=`dirname $0`
-r=$mypath/../sonic-annotator
+. test-include.sh
 
 tmpfile=$mypath/tmp_1_$$
 
 trap "rm -f $tmpfile" 0
-
-. test-include.sh
 
 transform=$mypath/transforms/transforms-summaries-percussiononsets-detectionfunction.n3 
 

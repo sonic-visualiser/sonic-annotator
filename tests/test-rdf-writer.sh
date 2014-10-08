@@ -1,18 +1,11 @@
 #!/bin/bash
 
-mypath=`dirname $0`
-r=$mypath/../sonic-annotator
+. test-include.sh
 
 infile=$mypath/audio/3clicks8.wav
-testplug=vamp:vamp-example-plugins:percussiononsets
 tmpttl=$mypath/tmp_1_$$.ttl
 
 trap "rm -f $tmpttl" 0
-
-fail() {
-    echo "Test failed: $1"
-    exit 1
-}
 
 transformpfx=$mypath/transforms/transforms-rdf-writer-percussiononsets
 

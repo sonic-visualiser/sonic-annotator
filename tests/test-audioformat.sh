@@ -1,16 +1,12 @@
 #!/bin/bash
 
-mypath=`dirname $0`
-r=$mypath/../sonic-annotator
+. test-include.sh
 
 inbase=$mypath/audio/3clicks
-testplug=vamp:vamp-example-plugins:percussiononsets
 tmpfile1=$mypath/tmp_1_$$
 tmpfile2=$mypath/tmp_2_$$
 
 trap "rm -f $tmpfile1 $tmpfile2" 0
-
-. test-include.sh
 
 for extension in wav ogg mp3 ; do
 
@@ -34,7 +30,7 @@ for extension in wav ogg mp3 ; do
 
     if [ "$extension" = "wav" ]; then
 	csvcompare $tmpfile2 $expected || \
-	    fail "Output mismatch for transform $transform with audio file $infile"
+	    faildiff "Output mismatch for transform $transform with audio file $infile" $tmpfile2 $expected
     else
 	csvcompare $tmpfile2 $expected || \
 	    ( echo "NOTE: Output mismatch for transform $transform with audio file $infile" ; \

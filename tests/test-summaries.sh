@@ -1,7 +1,6 @@
 #!/bin/bash
 
-mypath=`dirname $0`
-r=$mypath/../sonic-annotator
+. test-include.sh
 
 infile=$mypath/audio/3clicks8.wav
 infile2=$mypath/audio/6clicks8.wav
@@ -12,8 +11,6 @@ tmpcmp1=$mypath/tmp_3_$$
 tmpcmp2=$mypath/tmp_4_$$
 
 trap "rm -f $tmpfile $tmpcanonical $expcanonical $tmpcmp1 $tmpcmp2" 0
-
-. test-include.sh
 
 compare() {
     a=$1
