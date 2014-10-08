@@ -766,6 +766,9 @@ int main(int argc, char **argv)
              i != requestedTransformFiles.end(); ++i) {
             if (manager.addFeatureExtractorFromFile(i->c_str(), writers)) {
                 haveFeatureExtractor = true;
+            } else {
+                cerr << "ERROR: Failed to add feature extractor from transform file \"" << *i << "\"" << endl;
+                good = false;
             }
         }
 
@@ -773,6 +776,9 @@ int main(int argc, char **argv)
              i != requestedDefaultTransforms.end(); ++i) {
             if (manager.addDefaultFeatureExtractor(i->c_str(), writers)) {
                 haveFeatureExtractor = true;
+            } else {
+                cerr << "ERROR: Failed to add default feature extractor for transform \"" << *i << "\"" << endl;
+                good = false;
             }
         }
 
