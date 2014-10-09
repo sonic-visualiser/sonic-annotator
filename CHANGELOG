@@ -1,4 +1,13 @@
 
+Changes in Sonic Annotator 1.1 since the previous release 1.0:
+
+Front-end changes:
+
+ - Add support for the start time and duration properties of a
+   transform, applying a plugin to only a range of the input audio
+ - Add --normalise to request each audio file be normalised to 1.0 max
+ - Add --multiplex 
+
 Changes in Sonic Annotator 1.0 since the previous release 0.7:
 
 Bug fixes:

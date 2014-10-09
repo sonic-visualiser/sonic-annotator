@@ -137,6 +137,50 @@ wrap(QString s, int len, int pfx = 0)
     return ws;
 }
 
+static bool
+isVersionNewerThan(QString a, QString b) // from VersionTester in svapp
+{
+    QRegExp re("[._-]");
+    QStringList alist = a.split(re, QString::SkipEmptyParts);
+    QStringList blist = b.split(re, QString::SkipEmptyParts);
+    int ae = alist.size();
+    int be = blist.size();
+    int e = std::max(ae, be);
+    for (int i = 0; i < e; ++i) {
+        int an = 0, bn = 0;
+        if (i < ae) {
+            an = alist[i].toInt();
+            if (an == 0 && alist[i] != "0") {
+                an = -1; // non-numeric field -> "-pre1" etc
+            }
+        }
+        if (i < be) {
+            bn = blist[i].toInt();
+            if (bn == 0 && blist[i] != "0") {
+                bn = -1;
+            }
+        }
+        if (an < bn) return false;
+        if (an > bn) return true;
+    }
+    return false;
+}
+
+static int
+checkMinVersion(QString myname, QString v)
+{
+    if (v == RUNNER_VERSION) {
+        return 0;
+    } else if (isVersionNewerThan(RUNNER_VERSION, v)) {
+        return 0;
+    } else {
+        cerr << myname << ": version " 
+             << RUNNER_VERSION << " is less than requested min version "
+             << v << ", failing" << endl;
+        return 1;
+    }
+}
+
 void printUsage(QString myname)
 {
     cerr << endl;
@@ -150,15 +194,15 @@ void printUsage(QString myname)
     cerr << "This program is supplied with NO WARRANTY, to the extent permitted by law." << endl;
     cerr << endl;
     cerr << "Usage: " << endl;
-    cerr << "  " << myname.toStdString()
+    cerr << "  " << myname
          << " [-mrnf] -t transform.ttl [..] -w <writer> [..] <audio> [..]" << endl;
-    cerr << "  " << myname.toStdString()
+    cerr << "  " << myname
          << " [-mrnf] -T translist.txt [..] -w <writer> [..] <audio> [..]" << endl;
-    cerr << "  " << myname.toStdString()
+    cerr << "  " << myname
          << " [-mrnf] -d <plugin> [..] -w <writer> [..] <audio> [...]" << endl;
-    cerr << "  " << myname.toStdString()
+    cerr << "  " << myname
          << " -s <transform>" << endl;
-    cerr << "  " << myname.toStdString()
+    cerr << "  " << myname
          << " [-lhv]" << endl;
     cerr << endl;
     cerr << "Where <audio> is an audio file or URL to use as input: either a local file" << endl;
@@ -185,7 +229,7 @@ void printHelp(QString myname)
                 cerr << "\n  ";
                 c -= 78;
             }
-            cerr << ext.toStdString();
+            cerr << ext;
             if (i + 1 == extlist.size()) cerr << ".";
             else cerr << ", ";
         }
@@ -266,6 +310,11 @@ void printHelp(QString myname)
     cerr << "                      and write it to standard output." << endl;
     cerr << endl;
     cerr << "  -v, --version       Show the version number and exit." << endl;
+    cerr << endl;
+    cerr << "      --minversion <V> Exit with successful return code if the version of" << endl;
+    cerr << "                      " << myname << " is at least <V>, failure otherwise." << endl;
+    cerr << "                      For scripts that depend on certain option support." << endl;
+    cerr << endl;
     cerr << "  -h, --help          Show help." << endl;
 
     cerr << endl;
@@ -295,7 +344,7 @@ void printHelp(QString myname)
             for (int k = 0; k < spaceage; ++k) cerr << " ";
             QString s(j->description.c_str());
             s = wrap(s, 56, 22);
-            cerr << s.toStdString() << endl;
+            cerr << s << endl;
         }
     }
 
@@ -312,7 +361,7 @@ listTransforms()
          iter != transforms.end(); ++iter) {
         const TransformDescription &transform = *iter;
         if (transform.type == TransformDescription::Analysis) {
-            cout << transform.identifier.toStdString() << endl;
+            cout << transform.identifier << endl;
         }
     }
 }    
@@ -327,7 +376,7 @@ printSkeleton(QString id)
          << "@prefix :         <#> ." << endl << endl;
     QString rdf = RDFTransformFactory::writeTransformToRDF
         (transform, ":transform");
-    cout << rdf.toStdString();
+    cout << rdf;
 }    
 
 void
@@ -336,8 +385,8 @@ findSourcesRecursive(QString dirname, QStringList &addTo, int &found)
     QDir dir(dirname);
 
     QString printable = dir.dirName().left(20);
-    cerr << "\rScanning \"" << printable.toStdString() << "\"..."
-         << QString("                    ").left(20 - printable.length()).toStdString()
+    cerr << "\rScanning \"" << printable << "\"..."
+         << QString("                    ").left(20 - printable.length())
          << " [" << found << " audio file(s)]";
 
     QString extensions = AudioFileReaderFactory::getKnownExtensions();
@@ -411,6 +460,7 @@ int main(int argc, char **argv)
     bool list = false;
     bool summaryOnly = false;
     QString skeletonFor = "";
+    QString minVersion = "";
     QString myname = args[0];
     myname = QFileInfo(myname).baseName();
     QStringList otherArgs;
@@ -435,14 +485,14 @@ int main(int argc, char **argv)
 
         if (arg == "-w" || arg == "--writer") {
             if (last || args[i+1].startsWith("-")) {
-                cerr << myname.toStdString() << ": argument expected for \""
-                     << arg.toStdString() << "\" option" << endl;
-                cerr << helpStr.toStdString() << endl;
+                cerr << myname << ": argument expected for \""
+                     << arg << "\" option" << endl;
+                cerr << helpStr << endl;
                 exit(2);
             } else {
                 string tag = args[++i].toStdString();
                 if (requestedWriterTags.find(tag) != requestedWriterTags.end()) {
-                    cerr << myname.toStdString() << ": NOTE: duplicate specification of writer type \"" << tag << "\" ignored" << endl;
+                    cerr << myname << ": NOTE: duplicate specification of writer type \"" << tag << "\" ignored" << endl;
                 } else {
                     requestedWriterTags.insert(tag);
                 }
@@ -450,15 +500,15 @@ int main(int argc, char **argv)
             }
         } else if (arg == "-t" || arg == "--transform") {
             if (last || args[i+1].startsWith("-")) {
-                cerr << myname.toStdString() << ": argument expected for \""
-                     << arg.toStdString() << "\" option" << endl;
-                cerr << helpStr.toStdString() << endl;
+                cerr << myname << ": argument expected for \""
+                     << arg << "\" option" << endl;
+                cerr << helpStr << endl;
                 exit(2);
             } else {
                 string transform = args[++i].toStdString();
                 if (requestedTransformFiles.find(transform) !=
                     requestedTransformFiles.end()) {
-                    cerr << myname.toStdString() << ": NOTE: duplicate specification of transform file \"" << transform << "\" ignored" << endl;
+                    cerr << myname << ": NOTE: duplicate specification of transform file \"" << transform << "\" ignored" << endl;
                 } else {
                     requestedTransformFiles.insert(transform);
                 }
@@ -466,15 +516,15 @@ int main(int argc, char **argv)
             }
         } else if (arg == "-T" || arg == "--transforms") {
             if (last || args[i+1].startsWith("-")) {
-                cerr << myname.toStdString() << ": argument expected for \""
-                     << arg.toStdString() << "\" option" << endl;
-                cerr << helpStr.toStdString() << endl;
+                cerr << myname << ": argument expected for \""
+                     << arg << "\" option" << endl;
+                cerr << helpStr << endl;
                 exit(2);
             } else {
                 string transform = args[++i].toStdString();
                 if (requestedTransformListFiles.find(transform) !=
                     requestedTransformListFiles.end()) {
-                    cerr << myname.toStdString() << ": NOTE: duplicate specification of transform list file \"" << transform << "\" ignored" << endl;
+                    cerr << myname << ": NOTE: duplicate specification of transform list file \"" << transform << "\" ignored" << endl;
                 } else {
                     requestedTransformListFiles.insert(transform);
                 }
@@ -482,15 +532,15 @@ int main(int argc, char **argv)
             }
         } else if (arg == "-d" || arg == "--default") {
             if (last || args[i+1].startsWith("-")) {
-                cerr << myname.toStdString() << ": argument expected for \""
-                     << arg.toStdString() << "\" option" << endl;
-                cerr << helpStr.toStdString() << endl;
+                cerr << myname << ": argument expected for \""
+                     << arg << "\" option" << endl;
+                cerr << helpStr << endl;
                 exit(2);
             } else {
                 string deft = args[++i].toStdString();
                 if (requestedDefaultTransforms.find(deft) !=
                     requestedDefaultTransforms.end()) {
-                    cerr << myname.toStdString() << ": NOTE: duplicate specification of default transform \"" << deft << "\" ignored" << endl;
+                    cerr << myname << ": NOTE: duplicate specification of default transform \"" << deft << "\" ignored" << endl;
                 } else {
                     requestedDefaultTransforms.insert(deft);
                 }
@@ -498,9 +548,9 @@ int main(int argc, char **argv)
             }
         } else if (arg == "-S" || arg == "--summary") {
             if (last || args[i+1].startsWith("-")) {
-                cerr << myname.toStdString() << ": argument expected for \""
-                     << arg.toStdString() << "\" option" << endl;
-                cerr << helpStr.toStdString() << endl;
+                cerr << myname << ": argument expected for \""
+                     << arg << "\" option" << endl;
+                cerr << helpStr << endl;
                 exit(2);
             } else {
                 string summary = args[++i].toStdString();
@@ -512,9 +562,9 @@ int main(int argc, char **argv)
             continue;
         } else if (arg == "--segments") {
             if (last) {
-                cerr << myname.toStdString() << ": argument expected for \""
-                     << arg.toStdString() << "\" option" << endl;
-                cerr << helpStr.toStdString() << endl;
+                cerr << myname << ": argument expected for \""
+                     << arg << "\" option" << endl;
+                cerr << helpStr << endl;
                 exit(2);
             } else {
                 string segmentSpec = args[++i].toStdString();
@@ -524,8 +574,8 @@ int main(int argc, char **argv)
                     boundaries.insert(Vamp::RealTime::fromSeconds
                                       (segmentStrs[j].toDouble(&good)));
                     if (!good) {
-                        cerr << myname.toStdString() << ": segment boundaries must be numeric" << endl;
-                        cerr << helpStr.toStdString() << endl;
+                        cerr << myname << ": segment boundaries must be numeric" << endl;
+                        cerr << helpStr << endl;
                         exit(2);
                     }
                 }
@@ -545,12 +595,21 @@ int main(int argc, char **argv)
         } else if (arg == "-l" || arg == "--list") {
             list = true;
             continue;
+        } else if (arg == "--minversion") {
+            if (last || args[i+1].startsWith("-")) {
+                cerr << myname << ": usage: "
+                     << myname << " " << arg << " <version>" << endl;
+                cerr << helpStr << endl;
+                exit(2);
+            }
+            minVersion = args[++i];
+            continue;
         } else if (arg == "-s" || arg == "--skeleton") {
             if (last || args[i+1].startsWith("-")) {
-                cerr << myname.toStdString() << ": usage: "
-                     << myname.toStdString() << " " << arg.toStdString()
+                cerr << myname << ": usage: "
+                     << myname << " " << arg
                      << " <transform>" << endl;
-                cerr << helpStr.toStdString() << endl;
+                cerr << helpStr << endl;
                 exit(2);
             } else {
                 skeletonFor = args[++i];
@@ -563,7 +622,7 @@ int main(int argc, char **argv)
 
     if (list) {
         if (!requestedWriterTags.empty() || skeletonFor != "") {
-            cerr << helpStr.toStdString() << endl;
+            cerr << helpStr << endl;
             exit(2);
         }
         listTransforms();
@@ -571,35 +630,42 @@ int main(int argc, char **argv)
     }
     if (skeletonFor != "") {
         if (!requestedWriterTags.empty()) {
-            cerr << helpStr.toStdString() << endl;
+            cerr << helpStr << endl;
             exit(2);
         }
         printSkeleton(skeletonFor);
         exit(0);
     }
+    if (minVersion != "") {
+        if (!requestedWriterTags.empty()) {
+            cerr << helpStr << endl;
+            exit(2);
+        }
+        exit(checkMinVersion(myname, minVersion));
+    }
 
     if (requestedTransformFiles.empty() &&
         requestedTransformListFiles.empty() &&
         requestedDefaultTransforms.empty()) {
-        cerr << myname.toStdString()
+        cerr << myname
              << ": no transform(s) specified" << endl;
-        cerr << helpStr.toStdString() << endl;
+        cerr << helpStr << endl;
         exit(2);
     }
 
     if (requestedWriterTags.empty()) {
-        cerr << myname.toStdString()
+        cerr << myname
              << ": no writer(s) specified" << endl;
-        cerr << helpStr.toStdString() << endl;
+        cerr << helpStr << endl;
         exit(2);
     }
 
     if (!boundaries.empty()) {
         if (requestedSummaryTypes.empty()) {
-            cerr << myname.toStdString()
+            cerr << myname
                  << ": summary segment boundaries provided, but no summary type specified"
                  << endl;
-            cerr << helpStr.toStdString() << endl;
+            cerr << helpStr << endl;
             exit(2);
         }
     }
@@ -630,7 +696,7 @@ int main(int argc, char **argv)
     if (!requestedSummaryTypes.empty()) {
         if (!manager.setSummaryTypes(requestedSummaryTypes,
                                      boundaries)) {
-            cerr << myname.toStdString()
+            cerr << myname
                  << ": failed to set requested summary types" << endl;
             exit(1);
         }
@@ -646,9 +712,9 @@ int main(int argc, char **argv)
         FeatureWriter *writer = FeatureWriterFactory::createWriter(*i);
 
         if (!writer) {
-            cerr << myname.toStdString() << ": unknown feature writer \""
+            cerr << myname << ": unknown feature writer \""
                  << *i << "\"" << endl;
-            cerr << helpStr.toStdString() << endl;
+            cerr << helpStr << endl;
             exit(2);
         }
 
@@ -675,11 +741,11 @@ int main(int argc, char **argv)
                         writerArgs[argbase] = otherArgs[j].toStdString();
                         otherArgs.removeAt(j);
                     } else {
-                        cerr << myname.toStdString() << ": "
+                        cerr << myname << ": "
                              << "argument required for \""
-                             << literal.toStdString() << "\" option"
+                             << literal << "\" option"
                              << endl;
-                        cerr << helpStr.toStdString() << endl;
+                        cerr << helpStr << endl;
                         exit(2);
                     }
                 } else {
@@ -695,16 +761,16 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < otherArgs.size(); ++i) {
         if (otherArgs[i].startsWith("-")) {
-            cerr << myname.toStdString() << ": unknown option \""
-                 << otherArgs[i].toStdString() << "\"" << endl;
-            cerr << helpStr.toStdString() << endl;
+            cerr << myname << ": unknown option \""
+                 << otherArgs[i] << "\"" << endl;
+            cerr << helpStr << endl;
             exit(2);
         }
     }
 
     if (otherArgs.empty()) {
-        cerr << myname.toStdString() << ": no input(s) specified" << endl;
-        cerr << helpStr.toStdString() << endl;
+        cerr << myname << ": no input(s) specified" << endl;
+        cerr << helpStr << endl;
         exit(2);
     }    
 
@@ -717,7 +783,7 @@ int main(int argc, char **argv)
                 requestedTransformFiles.insert(files[j].toStdString());
             }
         } else {
-            cerr << myname.toStdString() << ": failed to read template list file \"" << *i << "\"" << endl;
+            cerr << myname << ": failed to read template list file \"" << *i << "\"" << endl;
             exit(2);
         }
     }
@@ -792,7 +858,7 @@ int main(int argc, char **argv)
         }
 
         if (!haveFeatureExtractor) {
-            cerr << myname.toStdString() << ": no feature extractors added" << endl;
+            cerr << myname << ": no feature extractors added" << endl;
             good = false;
         }
     }

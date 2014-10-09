@@ -32,4 +32,13 @@ $r --skeleton $percplug >/dev/null || \
 $r --skeleton $percplug | rapper -i turtle - test >/dev/null 2>&1 || \
     fail "Invalid XML skeleton produced with --skeleton $percplug"
 
+$r --minversion $version || \
+    fail "Returned failure code when run with --minversion $version"
+
+$r --minversion ${version}.1 2>/dev/null && \
+    fail "Returned success code when run with --minversion $version"
+
+$r --minversion 63.9 2>/dev/null && \
+    fail "Returned success code when run with --minversion 63.9"
+
 exit 0

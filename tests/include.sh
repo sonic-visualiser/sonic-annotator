@@ -4,6 +4,8 @@ mypath=`dirname $0`
 testdir=$mypath/..
 r=$testdir/../sonic-annotator
 
+version=1.1
+
 audiopath=$testdir/audio
 
 percplug=vamp:vamp-example-plugins:percussiononsets
