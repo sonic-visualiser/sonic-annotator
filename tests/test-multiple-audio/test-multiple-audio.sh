@@ -50,7 +50,17 @@ csvcompare $tmpfile $expected.csv || \
     faildiff "Output mismatch for transform $transform with summaries and 2-file input" $tmpfile $expected.csv
 
 
-# 4. Remote playlist file referring to remote audio files
+# 4. Multiple files supplied directly on command line, with file: URL
+
+$r -t $transform -w csv --csv-stdout $audiopath/3clicks.mp3 file://`pwd`/$audiopath/6clicks.ogg --summary-only 2>/dev/null | sed 's,^"[^"]*/,",' > $tmpfile || \
+    fail "Fails to run transform $transform with 2-file input"
+
+expected=$mypath/expected/playlist
+csvcompare $tmpfile $expected.csv || \
+    faildiff "Output mismatch for transform $transform with summaries and 2-file input using file:// URL" $tmpfile $expected.csv
+
+
+# 5. Remote playlist file referring to remote audio files
 
 $r -t $transform -w csv --csv-stdout $urlbase/playlist.m3u --summary-only 2>/dev/null | sed 's,^"[^"]*/,",' > $tmpfile || \
     fail "Fails to run transform $transform with remote playlist input"
@@ -60,7 +70,7 @@ csvcompare $tmpfile $expected.csv || \
     faildiff "Output mismatch for transform $transform with summaries and remote playlist input" $tmpfile $expected.csv
 
 
-# 5. Local playlist file referring to mixture of remote and local audio files
+# 6. Local playlist file referring to mixture of remote and local audio files
 
 $r -t $transform -w csv --csv-stdout $audiopath/remote-playlist.m3u --summary-only 2>/dev/null | sed 's,^"[^"]*/,",' > $tmpfile || \
     fail "Fails to run transform $transform with playlist of remote files"
@@ -70,7 +80,7 @@ csvcompare $tmpfile $expected.csv || \
     faildiff "Output mismatch for transform $transform with summaries and remote playlist input" $tmpfile $expected.csv
 
 
-# 6. Multiple remote files supplied directly on command line
+# 7. Multiple remote files supplied directly on command line
 
 $r -t $transform -w csv --csv-stdout $urlbase/3clicks.mp3 $urlbase/6clicks.ogg --summary-only 2>/dev/null | sed 's,^"[^"]*/,",' > $tmpfile || \
     fail "Fails to run transform $transform with 2-file remote input"
@@ -80,7 +90,7 @@ csvcompare $tmpfile $expected.csv || \
     faildiff "Output mismatch for transform $transform with summaries and 2-file input" $tmpfile $expected.csv
 
 
-# 7. Mixture of remote and local files supplied on command line
+# 8. Mixture of remote and local files supplied on command line
 
 $r -t $transform -w csv --csv-stdout $audiopath/3clicks.mp3 $urlbase/6clicks.ogg --summary-only 2>/dev/null | sed 's,^"[^"]*/,",' > $tmpfile || \
     fail "Fails to run transform $transform with 2-file remote input"

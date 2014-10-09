@@ -137,10 +137,8 @@ wrap(QString s, int len, int pfx = 0)
     return ws;
 }
 
-void usage(QString myname)
+void printUsage(QString myname)
 {
-    set<string> writers = FeatureWriterFactory::getWriterTags();
-        
     cerr << endl;
     cerr << "Sonic Annotator v" << RUNNER_VERSION << endl;
     cerr << "A utility for batch feature extraction from audio files." << endl;
@@ -151,18 +149,27 @@ void usage(QString myname)
     cerr << "terms of the GNU General Public License <http://www.gnu.org/licenses/gpl.html>." << endl;
     cerr << "This program is supplied with NO WARRANTY, to the extent permitted by law." << endl;
     cerr << endl;
-    cerr << "  Usage: " << myname.toStdString()
-         << " [-mr] -t trans.xml [...] -w <writer> [...] <audio> [...]" << endl;
-    cerr << "         " << myname.toStdString()
-         << " [-mr] -T trans.txt [...] -w <writer> [...] <audio> [...]" << endl;
-    cerr << "         " << myname.toStdString()
+    cerr << "Usage: " << endl;
+    cerr << "  " << myname.toStdString()
+         << " [-mrnf] -t transform.ttl [..] -w <writer> [..] <audio> [..]" << endl;
+    cerr << "  " << myname.toStdString()
+         << " [-mrnf] -T translist.txt [..] -w <writer> [..] <audio> [..]" << endl;
+    cerr << "  " << myname.toStdString()
+         << " [-mrnf] -d <plugin> [..] -w <writer> [..] <audio> [...]" << endl;
+    cerr << "  " << myname.toStdString()
          << " -s <transform>" << endl;
-    cerr << "         " << myname.toStdString()
+    cerr << "  " << myname.toStdString()
          << " [-lhv]" << endl;
     cerr << endl;
     cerr << "Where <audio> is an audio file or URL to use as input: either a local file" << endl;
-    cerr << "path, local \"file://\" URL, or remote \"http://\" or \"ftp://\" URL." << endl;
+    cerr << "path, local \"file://\" URL, or remote \"http://\" or \"ftp://\" URL;" << endl;
+    cerr << "and <plugin> is a plugin output identified as vamp:libname:plugin:output." << endl;
     cerr << endl;
+}
+
+void printHelp(QString myname)
+{
+    printUsage(myname);
 
     QString extensions = AudioFileReaderFactory::getKnownExtensions();
     QStringList extlist = extensions.split(" ", QString::SkipEmptyParts);
@@ -187,14 +194,15 @@ void usage(QString myname)
 
     cerr << "Playlist files in M3U format are also supported." << endl;
     cerr << endl;
+
     cerr << "Transformation options:" << endl;
     cerr << endl;
     cerr << "  -t, --transform <T> Apply transform described in transform file <T> to" << endl;
     cerr << "                      all input audio files.  You may supply this option" << endl;
     cerr << "                      multiple times.  You must supply this option or -T at" << endl;
     cerr << "                      least once for any work to be done.  Transform format" << endl;
-    cerr << "                      may be SV transform XML or Vamp transform RDF.  See" << endl;
-    cerr << "                      documentation for examples." << endl;
+    cerr << "                      may be SV transform XML or Vamp transform RDF/Turtle." << endl;
+    cerr << "                      See documentation for examples." << endl;
     cerr << endl;
     cerr << "  -T, --transforms <T> Apply all transforms described in transform files" << endl;
     cerr << "                      whose names are listed in text file <T>.  You may supply" << endl;
@@ -211,6 +219,7 @@ void usage(QString myname)
     cerr << endl;
     cerr << "  -w, --writer <W>    Write output using writer type <W>." << endl;
     cerr << "                      Supported writer types are: ";
+    set<string> writers = FeatureWriterFactory::getWriterTags();
     for (set<string>::const_iterator i = writers.begin();
          i != writers.end(); ) {
         cerr << *i;
@@ -223,7 +232,7 @@ void usage(QString myname)
     cerr << endl;
     cerr << "  -S, --summary <S>   In addition to the result features, write summary feature" << endl;
     cerr << "                      of summary type <S>." << endl;
-    cerr << "                      Supported summary types are: min, max, mean, median, mode," << endl;
+    cerr << "                      Supported summary types are min, max, mean, median, mode," << endl;
     cerr << "                      sum, variance, sd, count." << endl;
     cerr << "                      You may supply this option multiple times." << endl;
     cerr << endl;
@@ -257,7 +266,7 @@ void usage(QString myname)
     cerr << "                      and write it to standard output." << endl;
     cerr << endl;
     cerr << "  -v, --version       Show the version number and exit." << endl;
-    cerr << "  -h, --help          Show this help." << endl;
+    cerr << "  -h, --help          Show help." << endl;
 
     cerr << endl;
     cerr << "If no -w (or --writer) options are supplied, either the -l -s -v or -h option" << endl;
@@ -291,7 +300,6 @@ void usage(QString myname)
     }
 
     cerr << endl;
-    exit(0);
 }
 
 void
@@ -416,7 +424,8 @@ int main(int argc, char **argv)
         bool last = ((i + 1) == args.size());
         
         if (arg == "-h" || arg == "--help" || arg == "-?") {
-            usage(myname);
+            printHelp(myname);
+            return 0;
         }
 
         if (arg == "-v" || arg == "--version") {
