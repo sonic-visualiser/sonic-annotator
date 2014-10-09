@@ -7,6 +7,7 @@ r=$testdir/../sonic-annotator
 audiopath=$testdir/audio
 
 percplug=vamp:vamp-example-plugins:percussiononsets
+amplplug=vamp:vamp-example-plugins:amplitudefollower
 testplug=vamp:vamp-test-plugin:vamp-test-plugin
 
 fail() {

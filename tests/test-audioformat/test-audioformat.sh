@@ -39,4 +39,21 @@ for extension in wav ogg mp3 ; do
     fi
 done
 
+# Check the normalise flag
+
+$r -d $amplplug -w csv --csv-stdout ${inbase}8quiet.wav 2>/dev/null | head > $tmpfile1 || \
+    fail "Fails to run default transform for plugin $amplplug against audio file ${inbase}8quiet.wav"
+csvcompare $tmpfile1 $mypath/expected/norm-off.csv || \
+    faildiff "Output mismatch for default transform for plugin $amplplug against audio file ${inbase}8quiet.wav without normalisation" $tmpfile1 $mypath/expected/norm-off.csv
+
+$r -d $amplplug -n -w csv --csv-stdout ${inbase}8quiet.wav 2>/dev/null | head > $tmpfile1 || \
+    fail "Fails to run default transform for plugin $amplplug against audio file ${inbase}8quiet.wav with normalisation"
+csvcompare $tmpfile1 $mypath/expected/norm-on.csv || \
+    faildiff "Output mismatch for default transform for plugin $amplplug against audio file ${inbase}8quiet.wav with normalisation" $tmpfile1 $mypath/expected/norm-on.csv
+
+$r -d $amplplug --normalise -w csv --csv-stdout ${inbase}8quiet.wav 2>/dev/null | head > $tmpfile1 || \
+    fail "Fails to run default transform for plugin $amplplug against audio file ${inbase}8quiet.wav with normalisation"
+csvcompare $tmpfile1 $mypath/expected/norm-on.csv || \
+    faildiff "Output mismatch for default transform for plugin $amplplug against audio file ${inbase}8quiet.wav with normalisation" $tmpfile1 $mypath/expected/norm-on.csv
+
 exit 0
