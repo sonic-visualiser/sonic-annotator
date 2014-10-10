@@ -343,6 +343,15 @@ bool FeatureExtractionManager::addFeatureExtractor
         if (transform.getOutput() == "") {
             transform.setOutput
                 (plugin->getOutputDescriptors()[0].identifier.c_str());
+        } else {
+            if (m_pluginOutputs[plugin].find
+                (transform.getOutput().toLocal8Bit().data()) ==
+                m_pluginOutputs[plugin].end()) {
+                cerr << "ERROR: Transform requests nonexistent plugin output \""
+                     << transform.getOutput()
+                     << "\"" << endl;
+                return false;
+            }
         }
 
         m_transformPluginMap[transform] = plugin;
@@ -663,8 +672,9 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
             string outputId = transform.getOutput().toStdString();
             if (m_pluginOutputs[plugin].find(outputId) ==
                 m_pluginOutputs[plugin].end()) {
-                //!!! throw?
-                cerr << "WARNING: Nonexistent plugin output \"" << outputId << "\" requested for transform \""
+                // We shouldn't actually reach this point:
+                // addFeatureExtractor tests whether the output exists
+                cerr << "ERROR: Nonexistent plugin output \"" << outputId << "\" requested for transform \""
                      << transform.getIdentifier().toStdString() << "\", ignoring this transform"
                      << endl;
 /*
