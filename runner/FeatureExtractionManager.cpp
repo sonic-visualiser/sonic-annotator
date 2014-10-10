@@ -674,12 +674,12 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
             if (!haveExtents || startFrame + duration > latestEndFrame) {
                 latestEndFrame = startFrame + duration;
             }
-
+/*
             cerr << "startFrame for transform " << startFrame << endl;
             cerr << "duration for transform " << duration << endl;
             cerr << "earliestStartFrame becomes " << earliestStartFrame << endl;
             cerr << "latestEndFrame becomes " << latestEndFrame << endl;
-
+*/
             haveExtents = true;
 
             string outputId = transform.getOutput().toStdString();
@@ -799,14 +799,12 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
                  ti != pi->second.end(); ++ti) {
                 int startFrame = RealTime::realTime2Frame
                     (ti->first.getStartTime(), m_sampleRate);
-                cerr << "plugin " << plugin << " transform " << &(ti->first) << " start frame " << startFrame << " my frame " << i << endl;
                 if (i >= startFrame || i + m_blockSize > startFrame) {
                     inRange = true;
                     break;
                 }
             }
             if (!inRange) {
-                cerr << "not in range! plugging on" << endl;
                 continue;
             }
 
