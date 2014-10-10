@@ -340,6 +340,19 @@ bool FeatureExtractionManager::addFeatureExtractor
             }
         }
 
+        if (transform.getPluginVersion() != "") {
+            if (QString("%1").arg(plugin->getPluginVersion())
+                != transform.getPluginVersion()) {
+                cerr << "ERROR: Transform specifies version "
+                     << transform.getPluginVersion()
+                     << " of plugin \"" << plugin->getIdentifier()
+                     << "\", but installed plugin is version "
+                     << plugin->getPluginVersion()
+                     << endl;
+                return false;
+            }
+        }
+
         if (transform.getOutput() == "") {
             transform.setOutput
                 (plugin->getOutputDescriptors()[0].identifier.c_str());
