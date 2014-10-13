@@ -1,2 +1,4 @@
 svcore = https://code.soundsoftware.ac.uk/hg/svcore
 dataquay = https://bitbucket.org/breakfastquay/dataquay
+sv-dependency-builds = https://code.soundsoftware.ac.uk/hg/sv-dependency-builds
+
