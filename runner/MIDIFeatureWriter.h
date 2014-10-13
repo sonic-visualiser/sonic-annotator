@@ -28,6 +28,8 @@ public:
     MIDIFeatureWriter();
     virtual ~MIDIFeatureWriter();
 
+    string getDescription() const;
+
     virtual ParameterList getSupportedParameters() const;
     virtual void setParameters(map<string, string> &params);
 

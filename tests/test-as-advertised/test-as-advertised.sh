@@ -8,19 +8,14 @@ tmpwav=$tmpdir/test.wav
 
 trap "rm -rf $tmpdir" 0
 
-types=`\
-    $r --help 2>&1 | \
-    grep 'Supported writer types are:' | \
-    sed -e 's/^.*://' -e 's/[,\.]//g' \
-    `
+types=`$r --list-writers`
 [ -n "$types" ] || \
-    fail "Fails to report sensible list of writers in help text?"
+    fail "Fails to report list of writers"
 
 onsets=$mypath/transforms/percussiononsets-onsets.n3
 df=$mypath/transforms/percussiononsets-detectionfunction.n3
 
 adbdir=$tmpdir/audiodb-test
-mkdir -p $adbdir
 
 for type in $types; do
 
@@ -39,6 +34,7 @@ for type in $types; do
 
     case $type in
 	audiodb) 
+	    mkdir -p $adbdir
 	    $r -t $df -w $type $tmpwav --audiodb-basedir $tmpdir --audiodb-catid `basename $adbdir` 2>/dev/null || \
 		fail "Fails to run with reader type \"$type\" and default options"
 	    ;;

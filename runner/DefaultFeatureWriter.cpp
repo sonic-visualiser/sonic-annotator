@@ -20,6 +20,12 @@ using namespace std;
 
 #include "DefaultFeatureWriter.h"
 
+string
+DefaultFeatureWriter::getDescription() const
+{
+    return "Write features in a generic XML format, with <feature> or <summary> elements containing output name and some or all of timestamp, duration, values, and label.";
+}
+
 void DefaultFeatureWriter::write(QString,
                                  const Transform &,
                                  const Vamp::Plugin::OutputDescriptor& output,

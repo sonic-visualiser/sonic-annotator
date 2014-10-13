@@ -23,6 +23,7 @@ class DefaultFeatureWriter : public FeatureWriter
 {
 public:
     virtual ~DefaultFeatureWriter() { }
+    virtual string getDescription() const;
     virtual void write(QString trackid,
                        const Transform &transform,
                        const Vamp::Plugin::OutputDescriptor &output,
