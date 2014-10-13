@@ -50,7 +50,7 @@ private:
 	virtual NoteList getNotes() const {
 	    return m_notes;
 	}
-	virtual NoteList getNotesWithin(int startFrame, int endFrame) const {
+	virtual NoteList getNotesWithin(int, int) const {
 	    // Not required by MIDIFileWriter, not supported
 	    return NoteList();
 	}
@@ -60,6 +60,9 @@ private:
 
     typedef map<QString, NoteList> NoteMap; // output filename -> notes
     NoteMap m_notes;
+    
+    typedef map<QString, set<TransformId> > FileTransformMap;
+    FileTransformMap m_fileTransforms;
 
     typedef map<QString, float> SampleRateMap; // NoteData uses sample timing
     SampleRateMap m_rates;
@@ -67,8 +70,8 @@ private:
     typedef map<TransformId, int> ChannelMap;
     ChannelMap m_channels;
     
-    typedef map<QString, int> LastChannelMap;
-    LastChannelMap m_lastChannels;
+    typedef map<QString, int> NextChannelMap;
+    NextChannelMap m_nextChannels;
 };
 
 #endif

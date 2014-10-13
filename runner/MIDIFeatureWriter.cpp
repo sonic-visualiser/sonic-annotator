@@ -60,12 +60,42 @@ MIDIFeatureWriter::write(QString trackId,
 			 const Plugin::FeatureList& features,
 			 std::string summaryType)
 {
-    QString filename = getOutputFilename(trackId, transform.getIdentifier());
+    QString transformId = transform.getIdentifier();
+
+    QString filename = getOutputFilename(trackId, transformId);
     if (filename == "") {
-	throw FailedToOpenOutputStream(trackId, transform.getIdentifier());
+	throw FailedToOpenOutputStream(trackId, transformId);
     }
 
-    //!!! implement!
+    if (m_rates.find(filename) == m_rates.end()) {
+        // If the output is FixedSampleRate, we draw the sample rate
+        // from the output descriptor; otherwise from the transform
+        float sampleRate;
+        if (output.sampleType == Plugin::OutputDescriptor::FixedSampleRate) {
+            sampleRate = output.sampleRate;
+        } else {
+            sampleRate = transform.getSampleRate();
+        }
+        m_rates[filename] = sampleRate;
+    }
+
+    if (m_fileTransforms[filename].find(transformId) == 
+        m_fileTransforms[filename].end()) {
+
+        // This transform is new to the file, give it a channel number
+
+        int channel = m_nextChannels[filename];
+        m_nextChannels[filename] = channel + 1;
+
+        m_fileTransforms[filename].insert(transformId);
+        m_channels[transformId] = channel;
+    }
+
+    NoteList notes = m_notes[filename];
+
+    
+
+    m_notes[filename] = notes;
 }
 
 void
