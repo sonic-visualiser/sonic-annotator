@@ -53,8 +53,8 @@ win32-x-g++:QMAKE_LFLAGS += -Wl,-subsystem,console
 
 TARGET = sonic-annotator
 
-DEPENDPATH += . svcore
-INCLUDEPATH += . dataquay svcore
+DEPENDPATH += . svcore runner
+INCLUDEPATH += . dataquay svcore runner
 
 QMAKE_LIBDIR = svcore $$QMAKE_LIBDIR
 
@@ -84,6 +84,7 @@ HEADERS += \
         runner/FeatureWriterFactory.h  \
         runner/DefaultFeatureWriter.h \
         runner/FeatureExtractionManager.h \
+        runner/MIDIFeatureWriter.h \
         runner/MultiplexedReader.h
 
 SOURCES += \
@@ -92,6 +93,7 @@ SOURCES += \
 	runner/FeatureExtractionManager.cpp \
         runner/AudioDBFeatureWriter.cpp \
         runner/FeatureWriterFactory.cpp \
+        runner/MIDIFeatureWriter.cpp \
         runner/MultiplexedReader.cpp
 
 !win32 {

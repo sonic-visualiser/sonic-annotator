@@ -4,7 +4,7 @@ mypath=`dirname $0`
 testdir=$mypath/..
 r=$testdir/../sonic-annotator
 
-version=1.1
+version=1.1-hg
 
 audiopath=$testdir/audio
 
