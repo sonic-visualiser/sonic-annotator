@@ -211,8 +211,10 @@ void printUsage(QString myname)
     cerr << endl;
 }
 
-void printHelp(QString myname)
+void printHelp(QString myname, QString w)
 {
+    std::string writer = w.toStdString();
+
     printUsage(myname);
 
     QString extensions = AudioFileReaderFactory::getKnownExtensions();
@@ -239,107 +241,115 @@ void printHelp(QString myname)
     cerr << "Playlist files in M3U format are also supported." << endl;
     cerr << endl;
 
-    cerr << "Transformation options:" << endl;
-    cerr << endl;
-    cerr << "  -t, --transform <T> Apply transform described in transform file <T> to" << endl;
-    cerr << "                      all input audio files.  You may supply this option" << endl;
-    cerr << "                      multiple times.  You must supply this option or -T at" << endl;
-    cerr << "                      least once for any work to be done.  Transform format" << endl;
-    cerr << "                      may be SV transform XML or Vamp transform RDF/Turtle." << endl;
-    cerr << "                      See documentation for examples." << endl;
-    cerr << endl;
-    cerr << "  -T, --transforms <T> Apply all transforms described in transform files" << endl;
-    cerr << "                      whose names are listed in text file <T>.  You may supply" << endl;
-    cerr << "                      this option multiple times." << endl;
-    cerr << endl;
-    cerr << "  -d, --default <I>   Apply the default transform for transform id <I>.  This" << endl;
-    cerr << "                      is equivalent to generating a skeleton transform for this" << endl;
-    cerr << "                      id (using the -s option, below) and then applying that," << endl;
-    cerr << "                      unmodified, with the -t option in the normal way.  Note" << endl;
-    cerr << "                      that the results may vary as the implementation's default" << endl;
-    cerr << "                      processing parameters are not guaranteed.  Do not use" << endl;
-    cerr << "                      this in production systems.  You may supply this option" << endl;
-    cerr << "                      multiple times, and mix it with -t and -T." << endl;
-    cerr << endl;
-    cerr << "  -w, --writer <W>    Write output using writer type <W>." << endl;
-    cerr << "                      Supported writer types are: ";
     set<string> writers = FeatureWriterFactory::getWriterTags();
+
+    QString writerText = "Supported writer types are: ";
     for (set<string>::const_iterator i = writers.begin();
          i != writers.end(); ) {
-        cerr << *i;
-        if (++i != writers.end()) cerr << ", ";
-        else cerr << ".";
+        writerText += i->c_str();
+        if (++i != writers.end()) writerText += ", ";
+        else writerText += ".";
     }
-    cerr << endl;
-    cerr << "                      You may supply this option multiple times.  You must" << endl;
-    cerr << "                      supply this option at least once for any work to be done." << endl;
-    cerr << endl;
-    cerr << "  -S, --summary <S>   In addition to the result features, write summary feature" << endl;
-    cerr << "                      of summary type <S>." << endl;
-    cerr << "                      Supported summary types are min, max, mean, median, mode," << endl;
-    cerr << "                      sum, variance, sd, count." << endl;
-    cerr << "                      You may supply this option multiple times." << endl;
-    cerr << endl;
-    cerr << "      --summary-only  Write only summary features; do not write the regular" << endl;
-    cerr << "                      result features." << endl;
-    cerr << endl;
-    cerr << "      --segments <A>,<B>[,...]" << endl;
-    cerr << "                      Summarise in segments, with segment boundaries" << endl;
-    cerr << "                      at A, B, ... seconds." << endl;
-    cerr << endl;
-    cerr << "  -m, --multiplex     If multiple input audio files are given, use mono" << endl;
-    cerr << "                      mixdowns of all files as the input channels for a single" << endl;
-    cerr << "                      invocation of each transform, instead of running the" << endl;
-    cerr << "                      transform against all files separately. The first file" << endl;
-    cerr << "                      will be used for output reference name and sample rate." << endl;
-    cerr << endl;
-    cerr << "  -r, --recursive     If any of the <audio> arguments is found to be a local" << endl;
-    cerr << "                      directory, search the tree starting at that directory" << endl;
-    cerr << "                      for all supported audio files and take all of those as" << endl;
-    cerr << "                      input instead." << endl;
-    cerr << endl;
-    cerr << "  -n, --normalise     Normalise input audio files to signal absolute max = 1.f." << endl;
-    cerr << endl;
-    cerr << "  -f, --force         Continue with subsequent files following an error." << endl;
-    cerr << endl;
-    cerr << "Housekeeping options:" << endl;
-    cerr << endl;
-    cerr << "  -l, --list          List all known transform ids to standard output." << endl;
-    cerr << endl;
-    cerr << "  -s, --skeleton <I>  Generate a skeleton transform file for transform id <I>" << endl;
-    cerr << "                      and write it to standard output." << endl;
-    cerr << endl;
-    cerr << "  -v, --version       Show the version number and exit." << endl;
-    cerr << endl;
-    cerr << "      --minversion <V> Exit with successful return code if the version of" << endl;
-    cerr << "                      " << myname << " is at least <V>, failure otherwise." << endl;
-    cerr << "                      For scripts that depend on certain option support." << endl;
-    cerr << endl;
-    cerr << "  -h, --help          Show help." << endl;
+    writerText = wrap(writerText, 56, 22);
 
-    cerr << endl;
-    cerr << "If no -w (or --writer) options are supplied, either the -l -s -v or -h option" << endl;
-    cerr << "(or long equivalent) must be given instead." << endl;
+    if (writer == "" || writers.find(writer) == writers.end()) {
 
-    for (set<string>::const_iterator i = writers.begin();
-         i != writers.end(); ++i) {
-        FeatureWriter *w = FeatureWriterFactory::createWriter(*i);
+        cerr << "Transformation options:" << endl;
+        cerr << endl;
+        cerr << "  -t, --transform <T> Apply transform described in transform file <T> to" << endl;
+        cerr << "                      all input audio files. You may supply this option" << endl;
+        cerr << "                      multiple times. You must supply this option or -T at" << endl;
+        cerr << "                      least once for any work to be done. Transform format" << endl;
+        cerr << "                      may be SV transform XML or Vamp transform RDF/Turtle." << endl;
+        cerr << "                      See accompanying documentation for transform examples." << endl;
+        cerr << endl;
+        cerr << "  -T, --transforms <T> Apply all transforms described in transform files" << endl;
+        cerr << "                      whose names are listed in text file <T>. You may supply" << endl;
+        cerr << "                      this option multiple times." << endl;
+        cerr << endl;
+        cerr << "  -d, --default <I>   Apply the default transform for transform id <I>. This" << endl;
+        cerr << "                      is equivalent to generating a skeleton transform for this" << endl;
+        cerr << "                      id (using the -s option, below) and then applying that," << endl;
+        cerr << "                      unmodified, with the -t option in the normal way. Note" << endl;
+        cerr << "                      that results may vary, as the implementation's default" << endl;
+        cerr << "                      processing parameters are not guaranteed. Do not use" << endl;
+        cerr << "                      this in production systems. You may supply this option" << endl;
+        cerr << "                      multiple times, and mix it with -t and -T." << endl;
+        cerr << endl;
+        cerr << "  -w, --writer <W>    Write output using writer type <W>." << endl;
+        cerr << "                      " << writerText << endl;
+        cerr << "                      You may supply this option multiple times. You must" << endl;
+        cerr << "                      supply this option at least once for any work to be done." << endl;
+        cerr << endl;
+        cerr << "  -S, --summary <S>   In addition to the result features, write summary feature" << endl;
+        cerr << "                      of summary type <S>." << endl;
+        cerr << "                      Supported summary types are min, max, mean, median, mode," << endl;
+        cerr << "                      sum, variance, sd, count." << endl;
+        cerr << "                      You may supply this option multiple times." << endl;
+        cerr << endl;
+        cerr << "      --summary-only  Write only summary features; do not write the regular" << endl;
+        cerr << "                      result features." << endl;
+        cerr << endl;
+        cerr << "      --segments <A>,<B>[,...]" << endl;
+        cerr << "                      Summarise in segments, with segment boundaries" << endl;
+        cerr << "                      at A, B, ... seconds." << endl;
+        cerr << endl;
+        cerr << "  -m, --multiplex     If multiple input audio files are given, use mono" << endl;
+        cerr << "                      mixdowns of all files as the input channels for a single" << endl;
+        cerr << "                      invocation of each transform, instead of running the" << endl;
+        cerr << "                      transform against all files separately. The first file" << endl;
+        cerr << "                      will be used for output reference name and sample rate." << endl;
+        cerr << endl;
+        cerr << "  -r, --recursive     If any of the <audio> arguments is found to be a local" << endl;
+        cerr << "                      directory, search the tree starting at that directory" << endl;
+        cerr << "                      for all supported audio files and take all of those as" << endl;
+        cerr << "                      input instead." << endl;
+        cerr << endl;
+        cerr << "  -n, --normalise     Normalise input audio files to signal absolute max = 1.f." << endl;
+        cerr << endl;
+        cerr << "  -f, --force         Continue with subsequent files following an error." << endl;
+        cerr << endl;
+        cerr << "Housekeeping options:" << endl;
+        cerr << endl;
+        cerr << "  -l, --list          List all known transform ids to standard output." << endl;
+        cerr << endl;
+        cerr << "  -s, --skeleton <I>  Generate a skeleton transform file for transform id <I>" << endl;
+        cerr << "                      and write it to standard output." << endl;
+        cerr << endl;
+        cerr << "  -v, --version       Show the version number and exit." << endl;
+        cerr << endl;
+        cerr << "      --minversion <V> Exit with successful return code if the version of" << endl;
+        cerr << "                      " << myname << " is at least <V>, failure otherwise." << endl;
+        cerr << "                      For scripts that depend on certain option support." << endl;
+        cerr << endl;
+        cerr << "  -h, --help          Show help." << endl;
+        cerr << "  -h, --help <W>      Show help for writer type W." << endl;
+        cerr << "                      " << writerText << endl;
+
+        cerr << endl;
+        cerr << "If no -w (or --writer) options are supplied, either the -l -s -v or -h option" << endl;
+        cerr << "(or long equivalent) must be given instead." << endl;
+
+    } else {
+
+        FeatureWriter *w = FeatureWriterFactory::createWriter(writer);
         if (!w) {
-            cerr << "  (Internal error: failed to create writer of this type)" << endl;
-            continue;
+            cerr << "  (Internal error: failed to create writer of known type \""
+                 << writer << "\")" << endl;
+            return;
         }
+        cerr << "Additional options for writer type \"" << writer << "\":" << endl;
+        cerr << endl;
         FeatureWriter::ParameterList params = w->getSupportedParameters();
         delete w;
         if (params.empty()) {
-            continue;
+            cerr << "(No special options available for this writer)" << endl;
+            return;
         }
-        cerr << endl;
-        cerr << "Additional options for writer type \"" << *i << "\":" << endl;
-        cerr << endl;
         for (FeatureWriter::ParameterList::const_iterator j = params.begin();
              j != params.end(); ++j) {
-            cerr << "  --" << *i << "-" << j->name << " ";
-            int spaceage = 16 - int(i->length()) - int(j->name.length());
+            cerr << "  --" << writer << "-" << j->name << " ";
+            int spaceage = 16 - int(writer.length()) - int(j->name.length());
             if (j->hasArg) { cerr << "<X> "; spaceage -= 4; }
             for (int k = 0; k < spaceage; ++k) cerr << " ";
             QString s(j->description.c_str());
@@ -474,7 +484,11 @@ int main(int argc, char **argv)
         bool last = ((i + 1) == args.size());
         
         if (arg == "-h" || arg == "--help" || arg == "-?") {
-            printHelp(myname);
+            QString writer;
+            if (!last) {
+                writer = args[i+1];
+            }
+            printHelp(myname, writer);
             return 0;
         }
 
