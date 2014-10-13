@@ -58,7 +58,7 @@ MIDIFeatureWriter::write(QString trackId,
 			 const Transform &transform,
 			 const Plugin::OutputDescriptor& output,
 			 const Plugin::FeatureList& features,
-			 std::string summaryType)
+			 std::string /* summaryType */)
 {
     QString transformId = transform.getIdentifier();
 
@@ -67,15 +67,9 @@ MIDIFeatureWriter::write(QString trackId,
 	throw FailedToOpenOutputStream(trackId, transformId);
     }
 
+    int sampleRate = transform.getSampleRate();
+
     if (m_rates.find(filename) == m_rates.end()) {
-        // If the output is FixedSampleRate, we draw the sample rate
-        // from the output descriptor; otherwise from the transform
-        float sampleRate;
-        if (output.sampleType == Plugin::OutputDescriptor::FixedSampleRate) {
-            sampleRate = output.sampleRate;
-        } else {
-            sampleRate = transform.getSampleRate();
-        }
         m_rates[filename] = sampleRate;
     }
 
@@ -93,7 +87,46 @@ MIDIFeatureWriter::write(QString trackId,
 
     NoteList notes = m_notes[filename];
 
-    
+    bool freq = (output.unit == "Hz" || 
+                 output.unit == "hz" || 
+                 output.unit == "HZ");
+
+    for (int i = 0; i < (int)features.size(); ++i) {
+
+        const Plugin::Feature &feature(features[i]);
+
+        Vamp::RealTime timestamp = feature.timestamp;
+        int frame = Vamp::RealTime::realTime2Frame(timestamp, sampleRate);
+
+        int duration = 1;
+        if (feature.hasDuration) {
+            duration = Vamp::RealTime::realTime2Frame(feature.duration, sampleRate);
+        }
+        
+        int pitch = 60;
+        if (feature.values.size() > 0) {
+            float pval = feature.values[0];
+            if (freq) {
+                pitch = Pitch::getPitchForFrequency(pval);
+            } else {
+                pitch = int(pval + 0.5);
+            }
+        }
+
+        int velocity = 100;
+        if (feature.values.size() > 1) {
+            float vval = feature.values[1];
+            if (vval < 128) {
+                velocity = int(vval + 0.5);
+            }
+        }
+
+        NoteData note(frame, duration, pitch, velocity);
+
+        note.channel = m_channels[transformId];
+
+        notes.push_back(note);
+    }
 
     m_notes[filename] = notes;
 }
