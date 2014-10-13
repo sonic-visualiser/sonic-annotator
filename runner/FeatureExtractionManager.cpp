@@ -145,6 +145,9 @@ convertWindowType(WindowType t)
         return PluginInputDomainAdapter::NuttallWindow;
     case BlackmanHarrisWindow:
         return PluginInputDomainAdapter::BlackmanHarrisWindow;
+    case GaussianWindow:
+    case ParzenWindow:
+        // Not supported in Vamp SDK, fall through
     default:
         cerr << "ERROR: Unknown or unsupported window type \"" << t << "\", using Hann (\"" << HanningWindow << "\")" << endl;
         return PluginInputDomainAdapter::HanningWindow;

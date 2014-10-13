@@ -35,8 +35,8 @@ $r --skeleton $percplug | rapper -i turtle - test >/dev/null 2>&1 || \
 $r --minversion $version || \
     fail "Returned failure code when run with --minversion $version"
 
-$r --minversion ${version}.1 2>/dev/null && \
-    fail "Returned success code when run with --minversion $version"
+$r --minversion $nextversion 2>/dev/null && \
+    fail "Returned success code when run with --minversion $nextversion"
 
 $r --minversion 63.9 2>/dev/null && \
     fail "Returned success code when run with --minversion 63.9"

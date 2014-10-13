@@ -1,5 +1,5 @@
 
-AC_INIT([Sonic Annotator], [1.0], cannam@all-day-breakfast.com)
+AC_INIT([Sonic Annotator], [1.1-hg], cannam@all-day-breakfast.com)
 
 AC_CONFIG_SRCDIR(runner/main.cpp)
 
@@ -50,7 +50,7 @@ CXXFLAGS_RELEASE="$AUTOCONF_CXXFLAGS"
 CXXFLAGS_MINIMAL="$AUTOCONF_CXXFLAGS"
 
 if test "x$GCC" = "xyes"; then
-        CXXFLAGS_DEBUG="-Wall -Woverloaded-virtual -Wextra -Wformat-nonliteral -Wformat-security -Winit-self -Wswitch-enum -g -pipe"
+        CXXFLAGS_DEBUG="-Wall -Werror -Woverloaded-virtual -Wextra -Wformat-nonliteral -Wformat-security -Winit-self -Wswitch-enum -g -pipe"
    	CXXFLAGS_RELEASE="-g0 -O2 -Wall -pipe"
    	CXXFLAGS_MINIMAL="-g0 -O0"
 fi

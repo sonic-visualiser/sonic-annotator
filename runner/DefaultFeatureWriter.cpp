@@ -20,8 +20,8 @@ using namespace std;
 
 #include "DefaultFeatureWriter.h"
 
-void DefaultFeatureWriter::write(QString trackid,
-                                 const Transform &transform,
+void DefaultFeatureWriter::write(QString,
+                                 const Transform &,
                                  const Vamp::Plugin::OutputDescriptor& output,
                                  const Vamp::Plugin::FeatureList& featureList,
                                  std::string summaryType)
@@ -39,8 +39,8 @@ void DefaultFeatureWriter::write(QString trackid,
      
      */
     
-    for (int i = 0; i < featureList.size(); ++i)
-    {
+    for (int i = 0; i < (int)featureList.size(); ++i) {
+
         if (summaryType == "") {
             cout << "<feature>" << endl;
         } else {
@@ -56,8 +56,7 @@ void DefaultFeatureWriter::write(QString trackid,
         if (featureList[i].values.size() > 0)
         {
             cout << "\t<values>";
-            for (int j = 0; j < featureList[i].values.size(); ++j)
-            {
+            for (int j = 0; j < (int)featureList[i].values.size(); ++j) {
                 if (j > 0)
                     cout << " ";
                 if (output.binNames.size() > 0)

@@ -99,7 +99,7 @@ AudioDBFeatureWriter::setBaseDirectory(const string &base)
 }
 
 void AudioDBFeatureWriter::write(QString trackid,
-                                 const Transform &transform,
+                                 const Transform &,
                                  const Vamp::Plugin::OutputDescriptor& output, 
                                  const Vamp::Plugin::FeatureList& featureList,
                                  std::string summaryType)
@@ -135,8 +135,8 @@ void AudioDBFeatureWriter::write(QString trackid,
     if (output.binCount == 0)    // this kind of feature just outputs timestamps and labels, assume of no interest to audioDB
         return;    
         
-    for (int i = 0; i < featureList.size(); ++i)
-    {
+    for (int i = 0; i < (int)featureList.size(); ++i) {
+
         // replace output files if necessary
         if (replaceDBFile(trackid, output.identifier))
         {                
@@ -156,7 +156,7 @@ void AudioDBFeatureWriter::write(QString trackid,
         }
 
         if (dbfiles[output.identifier].ofs) {
-            for (int j = 0; j < featureList[i].values.size(); ++j)
+            for (int j = 0; j < (int) featureList[i].values.size(); ++j)
                 *dbfiles[output.identifier].ofs /*<< ios::binary*/ << featureList[i].values[j];
         
             // write the *end* time of each feature to the timestamp file
