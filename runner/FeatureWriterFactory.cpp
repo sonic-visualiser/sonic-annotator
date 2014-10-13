@@ -20,6 +20,7 @@
 #include "rdf/RDFFeatureWriter.h"
 #include "AudioDBFeatureWriter.h"
 #include "MIDIFeatureWriter.h"
+#include "JAMSFeatureWriter.h"
 #include "transform/CSVFeatureWriter.h"
 
 set<string>
@@ -31,6 +32,7 @@ FeatureWriterFactory::getWriterTags()
     tags.insert("audiodb");
     tags.insert("csv");
     tags.insert("midi");
+    tags.insert("json");
     return tags;
 }
 
@@ -47,6 +49,8 @@ FeatureWriterFactory::createWriter(string tag)
         return new CSVFeatureWriter();
     } else if (tag == "midi") {
         return new MIDIFeatureWriter();
+    } else if (tag == "json") {
+        return new JAMSFeatureWriter();
     }
 
     return 0;

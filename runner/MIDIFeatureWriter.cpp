@@ -158,5 +158,7 @@ MIDIFeatureWriter::finish()
 	    writer.write();
 	}
     }
+
+    FileFeatureWriter::finish();
 }
 
