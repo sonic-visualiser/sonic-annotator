@@ -311,7 +311,9 @@ void printHelp(QString myname, QString w)
         cerr << endl;
         cerr << "Housekeeping options:" << endl;
         cerr << endl;
-        cerr << "  -l, --list          List all known transform ids to standard output." << endl;
+        cerr << "  -l, --list          List available transform ids to standard output." << endl;
+        cerr << "      --list-writers  List supported writer types to standard output." << endl;
+        cerr << "      --list-formats  List supported input audio formats to standard output." << endl;
         cerr << endl;
         cerr << "  -s, --skeleton <I>  Generate a skeleton transform file for transform id <I>" << endl;
         cerr << "                      and write it to standard output." << endl;
@@ -338,12 +340,14 @@ void printHelp(QString myname, QString w)
                  << writer << "\")" << endl;
             return;
         }
+        cerr << "Feature writer \"" << writer << "\":" << endl << endl;
+        cerr << "  " << wrap(w->getDescription().c_str(), 76, 2) << endl << endl;
         cerr << "Additional options for writer type \"" << writer << "\":" << endl;
         cerr << endl;
         FeatureWriter::ParameterList params = w->getSupportedParameters();
         delete w;
         if (params.empty()) {
-            cerr << "(No special options available for this writer)" << endl;
+            cerr << "  No additional options are available for this writer." << endl << endl;
             return;
         }
         for (FeatureWriter::ParameterList::const_iterator j = params.begin();
@@ -468,6 +472,8 @@ int main(int argc, char **argv)
     bool recursive = false;
     bool normalise = false;
     bool list = false;
+    bool listWriters = false;
+    bool listFormats = false;
     bool summaryOnly = false;
     QString skeletonFor = "";
     QString minVersion = "";
@@ -606,6 +612,12 @@ int main(int argc, char **argv)
         } else if (arg == "-f" || arg == "--force") {
             force = true;
             continue;
+        } else if (arg == "--list-writers") {
+            listWriters = true;
+            continue;
+        } else if (arg == "--list-formats") {
+            listFormats = true;
+            continue;
         } else if (arg == "-l" || arg == "--list") {
             list = true;
             continue;
@@ -634,6 +646,47 @@ int main(int argc, char **argv)
         }
     }
 
+    if (list) {
+        if (!requestedWriterTags.empty() || skeletonFor != "") {
+            cerr << helpStr << endl;
+            exit(2);
+        }
+        listTransforms();
+        exit(0);
+    }
+    if (listWriters) {
+        if (!requestedWriterTags.empty() || skeletonFor != "") {
+            cerr << helpStr << endl;
+            exit(2);
+        }
+        set<string> writers = FeatureWriterFactory::getWriterTags();
+        bool first = true;
+        for (set<string>::const_iterator i = writers.begin();
+             i != writers.end(); ++i) {
+            if (!first) cout << " ";
+            cout << *i;
+            first = false;
+        }
+        cout << endl;
+        exit(0);
+    }
+    if (listFormats) {
+        if (!requestedWriterTags.empty() || skeletonFor != "") {
+            cerr << helpStr << endl;
+            exit(2);
+        }
+        QString extensions = AudioFileReaderFactory::getKnownExtensions();
+        QStringList extlist = extensions.split(" ", QString::SkipEmptyParts);
+        bool first = true;
+        foreach (QString s, extlist) {
+            if (!first) cout << " ";
+            s.replace("*.", "");
+            cout << s;
+            first = false;
+        }
+        cout << endl;
+        exit(0);
+    }
     if (list) {
         if (!requestedWriterTags.empty() || skeletonFor != "") {
             cerr << helpStr << endl;

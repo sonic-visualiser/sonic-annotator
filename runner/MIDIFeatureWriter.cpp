@@ -34,6 +34,12 @@ MIDIFeatureWriter::~MIDIFeatureWriter()
 {
 }
 
+string
+MIDIFeatureWriter::getDescription() const
+{
+    return "Write features to MIDI files. All features are written as MIDI notes. If a feature has at least one value, its first value will be used as the note pitch, the second value (if present) for velocity. If a feature has units of Hz, then its pitch will be converted from frequency to an integer value in MIDI range, otherwise it will be written directly. Multiple (up to 16) transforms can be written to a single MIDI file, where they will be given separate MIDI channel numbers.";
+}
+
 MIDIFeatureWriter::ParameterList
 MIDIFeatureWriter::getSupportedParameters() const
 {

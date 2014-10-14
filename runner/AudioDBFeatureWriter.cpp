@@ -54,6 +54,12 @@ AudioDBFeatureWriter::~AudioDBFeatureWriter()
     // TODO: error handling on close
 }
 
+string
+AudioDBFeatureWriter::getDescription() const
+{
+    return "Write features in a binary format intended for import into AudioDB.";
+}
+
 AudioDBFeatureWriter::ParameterList
 AudioDBFeatureWriter::getSupportedParameters() const
 {
