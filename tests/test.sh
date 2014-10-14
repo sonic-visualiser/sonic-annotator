@@ -12,6 +12,7 @@ for x in \
     rdf-writer \
     rdf-destinations \
     csv-destinations \
+    lab-writer \
     lab-destinations \
     midi-destinations \
     summaries \
