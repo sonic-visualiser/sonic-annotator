@@ -12,6 +12,7 @@ for x in \
     rdf-writer \
     rdf-destinations \
     csv-destinations \
+    midi-destinations \
     summaries \
     multiple-audio \
     ; do

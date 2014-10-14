@@ -155,7 +155,14 @@ MIDIFeatureWriter::finish()
 		     << writer.getError() << endl;
 		throw FileOperationFailed(filename, "create MIDI writer");
 	    }
+
 	    writer.write();
+
+            if (!writer.isOK()) {
+		cerr << "ERROR: Failed to write to MIDI file: " 
+		     << writer.getError() << endl;
+		throw FileOperationFailed(filename, "MIDI write");
+            }
 	}
     }
 
