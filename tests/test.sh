@@ -11,6 +11,7 @@ for x in \
     as-advertised \
     rdf-writer \
     rdf-destinations \
+    csv-writer \
     csv-destinations \
     lab-writer \
     lab-destinations \
