@@ -13,6 +13,7 @@ for x in \
     rdf-destinations \
     csv-destinations \
     midi-destinations \
+    json-destinations \
     summaries \
     multiple-audio \
     ; do
