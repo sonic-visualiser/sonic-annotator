@@ -80,10 +80,10 @@ check_json $audiopath/$outfile2 "$ctx"
 
 ctx="onsets transform, two audio files, one-file JSON writer"
 
-# Does not support one file across all tracks
+$r -t $transformdir/onsets.n3 -w json --json-one-file $tmpjson $infile1 $infile2 2>/dev/null || \
+    fail "Fails to run with $ctx"
 
-$r -t $transformdir/onsets.n3 -w json --json-one-file $tmpjson $infile1 $infile2 2>/dev/null && \
-    fail "Fails by completing successfully with $ctx"
+check_json $tmpjson "$ctx"
 
 
 ctx="onsets transform, two audio files, stdout JSON writer"

@@ -25,6 +25,7 @@ using Vamp::PluginBase;
 JAMSFeatureWriter::JAMSFeatureWriter() :
     FileFeatureWriter(SupportOneFilePerTrackTransform |
                       SupportOneFilePerTrack |
+                      SupportOneFileTotal |
 		      SupportStdOut,
                       "json"),
     m_network(false),
@@ -73,10 +74,11 @@ void
 JAMSFeatureWriter::setTrackMetadata(QString trackId, TrackMetadata metadata)
 {
     QString json
-	("'file_metadata':"
-	 "  { 'artist': \"%1\","
-	 "    'title': \"%2\" }");
+	(" \"file_metadata\":\n"
+	 "  { \"artist\": \"%1\",\n"
+	 "    \"title\": \"%2\" },\n");
     m_metadata[trackId] = json.arg(metadata.maker).arg(metadata.title);
+    cerr << "setTrackMetadata: metadata is: " << m_metadata[trackId] << endl;
 }
 
 void
@@ -95,27 +97,63 @@ JAMSFeatureWriter::write(QString trackId,
 
     QTextStream &stream = *sptr;
 
-    if (m_startedTransforms.find(transformId) == m_startedTransforms.end()) {
+    TrackTransformPair tt(trackId, transformId);
+    TrackTransformPair targetKey = getFilenameKey(trackId, transformId);
+
+    if (m_startedTargets.find(targetKey) == m_startedTargets.end()) {
+        // Need to write track-level preamble
+        stream << "{" << m_metadata[trackId] << endl;
+        m_startedTargets.insert(targetKey);
+    }
+
+    if (m_data.find(tt) == m_data.end()) {
 
 	identifyTask(transform);
 
-	if (m_manyFiles ||
-	    (m_startedTracks.find(trackId) == m_startedTracks.end())) {
-
-	    // track-level preamble
-	    stream << "{" << m_metadata[trackId] << endl;
-	}
-
-	stream << "'" << getTaskKey(m_tasks[transformId]) << "':" << endl;
-	stream << "  [ ";
+        QString json("\"%1\": [ ");
+        m_data[tt] = json.arg(getTaskKey(m_tasks[transformId]));
     }
-
-    m_startedTracks.insert(trackId);
-    m_startedTransforms.insert(transformId);
 
     for (int i = 0; i < int(features.size()); ++i) {
 	
     }	
+}
+
+void
+JAMSFeatureWriter::finish()
+{
+    cerr << "Finish called on " << this << endl;
+
+    set<QTextStream *> startedStreams;
+
+    for (DataMap::const_iterator i = m_data.begin();
+         i != m_data.end(); ++i) {
+
+        TrackTransformPair tt = i->first;
+        QString data = i->second;
+
+        QTextStream *sptr = getOutputStream(tt.first, tt.second);
+        if (!sptr) {
+            throw FailedToOpenOutputStream(tt.first, tt.second);
+        }
+
+        if (startedStreams.find(sptr) != startedStreams.end()) {
+            *sptr << "," << endl;
+        }
+        startedStreams.insert(sptr);
+        
+        *sptr << data << "]";
+    }
+        
+    for (FileStreamMap::const_iterator i = m_streams.begin();
+	 i != m_streams.end(); ++i) {
+	*(i->second) << endl << "}" << endl;
+    }
+
+    m_data.clear();
+    m_startedTargets.clear();
+
+    FileFeatureWriter::finish();
 }
 
 void
@@ -223,15 +261,3 @@ JAMSFeatureWriter::getTaskKey(Task task)
     }
     return "unknown";
 }
-
-void
-JAMSFeatureWriter::finish()
-{
-    for (FileStreamMap::const_iterator i = m_streams.begin();
-	 i != m_streams.end(); ++i) {
-	*(i->second) << "}" << endl;
-    }
-
-    FileFeatureWriter::finish();
-}
-

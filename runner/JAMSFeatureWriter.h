@@ -65,13 +65,14 @@ private:
     typedef map<QString, QString> TrackMetadataMap; // track id -> json object
     TrackMetadataMap m_metadata;
 
+    typedef map<TrackTransformPair, QString> DataMap;
+    DataMap m_data;
+
     typedef map<QString, Task> TaskMap; // by transform id
     TaskMap m_tasks;
 
-    //!!! no -- need to map track-transform (could have same transform for many tracks)
-    typedef set<QString> StartedSet; // transform or track id
-    StartedSet m_startedTracks;
-    StartedSet m_startedTransforms;
+    typedef set<TrackTransformPair> StartedSet;
+    StartedSet m_startedTargets;
 
     void loadRDFDescription(const Transform &);
     void identifyTask(const Transform &);
