@@ -26,7 +26,8 @@ transformdir=$mypath/transforms
 check_json() {
     test -f $1 || \
 	fail "Fails to write output to expected location $1 for $2"
-    ##!!! todo!
+    cat $1 | json_verify || \
+	fail "Writes invalid JSON to location $1 for $2"
     rm -f $1
 }    
 
