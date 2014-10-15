@@ -96,7 +96,7 @@ LabFeatureWriter::write(QString trackId,
 
     if (n == 0) return;
 
-    TrackTransformPair tt(trackId, transformId);
+    DataId tt(trackId, transform);
 
     if (m_pending.find(tt) != m_pending.end()) {
         writeFeature(stream, m_pending[tt], &features[0]);
@@ -119,11 +119,11 @@ LabFeatureWriter::finish()
 {
     for (PendingFeatures::const_iterator i = m_pending.begin();
          i != m_pending.end(); ++i) {
-        TrackTransformPair tt = i->first;
+        DataId tt = i->first;
         Plugin::Feature f = i->second;
-        QTextStream *sptr = getOutputStream(tt.first, tt.second);
+        QTextStream *sptr = getOutputStream(tt.first, tt.second.getIdentifier());
         if (!sptr) {
-            throw FailedToOpenOutputStream(tt.first, tt.second);
+            throw FailedToOpenOutputStream(tt.first, tt.second.getIdentifier());
         }
         QTextStream &stream = *sptr;
         // final feature has its own time as end time (we can't

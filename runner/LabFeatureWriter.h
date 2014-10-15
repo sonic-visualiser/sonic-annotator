@@ -57,8 +57,9 @@ public:
 
 private:
     bool m_forceEnd;
-    
-    typedef map<TrackTransformPair, Vamp::Plugin::Feature> PendingFeatures;
+
+    typedef pair<QString, Transform> DataId; // track id, transform
+    typedef map<DataId, Vamp::Plugin::Feature> PendingFeatures;
     PendingFeatures m_pending;
 
     void writeFeature(QTextStream &,
