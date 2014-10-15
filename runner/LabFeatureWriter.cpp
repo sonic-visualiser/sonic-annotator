@@ -78,58 +78,99 @@ LabFeatureWriter::write(QString trackId,
                         const Transform &transform,
                         const Plugin::OutputDescriptor& ,
                         const Plugin::FeatureList& features,
-                        std::string summaryType)
+                        std::string)
 {
     // Select appropriate output file for our track/transform
     // combination
 
-    QTextStream *sptr = getOutputStream(trackId, transform.getIdentifier());
+    TransformId transformId = transform.getIdentifier();
+
+    QTextStream *sptr = getOutputStream(trackId, transformId);
     if (!sptr) {
-        throw FailedToOpenOutputStream(trackId, transform.getIdentifier());
+        throw FailedToOpenOutputStream(trackId, transformId);
     }
 
     QTextStream &stream = *sptr;
 
+    int n = features.size();
+
+    if (n == 0) return;
+
+    TrackTransformPair tt(trackId, transformId);
+
+    if (m_pending.find(tt) != m_pending.end()) {
+        writeFeature(stream, m_pending[tt], &features[0]);
+        m_pending.erase(tt);
+    }
+
+    if (m_forceEnd) {
+        // can't write final feature until we know its end time
+        --n;
+        m_pending[tt] = features[n];
+    }
+
+    for (int i = 0; i < n; ++i) {
+        writeFeature(stream, features[i], m_forceEnd ? &features[i+1] : 0);
+    }
+}
+
+void
+LabFeatureWriter::finish()
+{
+    for (PendingFeatures::const_iterator i = m_pending.begin();
+         i != m_pending.end(); ++i) {
+        TrackTransformPair tt = i->first;
+        Plugin::Feature f = i->second;
+        QTextStream *sptr = getOutputStream(tt.first, tt.second);
+        if (!sptr) {
+            throw FailedToOpenOutputStream(tt.first, tt.second);
+        }
+        QTextStream &stream = *sptr;
+        // final feature has its own time as end time (we can't
+        // reliably determine the end of audio file, and because of
+        // the nature of block processing, the feature could even
+        // start beyond that anyway)
+        writeFeature(stream, f, &f);
+    }
+}
+
+void
+LabFeatureWriter::writeFeature(QTextStream &stream,
+                               const Plugin::Feature &f,
+                               const Plugin::Feature *optionalNextFeature)
+{
     QString sep = "\t";
 
-    for (unsigned int i = 0; i < features.size(); ++i) {
+    QString timestamp = f.timestamp.toString().c_str();
+    timestamp.replace(QRegExp("^ +"), "");
+    stream << timestamp;
 
-        QString timestamp = features[i].timestamp.toString().c_str();
-        timestamp.replace(QRegExp("^ +"), "");
-        stream << timestamp;
+    Vamp::RealTime endTime;
+    bool haveEndTime = true;
 
-        Vamp::RealTime endTime;
-        bool haveEndTime = true;
-
-        if (features[i].hasDuration) {
-            endTime = features[i].timestamp + features[i].duration;
-        } else if (m_forceEnd) {
-            if (i+1 < features.size()) {
-                endTime = features[i+1].timestamp;
-            } else {
-                //!!! what to do??? can we get the end time of the input file?
-                endTime = features[i].timestamp;
-            }
-        } else {
-            haveEndTime = false;
-        }
-
-        if (haveEndTime) {
-            QString e = endTime.toString().c_str();
-            e.replace(QRegExp("^ +"), "");
-            stream << sep << e;
-        }
-
-        for (unsigned int j = 0; j < features[i].values.size(); ++j) {
-            stream << sep << features[i].values[j];
-        }
-
-        if (features[i].label != "") {
-            stream << sep << "\"" << features[i].label.c_str() << "\"";
-        }
-
-        stream << "\n";
+    if (f.hasDuration) {
+        endTime = f.timestamp + f.duration;
+    } else if (optionalNextFeature) {
+        endTime = optionalNextFeature->timestamp;
+    } else {
+        haveEndTime = false;
     }
+
+    if (haveEndTime) {
+        QString e = endTime.toString().c_str();
+        e.replace(QRegExp("^ +"), "");
+        stream << sep << e;
+    }
+    
+    for (unsigned int j = 0; j < f.values.size(); ++j) {
+        stream << sep << f.values[j];
+    }
+    
+    if (f.label != "") {
+        stream << sep << "\"" << f.label.c_str() << "\"";
+    }
+    
+    stream << "\n";
 }
 
 

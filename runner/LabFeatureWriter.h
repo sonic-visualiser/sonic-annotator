@@ -51,10 +51,19 @@ public:
                        const Vamp::Plugin::FeatureList &features,
                        std::string summaryType = "");
 
+    virtual void finish();
+
     virtual QString getWriterTag() const { return "lab"; }
 
 private:
     bool m_forceEnd;
+    
+    typedef map<TrackTransformPair, Vamp::Plugin::Feature> PendingFeatures;
+    PendingFeatures m_pending;
+
+    void writeFeature(QTextStream &,
+                      const Vamp::Plugin::Feature &f,
+                      const Vamp::Plugin::Feature *optionalNextFeature);
 };
 
 #endif
