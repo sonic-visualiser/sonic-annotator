@@ -46,7 +46,7 @@ JAMSFeatureWriter::~JAMSFeatureWriter()
 string
 JAMSFeatureWriter::getDescription() const
 {
-    return "Write features to JSON files in JAMS (JSON Annotated Music Specification) format.";
+    return "Write features to JSON files in JAMS (JSON Annotated Music Specification) format. WARNING: This is a provisional implementation! The output format may change in future releases to comply more effectively with the specification. Please report any problems you find with the current implementation.";
 }
 
 JAMSFeatureWriter::ParameterList
