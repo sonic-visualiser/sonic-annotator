@@ -62,17 +62,29 @@ private:
     typedef map<QString, PluginRDFDescription> RDFDescriptionMap; // by plugin id
     RDFDescriptionMap m_rdfDescriptions;
 
-    typedef map<QString, TrackMetadata> TrackMetadataMap;
-    TrackMetadataMap m_metadata;
+    typedef QString TrackId;
+    typedef pair<TrackId, Transform> DataId;
 
-    typedef map<TrackTransformPair, QString> DataMap;
+    typedef map<TrackId, TrackMetadata> TrackMetadataMap;
+    TrackMetadataMap m_trackMetadata;
+
+    typedef set<TrackId> TrackIds;
+    typedef map<QTextStream *, TrackIds> StreamTrackMap;
+    StreamTrackMap m_streamTracks;
+
+    typedef set<Task> Tasks;
+    typedef map<QTextStream *, Tasks> StreamTaskMap;
+    StreamTaskMap m_streamTasks;
+
+    typedef set<DataId> DataIds;
+    typedef map<QTextStream *, DataIds> StreamDataMap;
+    StreamDataMap m_streamData;
+
+    typedef map<DataId, QString> DataMap;
     DataMap m_data;
 
-    typedef map<QString, Task> TaskMap; // by transform id
+    typedef map<TransformId, Task> TaskMap;
     TaskMap m_tasks;
-
-    typedef set<TrackTransformPair> StartedSet;
-    StartedSet m_startedTargets;
 
     void loadRDFDescription(const Transform &);
     void identifyTask(const Transform &);

@@ -77,7 +77,7 @@ JAMSFeatureWriter::setParameters(map<string, string> &params)
 void
 JAMSFeatureWriter::setTrackMetadata(QString trackId, TrackMetadata metadata)
 {
-    m_metadata[trackId] = metadata;
+    m_trackMetadata[trackId] = metadata;
 }
 
 static double
@@ -100,65 +100,21 @@ JAMSFeatureWriter::write(QString trackId,
         throw FailedToOpenOutputStream(trackId, transformId);
     }
 
-    QTextStream &stream = *sptr;
+    DataId did(trackId, transform);
 
-    TrackTransformPair tt(trackId, transformId);
-    TrackTransformPair targetKey = getFilenameKey(trackId, transformId);
-
-    if (m_startedTargets.find(targetKey) == m_startedTargets.end()) {
-        // Need to write track-level preamble
-        stream << "{\n";
-        stream << QString("\"file_metadata\": {\n"
-                          "  \"filename\": \"%1\"")
-            .arg(QFileInfo(trackId).fileName());
-
-        if (m_metadata.find(trackId) != m_metadata.end()) {
-            if (m_metadata[trackId].maker != "") {
-                stream << QString(",\n  \"artist\": \"%1\"")
-                    .arg(m_metadata[trackId].maker);
-            }
-            if (m_metadata[trackId].title != "") {
-                stream << QString(",\n  \"title\": \"%1\"")
-                    .arg(m_metadata[trackId].title);
-            }
-        }
-
-        stream << "\n},\n";
-
-        m_startedTargets.insert(targetKey);
-    }
-
-    bool justBegun = false;
-    
-    if (m_data.find(tt) == m_data.end()) {
-
+    if (m_data.find(did) == m_data.end()) {
 	identifyTask(transform);
-
-        QString json
-            ("\"%1\": [ { \n"
-             "  \"annotation_metadata\": {\n"
-             "    \"annotation_tools\": \"Sonic Annotator v%2\",\n"
-             "    \"data_source\": \"Automatic feature extraction\",\n"
-             "    \"annotator\": {\n"
-             "%3"
-             "    },\n"
-             "  },\n"
-             "  \"data\": [");
-        m_data[tt] = json
-            .arg(getTaskKey(m_tasks[transformId]))
-            .arg(RUNNER_VERSION)
-            .arg(writeTransformToObjectContents(transform));
-        justBegun = true;
+        m_streamTracks[sptr].insert(trackId);
+        m_streamTasks[sptr].insert(m_tasks[transformId]);
+        m_streamData[sptr].insert(did);
     }
 
-    QString d = m_data[tt];
+    QString d = m_data[did];
 
     for (int i = 0; i < int(features.size()); ++i) {
 
-        if (i > 0 || !justBegun) {
+        if (d != "") {
             d += ",\n";
-        } else {
-            d += "\n";
         }
         
         d += "    { ";
@@ -200,50 +156,132 @@ JAMSFeatureWriter::write(QString trackId,
         if (f.label != "") {
             d += QString(", \"label\": { \"value\": \"%2\" }")
                 .arg(f.label.c_str());
-        } else if (f.values.size() > 0) {
-            d += QString(", \"label\": { \"value\": \"%2\" }")
-                .arg(f.values[0]);
+        }
+
+        if (f.values.size() > 0) {
+            d += QString(", \"value\": [ ");
+            for (int j = 0; j < int(f.values.size()); ++j) {
+                d += QString("%1 ").arg(f.values[i]);
+            }
+            d += "]";
         }
             
         d += " }";
     }	
 
-    m_data[tt] = d;
+    m_data[did] = d;
 }
 
 void
 JAMSFeatureWriter::finish()
 {
-    cerr << "Finish called on " << this << endl;
+    for (FileStreamMap::const_iterator stri = m_streams.begin();
+	 stri != m_streams.end(); ++stri) {
 
-    set<QTextStream *> startedStreams;
+        QTextStream *sptr = stri->second;
+        QTextStream &stream = *sptr;
 
-    for (DataMap::const_iterator i = m_data.begin();
-         i != m_data.end(); ++i) {
-
-        TrackTransformPair tt = i->first;
-        QString data = i->second;
-
-        QTextStream *sptr = getOutputStream(tt.first, tt.second);
-        if (!sptr) {
-            throw FailedToOpenOutputStream(tt.first, tt.second);
+        if (m_streamTracks[sptr].size() > 1) {
+            stream << "[\n";
         }
 
-        if (startedStreams.find(sptr) != startedStreams.end()) {
-            *sptr << "," << endl;
-        }
-        startedStreams.insert(sptr);
-        
-        *sptr << data << "\n  ]\n} ]";
-    }
-        
-    for (FileStreamMap::const_iterator i = m_streams.begin();
-	 i != m_streams.end(); ++i) {
-	*(i->second) << endl << "}" << endl;
-    }
+        bool firstInStream = true;
 
+        for (TrackIds::const_iterator tri = m_streamTracks[sptr].begin();
+             tri != m_streamTracks[sptr].end(); ++tri) {
+
+            TrackId trackId = *tri;
+
+            if (!firstInStream) {
+                stream << ",\n";
+            }
+
+            stream << "{\n"
+                   << QString("\"file_metadata\": {\n"
+                              "  \"filename\": \"%1\"")
+                .arg(QFileInfo(trackId).fileName());
+
+            if (m_trackMetadata.find(trackId) != m_trackMetadata.end()) {
+                if (m_trackMetadata[trackId].maker != "") {
+                    stream << QString(",\n  \"artist\": \"%1\"")
+                        .arg(m_trackMetadata[trackId].maker);
+                }
+                if (m_trackMetadata[trackId].title != "") {
+                    stream << QString(",\n  \"title\": \"%1\"")
+                        .arg(m_trackMetadata[trackId].title);
+                }
+            }
+
+            stream << "\n},\n";
+
+            bool firstInTrack = true;
+
+            for (Tasks::const_iterator ti = m_streamTasks[sptr].begin();
+                 ti != m_streamTasks[sptr].end(); ++ti) {
+                
+                Task task = *ti;
+
+                if (!firstInTrack) {
+                    stream << ",\n";
+                }
+
+                stream << "\"" << getTaskKey(task) << "\": [\n";
+                
+                bool firstInTask = true;
+
+                for (DataIds::const_iterator di = m_streamData[sptr].begin();
+                     di != m_streamData[sptr].end(); ++di) {
+                    
+                    DataId did = *di;
+
+                    QString trackId = did.first;
+                    Transform transform = did.second;
+
+                    if (m_tasks[transform.getIdentifier()] != task) continue;
+
+                    QString data = m_data[did];
+
+                    if (!firstInTask) {
+                        stream << ",\n";
+                    }
+
+                    stream << QString
+                        ("{ \n"
+                         "  \"annotation_metadata\": {\n"
+                         "    \"annotation_tools\": \"Sonic Annotator v%2\",\n"
+                         "    \"data_source\": \"Automatic feature extraction\",\n"
+                         "    \"annotator\": {\n"
+                         "%3"
+                         "    }\n"
+                         "  },\n"
+                         "  \"data\": [\n")
+                        .arg(RUNNER_VERSION)
+                        .arg(writeTransformToObjectContents(transform));
+
+                    stream << data;
+
+                    stream << "\n  ]\n}";
+                    firstInTask = false;
+                }
+
+                stream << "\n]";
+                firstInTrack = false;
+            }
+
+            stream << "\n}";
+            firstInStream = false;
+        }
+
+        if (m_streamTracks[sptr].size() > 1) {
+            stream << "\n]";
+        }
+        stream << "\n";
+    }
+        
+    m_streamTracks.clear();
+    m_streamTasks.clear();
+    m_streamData.clear();
     m_data.clear();
-    m_startedTargets.clear();
 
     FileFeatureWriter::finish();
 }
@@ -407,11 +445,14 @@ JAMSFeatureWriter::writeTransformToObjectContents(const Transform &t)
         Transform::ParameterMap parameters = t.getParameters();
         for (Transform::ParameterMap::const_iterator i = parameters.begin();
              i != parameters.end(); ++i) {
+            if (i != parameters.begin()) {
+                json += ",\n";
+            }
             QString name = i->first;
             float value = i->second;
-            json += QString("        \"%1\": %2\n").arg(name).arg(value);
+            json += QString("        \"%1\": %2").arg(name).arg(value);
         }
-        json += QString("      },\n");
+        json += QString("\n      },\n");
     }
 
     // no trailing comma on final property:
