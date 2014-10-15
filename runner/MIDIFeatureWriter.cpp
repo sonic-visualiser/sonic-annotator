@@ -79,7 +79,7 @@ MIDIFeatureWriter::write(QString trackId,
         m_rates[filename] = sampleRate;
     }
 
-    if (m_fileTransforms[filename].find(transformId) == 
+    if (m_fileTransforms[filename].find(transform) == 
         m_fileTransforms[filename].end()) {
 
         // This transform is new to the file, give it a channel number
@@ -87,8 +87,8 @@ MIDIFeatureWriter::write(QString trackId,
         int channel = m_nextChannels[filename];
         m_nextChannels[filename] = channel + 1;
 
-        m_fileTransforms[filename].insert(transformId);
-        m_channels[transformId] = channel;
+        m_fileTransforms[filename].insert(transform);
+        m_channels[transform] = channel;
     }
 
     NoteList notes = m_notes[filename];
@@ -129,7 +129,7 @@ MIDIFeatureWriter::write(QString trackId,
 
         NoteData note(frame, duration, pitch, velocity);
 
-        note.channel = m_channels[transformId];
+        note.channel = m_channels[transform];
 
         notes.push_back(note);
     }

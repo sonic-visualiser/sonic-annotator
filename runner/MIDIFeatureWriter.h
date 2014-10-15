@@ -63,13 +63,13 @@ private:
     typedef map<QString, NoteList> NoteMap; // output filename -> notes
     NoteMap m_notes;
     
-    typedef map<QString, set<TransformId> > FileTransformMap;
+    typedef map<QString, set<Transform> > FileTransformMap;
     FileTransformMap m_fileTransforms;
 
     typedef map<QString, float> SampleRateMap; // NoteData uses sample timing
     SampleRateMap m_rates;
 
-    typedef map<TransformId, int> ChannelMap;
+    typedef map<Transform, int> ChannelMap;
     ChannelMap m_channels;
     
     typedef map<QString, int> NextChannelMap;
