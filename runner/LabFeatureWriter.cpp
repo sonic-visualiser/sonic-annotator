@@ -132,6 +132,8 @@ LabFeatureWriter::finish()
         // start beyond that anyway)
         writeFeature(stream, f, &f);
     }
+
+    m_pending.clear();
 }
 
 void

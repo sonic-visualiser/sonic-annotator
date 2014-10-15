@@ -25,6 +25,14 @@ for output in notes-regions curve-vsr; do
     csvcompare "$tmpcsv" "$mypath/expected/$output-$flag.csv" || \
 	faildiff "Output differs from expected for output $output and $flag flag" "$tmpcsv" "$mypath/expected/$output-$flag.csv"
 
+    flag=fill-ends
+
+    $r -d "$testplug:$output" -w csv --csv-$flag --csv-stdout "$infile" 2>/dev/null > "$tmpcsv" || \
+	fail "Failed to run for plugin $testplug with output $output and $flag flag"
+
+    csvcompare "$tmpcsv" "$mypath/expected/$output-$flag.csv" || \
+	faildiff "Output differs from expected for output $output and $flag flag" "$tmpcsv" "$mypath/expected/$output-$flag.csv"
+
     flag=end-times
 
     $r -d "$testplug:$output" -w csv --csv-$flag --csv-stdout "$infile" 2>/dev/null > "$tmpcsv" || \
@@ -40,6 +48,14 @@ for output in notes-regions curve-vsr; do
 
     csvcompare "$tmpcsv" "$mypath/expected/$output-$flag.csv" || \
 	faildiff "Output differs from expected for output $output and $flag flag" "$tmpcsv" "$mypath/expected/$output-$flag.csv"
+
+    flag=all
+
+    $r -d "$testplug:$output" -w csv --csv-sample-timing --csv-fill-ends --csv-end-times --csv-separator '@' --csv-stdout "$infile" 2>/dev/null > "$tmpcsv" || \
+	fail "Failed to run for plugin $testplug with output $output and all flags"
+
+    csvcompare "$tmpcsv" "$mypath/expected/$output-$flag.csv" || \
+	faildiff "Output differs from expected for output $output and all flags" "$tmpcsv" "$mypath/expected/$output-$flag.csv"
 
 done
 
