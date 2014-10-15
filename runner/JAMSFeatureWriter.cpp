@@ -22,6 +22,8 @@ using Vamp::PluginBase;
 #include "base/Exceptions.h"
 #include "rdf/PluginRDFIndexer.h"
 
+#include "version.h"
+
 JAMSFeatureWriter::JAMSFeatureWriter() :
     FileFeatureWriter(SupportOneFilePerTrackTransform |
                       SupportOneFilePerTrack |
@@ -74,9 +76,9 @@ void
 JAMSFeatureWriter::setTrackMetadata(QString trackId, TrackMetadata metadata)
 {
     QString json
-	("\n\"file_metadata\":\n"
-	 "  { \"artist\": \"%1\",\n"
-	 "    \"title\": \"%2\" },\n");
+	("\n\"file_metadata\": {\n"
+	 "  \"artist\": \"%1\",\n"
+	 "  \"title\": \"%2\"\n},\n");
     m_metadata[trackId] = json.arg(metadata.maker).arg(metadata.title);
     cerr << "setTrackMetadata: metadata is: " << m_metadata[trackId] << endl;
 }
@@ -118,8 +120,18 @@ JAMSFeatureWriter::write(QString trackId,
 
 	identifyTask(transform);
 
-        QString json("\"%1\": [ ");
-        m_data[tt] = json.arg(getTaskKey(m_tasks[transformId]));
+        QString json
+            ("\"%1\": [ { \n"
+             "  \"annotation_metadata\": {\n"
+             "    \"annotation_tools\": \"Sonic Annotator v%2\",\n"
+             "    \"data_source\": \"Automatic feature extraction\",\n"
+             "    \"annotator\": { \"transform_id\": \"%3\" }\n"
+             "  },\n"
+             "  \"data\": [");
+        m_data[tt] = json
+            .arg(getTaskKey(m_tasks[transformId]))
+            .arg(RUNNER_VERSION)
+            .arg(transformId);
         justBegun = true;
     }
 
@@ -206,7 +218,7 @@ JAMSFeatureWriter::finish()
         }
         startedStreams.insert(sptr);
         
-        *sptr << data << "\n  ]";
+        *sptr << data << "\n  ]\n} ]";
     }
         
     for (FileStreamMap::const_iterator i = m_streams.begin();
