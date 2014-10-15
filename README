@@ -205,6 +205,9 @@ module has its own set of parameters which can be adjusted on the
 command line, as well as its own default rules about where to write
 the results.
 
+To get help on a specific writer, run Sonic Annotator with the -h
+option followed by the writer name (e.g. "-h csv").
+
 The following writers are currently supported.  (Others exist, but are
 not properly implemented or not supported.)
 
@@ -234,10 +237,29 @@ not properly implemented or not supported.)
    label if present.  If the --csv-one-file or --csv-stdout option is
    specified, then an additional column will appear before any of the
    above, containing the audio file name from which the feature was
-   extracted, if it differs from that of the previous row.
+   extracted, if it differs from that of the previous row. To suppress
+   this additional column, use the --csv-omit-filenames option.
+
+   To make the CSV writer emit the end time instead of the duration
+   (for features with duration) use the --csv-end-times option.
+
+   To make the writer always emit end time or duration, even when the
+   feature lacks duration, by using the time of the following feature
+   as the end time, use the --csv-fill-ends option.
 
    The default column separator is a comma; you can specify a
    different one with the --csv-separator option.
+
+ * lab
+
+   Writes the results into a tab-separated label file (.lab).
+
+   This is equivalent to using the CSV writer with a tab separator and
+   the options --csv-end-times --csv-omit-filenames.
+
+   It supports the --lab-basedir, --lab-one-file, --lab-stdout,
+   --lab-force, --lab-append, and --lab-fill-ends options, which all
+   behave similarly to their CSV writer equivalents.
 
  * rdf
 
@@ -282,6 +304,26 @@ not properly implemented or not supported.)
    while generating RDF that describes a copy of it available on a
    network, you can use the --rdf-signal-uri option to specify an
    alternative signal URI.
+
+ * json
+
+   Writes the results into JSON format following JAMS, the JSON
+   Annotated Music Specification. This writer is provisional as of
+   Sonic Annotator v1.1.
+
+ * midi
+
+   Writes the results to MIDI files. All features are written as MIDI
+   notes.
+
+   If a feature has at least one value, its first value will be used
+   as the note pitch, the second value (if present) for velocity. If a
+   feature has units of Hz, then its pitch will be converted from
+   frequency to an integer value in MIDI range, otherwise it will be
+   written directly.
+
+   Multiple (up to 16) transforms can be written to a single MIDI
+   file, where they will be given separate MIDI channel numbers.
 
 
 4. Optionally, how to summarise the features
