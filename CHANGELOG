@@ -5,11 +5,32 @@ Front-end changes:
 
  - Add support for the start time and duration properties of a
    transform, applying a plugin to only a range of the input audio
- - Add --normalise to request each audio file be normalised to 1.0 max
  - Add --multiplex option to compose multiple audio files into a
    single multi-channel stream with one input file per channel
+ - Add --normalise to request each audio file be normalised to 1.0 max
+ - Add support for the plugin_version property of a transform, causing
+   Sonic Annotator to refuse to run with the wrong version of a plugin
  - Add --minversion option to permit scripts to check that the
    version of Sonic Annotator is as they expect
+ - Add new housekeeping options to list the available feature writers
+   and supported audio file formats
+ - Pull out the feature-writer-specific help text into separate help
+   options (-h <writertype>) as the help was getting too long
+
+Back-end (feature writer) changes:
+
+ - Add --csv-omit-filename, --csv-end-times, and --csv-fill-ends
+   options to the CSV feature writer to adjust various aspects of its
+   output
+ - Add "json" feature writer, exporting to JAMS (JSON Annotated Music
+   Specificiation) format. This writer is provisional and is expected
+   to change in future releases to comply more effectively with the
+   specification
+ - Add "midi" feature writer, exporting to MIDI files
+ - Add "lab" feature writer, exporting to tab-separated label files.
+   (This is equivalent to using the CSV writer with a tab separator and
+   the new --csv-omit-filename and --csv-end-times options, but it's
+   simpler to use if .lab is what you want)
 
 Bug fixes:
 
@@ -19,6 +40,7 @@ Bug fixes:
  - Fix failure to support --summary-only flag when reading transforms
    with summaries from a transform file
 
+
 Changes in Sonic Annotator 1.0 since the previous release 0.7:
 
 Bug fixes:
@@ -26,6 +48,7 @@ Bug fixes:
  - Fix incorrect samplerate in reading m4a files on OS/X
  - Fix incorrect handling of FixedSampleRate outputs (Vamp SDK fix)
  - Add tests that use the Vamp test plugin
+
 
 Changes in Sonic Annotator 0.7 since the previous release 0.6:
 
@@ -37,6 +60,7 @@ Build changes:
  - Simplify RDF reading and fix some bugs. Now requires Dataquay
    (http://breakfastquay.com/dataquay/) rather than using Redland
    directly. Release builds use Sord/Serd rather than Redland
+
 
 Changes in Sonic Annotator 0.6 since the previous release 0.5:
 
@@ -56,6 +80,7 @@ Front-end changes:
  - Fix --force option when using playlists
  - Add -v option to print version number and exit
 
+
 Changes in Sonic Annotator 0.5 since the previous release 0.4:
 
 Build changes:
@@ -69,6 +94,7 @@ Front-end changes:
  properly for single-channel plugins with multi-channel input files
  - Fail sooner if the output file is not writable (i.e. don't wait
  until the first data is available for writing)
+
 
 Changes in Sonic Annotator 0.4 since the previous release 0.3:
 

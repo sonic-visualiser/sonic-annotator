@@ -1,8 +1,8 @@
 
 mypath=`dirname $0`
 
-version=1.1-hg
-nextversion=1.1
+version=1.1
+nextversion=1.2
 
 testdir=$mypath/..
 r=$testdir/../sonic-annotator
