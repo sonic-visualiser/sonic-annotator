@@ -79,6 +79,8 @@ private:
 
     QString getTaskKey(Task);
 
+    QString writeTransformToObjectContents(const Transform &);
+
     bool m_network;
     bool m_networkRetrieved;
 };

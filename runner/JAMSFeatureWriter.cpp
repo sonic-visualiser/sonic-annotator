@@ -125,13 +125,15 @@ JAMSFeatureWriter::write(QString trackId,
              "  \"annotation_metadata\": {\n"
              "    \"annotation_tools\": \"Sonic Annotator v%2\",\n"
              "    \"data_source\": \"Automatic feature extraction\",\n"
-             "    \"annotator\": { \"transform_id\": \"%3\" }\n"
+             "    \"annotator\": {\n"
+             "%3"
+             "    },\n"
              "  },\n"
              "  \"data\": [");
         m_data[tt] = json
             .arg(getTaskKey(m_tasks[transformId]))
             .arg(RUNNER_VERSION)
-            .arg(transformId);
+            .arg(writeTransformToObjectContents(transform));
         justBegun = true;
     }
 
@@ -337,3 +339,70 @@ JAMSFeatureWriter::getTaskKey(Task task)
     }
     return "unknown";
 }
+
+QString
+JAMSFeatureWriter::writeTransformToObjectContents(const Transform &t)
+{
+    QString json;
+    QString stpl("      \"%1\": \"%2\",\n");
+    QString ntpl("      \"%1\": %2,\n");
+
+    json += stpl.arg("plugin_id").arg(t.getPluginIdentifier());
+    json += stpl.arg("output_id").arg(t.getOutput());
+
+    if (t.getSummaryType() != Transform::NoSummary) {
+        json += stpl.arg("summary_type")
+            .arg(Transform::summaryTypeToString(t.getSummaryType()));
+    }
+
+    if (t.getPluginVersion() != QString()) {
+        json += stpl.arg("plugin_version").arg(t.getPluginVersion());
+    }
+
+    if (t.getProgram() != QString()) {
+        json += stpl.arg("program").arg(t.getProgram());
+    }
+
+    if (t.getStepSize() != 0) {
+        json += ntpl.arg("step_size").arg(t.getStepSize());
+    }
+
+    if (t.getBlockSize() != 0) {
+        json += ntpl.arg("block_size").arg(t.getBlockSize());
+    }
+
+    if (t.getWindowType() != HanningWindow) {
+        json += stpl.arg("window_type")
+            .arg(Window<float>::getNameForType(t.getWindowType()).c_str());
+    }
+
+    if (t.getStartTime() != RealTime::zeroTime) {
+        json += ntpl.arg("start").arg(t.getStartTime().toDouble());
+    }
+
+    if (t.getDuration() != RealTime::zeroTime) {
+        json += ntpl.arg("duration").arg(t.getDuration().toDouble());
+    }
+
+    if (t.getSampleRate() != 0) {
+        json += ntpl.arg("sample_rate").arg(t.getSampleRate());
+    }
+
+    if (!t.getParameters().empty()) {
+        json += QString("      \"parameters\": {\n");
+        Transform::ParameterMap parameters = t.getParameters();
+        for (Transform::ParameterMap::const_iterator i = parameters.begin();
+             i != parameters.end(); ++i) {
+            QString name = i->first;
+            float value = i->second;
+            json += QString("        \"%1\": %2\n").arg(name).arg(value);
+        }
+        json += QString("      },\n");
+    }
+
+    // no trailing comma on final property:
+    json += QString("      \"transform_id\": \"%1\"\n").arg(t.getIdentifier());
+
+    return json;
+}
+
