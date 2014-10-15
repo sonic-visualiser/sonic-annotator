@@ -33,7 +33,9 @@ JAMSFeatureWriter::JAMSFeatureWriter() :
 		      SupportStdOut,
                       "json"),
     m_network(false),
-    m_networkRetrieved(false)
+    m_networkRetrieved(false),
+    m_n(1),
+    m_m(1)
 {
 }
 
@@ -142,7 +144,13 @@ JAMSFeatureWriter::write(QString trackId,
         if (f.values.size() > 0) {
             d += QString(", \"value\": [ ");
             for (int j = 0; j < int(f.values.size()); ++j) {
-                d += QString("%1 ").arg(f.values[i]);
+                if (isnan(f.values[j])) {
+                    d += "\"NaN\" ";
+                } else if (isinf(f.values[j])) {
+                    d += "\"Inf\" ";
+                } else {
+                    d += QString("%1 ").arg(f.values[j]);
+                }
             }
             d += "]";
         }
@@ -154,6 +162,18 @@ JAMSFeatureWriter::write(QString trackId,
 }
 
 void
+JAMSFeatureWriter::setNofM(int n, int m)
+{
+    if (m_singleFileName != "" || m_stdout) {
+        m_n = n;
+        m_m = m;
+    } else {
+        m_n = 1;
+        m_m = 1;
+    }
+}
+
+void
 JAMSFeatureWriter::finish()
 {
     for (FileStreamMap::const_iterator stri = m_streams.begin();
@@ -162,10 +182,6 @@ JAMSFeatureWriter::finish()
         QTextStream *sptr = stri->second;
         QTextStream &stream = *sptr;
 
-        if (m_streamTracks[sptr].size() > 1) {
-            stream << "[\n";
-        }
-
         bool firstInStream = true;
 
         for (TrackIds::const_iterator tri = m_streamTracks[sptr].begin();
@@ -173,7 +189,13 @@ JAMSFeatureWriter::finish()
 
             TrackId trackId = *tri;
 
-            if (!firstInStream) {
+            if (firstInStream) {
+                if (m_streamTracks[sptr].size() > 1 || (m_m > 1 && m_n == 1)) {
+                    stream << "[\n";
+                }
+            }
+
+            if (!firstInStream || (m_m > 1 && m_n > 1)) {
                 stream << ",\n";
             }
 
@@ -253,10 +275,12 @@ JAMSFeatureWriter::finish()
             firstInStream = false;
         }
 
-        if (m_streamTracks[sptr].size() > 1) {
-            stream << "\n]";
+        if (!firstInStream) {
+            if (m_streamTracks[sptr].size() > 1 || (m_m > 1 && m_n == m_m)) {
+                stream << "\n]";
+            }
+            stream << "\n";
         }
-        stream << "\n";
     }
         
     m_streamTracks.clear();

@@ -939,17 +939,25 @@ int main(int argc, char **argv)
         }
         if (multiplex) {
             try {
+                for (int i = 0; i < (int)writers.size(); ++i) {
+                    writers[i]->setNofM(1, 1);
+                }
                 manager.extractFeaturesMultiplexed(goodSources);
             } catch (const std::exception &e) {
                 cerr << "ERROR: Feature extraction failed: "
                      << e.what() << endl;
             }
         } else {
+            int n = 0;
             for (QStringList::const_iterator i = goodSources.begin();
                  i != goodSources.end(); ++i) {
                 std::cerr << "Extracting features for: \"" << i->toStdString()
                           << "\"" << std::endl;
+                ++n;
                 try {
+                    for (int j = 0; j < (int)writers.size(); ++j) {
+                        writers[j]->setNofM(n, goodSources.size());
+                    }
                     manager.extractFeatures(*i);
                 } catch (const std::exception &e) {
                     cerr << "ERROR: Feature extraction failed for \""

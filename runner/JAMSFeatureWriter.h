@@ -36,6 +36,8 @@ public:
 
     virtual void setTrackMetadata(QString trackid, TrackMetadata metadata);
 
+    virtual void setNofM(int, int);
+    
     virtual void write(QString trackid,
                        const Transform &transform,
                        const Vamp::Plugin::OutputDescriptor &output,
@@ -95,6 +97,8 @@ private:
 
     bool m_network;
     bool m_networkRetrieved;
+    int m_n;
+    int m_m;
 };
 
 #endif
