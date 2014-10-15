@@ -42,7 +42,7 @@ LabFeatureWriter::~LabFeatureWriter()
 string
 LabFeatureWriter::getDescription() const
 {
-    return "Write features in .lab, a tab-separated columnar format. The first column is always the feature start time in seconds. If the features have duration, the second column will be the feature end time in seconds. Remaining columns are the feature values (if any) and finally the feature label (if any). There is no identification of the audio file or the transform, so confusion will result if features from different audio or transforms are mixed. For more control over the output, consider using the CSV writer.";
+    return "Write features in .lab, a tab-separated columnar format. The first column is always the feature start time in seconds. If the features have duration, the second column will be the feature end time in seconds. Remaining columns are the feature values (if any) and finally the feature label (if any). There is no identification of the audio file or the transform, so confusion will result if features from different audio or transforms are mixed. (For more control over the output, consider using the more general CSV writer.)";
 }
 
 LabFeatureWriter::ParameterList
