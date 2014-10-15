@@ -23,6 +23,7 @@
 
 #include "AudioDBFeatureWriter.h"
 #include "MIDIFeatureWriter.h"
+#include "JAMSFeatureWriter.h"
 #include "LabFeatureWriter.h"
 
 set<string>
@@ -35,6 +36,7 @@ FeatureWriterFactory::getWriterTags()
     tags.insert("csv");
     tags.insert("lab");
     tags.insert("midi");
+    tags.insert("json");
     return tags;
 }
 
@@ -53,6 +55,8 @@ FeatureWriterFactory::createWriter(string tag)
         return new LabFeatureWriter();
     } else if (tag == "midi") {
         return new MIDIFeatureWriter();
+    } else if (tag == "json") {
+        return new JAMSFeatureWriter();
     }
 
     return 0;

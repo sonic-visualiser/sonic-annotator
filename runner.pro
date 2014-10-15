@@ -84,6 +84,7 @@ HEADERS += \
         runner/FeatureWriterFactory.h  \
         runner/DefaultFeatureWriter.h \
         runner/FeatureExtractionManager.h \
+        runner/JAMSFeatureWriter.h \
         runner/LabFeatureWriter.h \
         runner/MIDIFeatureWriter.h \
         runner/MultiplexedReader.h
@@ -94,6 +95,7 @@ SOURCES += \
 	runner/FeatureExtractionManager.cpp \
         runner/AudioDBFeatureWriter.cpp \
         runner/FeatureWriterFactory.cpp \
+        runner/JAMSFeatureWriter.cpp \
         runner/LabFeatureWriter.cpp \
         runner/MIDIFeatureWriter.cpp \
         runner/MultiplexedReader.cpp

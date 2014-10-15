@@ -165,5 +165,9 @@ MIDIFeatureWriter::finish()
             }
 	}
     }
+
+    m_notes.clear();
+
+    FileFeatureWriter::finish();
 }
 
