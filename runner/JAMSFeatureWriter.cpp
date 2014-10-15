@@ -162,6 +162,11 @@ JAMSFeatureWriter::write(QString trackId,
             d += QString("\"time\": { \"value\": %1 }")
                 .arg(realTime2Sec(f.timestamp));
             break;
+
+        case MelodyTask:
+        case PitchTask:
+            //!!!
+            break;
         }
         
         if (f.label != "") {

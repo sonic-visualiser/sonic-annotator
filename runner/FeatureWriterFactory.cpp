@@ -17,11 +17,14 @@
 #include "FeatureWriterFactory.h"
 
 #include "DefaultFeatureWriter.h"
+
 #include "rdf/RDFFeatureWriter.h"
+#include "transform/CSVFeatureWriter.h"
+
 #include "AudioDBFeatureWriter.h"
 #include "MIDIFeatureWriter.h"
 #include "JAMSFeatureWriter.h"
-#include "transform/CSVFeatureWriter.h"
+#include "LabFeatureWriter.h"
 
 set<string>
 FeatureWriterFactory::getWriterTags()
@@ -31,6 +34,7 @@ FeatureWriterFactory::getWriterTags()
     tags.insert("rdf");
     tags.insert("audiodb");
     tags.insert("csv");
+    tags.insert("lab");
     tags.insert("midi");
     tags.insert("json");
     return tags;
@@ -47,6 +51,8 @@ FeatureWriterFactory::createWriter(string tag)
         return new AudioDBFeatureWriter();
     } else if (tag == "csv") {
         return new CSVFeatureWriter();
+    } else if (tag == "lab") {
+        return new LabFeatureWriter();
     } else if (tag == "midi") {
         return new MIDIFeatureWriter();
     } else if (tag == "json") {
