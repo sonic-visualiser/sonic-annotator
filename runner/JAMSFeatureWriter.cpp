@@ -22,6 +22,8 @@ using Vamp::PluginBase;
 #include "base/Exceptions.h"
 #include "rdf/PluginRDFIndexer.h"
 
+#include <QFileInfo>
+
 #include "version.h"
 
 JAMSFeatureWriter::JAMSFeatureWriter() :
@@ -75,12 +77,7 @@ JAMSFeatureWriter::setParameters(map<string, string> &params)
 void
 JAMSFeatureWriter::setTrackMetadata(QString trackId, TrackMetadata metadata)
 {
-    QString json
-	("\n\"file_metadata\": {\n"
-	 "  \"artist\": \"%1\",\n"
-	 "  \"title\": \"%2\"\n},\n");
-    m_metadata[trackId] = json.arg(metadata.maker).arg(metadata.title);
-    cerr << "setTrackMetadata: metadata is: " << m_metadata[trackId] << endl;
+    m_metadata[trackId] = metadata;
 }
 
 static double
@@ -110,7 +107,24 @@ JAMSFeatureWriter::write(QString trackId,
 
     if (m_startedTargets.find(targetKey) == m_startedTargets.end()) {
         // Need to write track-level preamble
-        stream << "{" << m_metadata[trackId] << endl;
+        stream << "{\n";
+        stream << QString("\"file_metadata\": {\n"
+                          "  \"filename\": \"%1\"")
+            .arg(QFileInfo(trackId).fileName());
+
+        if (m_metadata.find(trackId) != m_metadata.end()) {
+            if (m_metadata[trackId].maker != "") {
+                stream << QString(",\n  \"artist\": \"%1\"")
+                    .arg(m_metadata[trackId].maker);
+            }
+            if (m_metadata[trackId].title != "") {
+                stream << QString(",\n  \"title\": \"%1\"")
+                    .arg(m_metadata[trackId].title);
+            }
+        }
+
+        stream << "\n},\n";
+
         m_startedTargets.insert(targetKey);
     }
 

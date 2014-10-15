@@ -62,7 +62,7 @@ private:
     typedef map<QString, PluginRDFDescription> RDFDescriptionMap; // by plugin id
     RDFDescriptionMap m_rdfDescriptions;
 
-    typedef map<QString, QString> TrackMetadataMap; // track id -> json object
+    typedef map<QString, TrackMetadata> TrackMetadataMap;
     TrackMetadataMap m_metadata;
 
     typedef map<TrackTransformPair, QString> DataMap;
