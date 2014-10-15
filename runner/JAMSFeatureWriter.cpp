@@ -121,36 +121,17 @@ JAMSFeatureWriter::write(QString trackId,
 	
         Plugin::Feature f(features[i]);
 
-        switch (m_tasks[transformId]) {
-
-        case ChordTask:
-        case SegmentTask:
-        case NoteTask:
-        case UnknownTask:
-            if (f.hasDuration) {
-                d += QString
-                    ("\"start\": { \"value\": %1 }, "
-                     "\"end\": { \"value\": %2 }")
-                    .arg(realTime2Sec(f.timestamp))
-                    .arg(realTime2Sec
-                         (f.timestamp +
-                          (f.hasDuration ? f.duration : Vamp::RealTime::zeroTime)));
-                break;
-            } else {
-                // don't break; fall through to simpler no-duration case
-            }
-            
-        case BeatTask:
-        case KeyTask:
-        case OnsetTask:
+        if (f.hasDuration) {
+            d += QString
+                ("\"start\": { \"value\": %1 }, "
+                 "\"end\": { \"value\": %2 }")
+                .arg(realTime2Sec(f.timestamp))
+                .arg(realTime2Sec
+                     (f.timestamp +
+                      (f.hasDuration ? f.duration : Vamp::RealTime::zeroTime)));
+        } else {
             d += QString("\"time\": { \"value\": %1 }")
                 .arg(realTime2Sec(f.timestamp));
-            break;
-
-        case MelodyTask:
-        case PitchTask:
-            //!!!
-            break;
         }
         
         if (f.label != "") {
