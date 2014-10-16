@@ -52,7 +52,7 @@ win32-x-g++:QMAKE_LFLAGS += -Wl,-subsystem,console
 # HAVE_FFTW3 flag), you can define the same flag here to ensure the
 # program saves and restores FFTW wisdom in its configuration properly
 #
-#DEFINES += HAVE_FFTW3
+DEFINES += HAVE_FFTW3
 
 TARGET = sonic-annotator
 

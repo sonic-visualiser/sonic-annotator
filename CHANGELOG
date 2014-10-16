@@ -5,6 +5,8 @@ Front-end changes:
 
  - Add support for the start time and duration properties of a
    transform, applying a plugin to only a range of the input audio
+ - Reduce the internal processing blocksize from 16384 to 1024 samples
+   to reduce extent of time rounding at end of file or range
  - Add --multiplex option to compose multiple audio files into a
    single multi-channel stream with one input file per channel
  - Add --normalise to request each audio file be normalised to 1.0 max
