@@ -25,7 +25,7 @@ Back-end (feature writer) changes:
    options to the CSV feature writer to adjust various aspects of its
    output
  - Add "json" feature writer, exporting to JAMS (JSON Annotated Music
-   Specificiation) format. This writer is provisional and is expected
+   Specification) format. This writer is provisional and is expected
    to change in future releases to comply more effectively with the
    specification
  - Add "midi" feature writer, exporting to MIDI files
