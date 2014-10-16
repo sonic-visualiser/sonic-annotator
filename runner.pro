@@ -10,7 +10,7 @@ win32-msvc* {
 }
 mac* {
     INCLUDEPATH += sv-dependency-builds/osx/include
-    LIBS += -L../vamp-plugin-sdk -Lsv-dependency-builds/osx/lib
+    LIBS += -Lsv-dependency-builds/osx/lib
 }
 
 exists(config.pri) {
@@ -24,7 +24,7 @@ exists(config.pri) {
 
     DEFINES += HAVE_BZ2 HAVE_FFTW3 HAVE_FFTW3F HAVE_SNDFILE HAVE_SAMPLERATE HAVE_VAMP HAVE_VAMPHOSTSDK HAVE_DATAQUAY HAVE_MAD HAVE_ID3TAG
 
-    LIBS += -lbz2 -lvamp-hostsdk -lfftw3 -lfftw3f -lsndfile -lFLAC -logg -lvorbis -lvorbisenc -lvorbisfile -logg -lmad -lid3tag -lsamplerate -lz -lsord-0 -lserd-0
+    LIBS += -lbz2 -lfftw3 -lfftw3f -lsndfile -lFLAC -logg -lvorbis -lvorbisenc -lvorbisfile -logg -lmad -lid3tag -lsamplerate -lz -lsord-0 -lserd-0
 
     win* {
         LIBS += -lwinmm -lws2_32
@@ -32,6 +32,9 @@ exists(config.pri) {
     macx* {
         DEFINES += HAVE_COREAUDIO
         LIBS += -framework CoreAudio -framework CoreMidi -framework AudioUnit -framework AudioToolbox -framework CoreFoundation -framework CoreServices -framework Accelerate
+    }
+    linux* {
+        LIBS += -ldl
     }
 }
 
@@ -80,6 +83,17 @@ LIBS = $$MY_LIBS $$LIBS
 #PRE_TARGETDEPS += svcore/libsvcore.a
 
 HEADERS += \
+        vamp-plugin-sdk/vamp-hostsdk/PluginBase.h \
+        vamp-plugin-sdk/vamp-hostsdk/PluginBufferingAdapter.h \
+        vamp-plugin-sdk/vamp-hostsdk/PluginChannelAdapter.h \
+        vamp-plugin-sdk/vamp-hostsdk/Plugin.h \
+        vamp-plugin-sdk/vamp-hostsdk/PluginHostAdapter.h \
+        vamp-plugin-sdk/vamp-hostsdk/PluginInputDomainAdapter.h \
+        vamp-plugin-sdk/vamp-hostsdk/PluginLoader.h \
+        vamp-plugin-sdk/vamp-hostsdk/PluginSummarisingAdapter.h \
+        vamp-plugin-sdk/vamp-hostsdk/PluginWrapper.h \
+        vamp-plugin-sdk/vamp-hostsdk/RealTime.h \
+        vamp-plugin-sdk/src/vamp-hostsdk/Window.h \
 	runner/AudioDBFeatureWriter.h \
         runner/FeatureWriterFactory.h  \
         runner/DefaultFeatureWriter.h \
@@ -90,6 +104,14 @@ HEADERS += \
         runner/MultiplexedReader.h
 
 SOURCES += \
+        vamp-plugin-sdk/src/vamp-hostsdk/PluginBufferingAdapter.cpp \
+        vamp-plugin-sdk/src/vamp-hostsdk/PluginChannelAdapter.cpp \
+        vamp-plugin-sdk/src/vamp-hostsdk/PluginHostAdapter.cpp \
+        vamp-plugin-sdk/src/vamp-hostsdk/PluginInputDomainAdapter.cpp \
+        vamp-plugin-sdk/src/vamp-hostsdk/PluginLoader.cpp \
+        vamp-plugin-sdk/src/vamp-hostsdk/PluginSummarisingAdapter.cpp \
+        vamp-plugin-sdk/src/vamp-hostsdk/PluginWrapper.cpp \
+        vamp-plugin-sdk/src/vamp-hostsdk/RealTime.cpp \
 	runner/main.cpp \
 	runner/DefaultFeatureWriter.cpp \
 	runner/FeatureExtractionManager.cpp \

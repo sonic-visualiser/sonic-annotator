@@ -50,7 +50,7 @@ CXXFLAGS_RELEASE="$AUTOCONF_CXXFLAGS"
 CXXFLAGS_MINIMAL="$AUTOCONF_CXXFLAGS"
 
 if test "x$GCC" = "xyes"; then
-        CXXFLAGS_DEBUG="-Wall -Werror -Woverloaded-virtual -Wextra -Wformat-nonliteral -Wformat-security -Winit-self -Wswitch-enum -g -pipe"
+        CXXFLAGS_DEBUG="-Wall -Werror -Wno-error=cpp -Woverloaded-virtual -Wextra -Wformat-nonliteral -Wformat-security -Winit-self -Wswitch-enum -g -pipe"
    	CXXFLAGS_RELEASE="-g0 -O2 -Wall -pipe"
    	CXXFLAGS_MINIMAL="-g0 -O0"
 fi
@@ -79,8 +79,6 @@ SV_MODULE_REQUIRED([fftw3],[fftw3 >= 3.0.0],[fftw3.h],[fftw3],[fftw_execute])
 SV_MODULE_REQUIRED([fftw3f],[fftw3f >= 3.0.0],[fftw3.h],[fftw3f],[fftwf_execute])
 SV_MODULE_REQUIRED([sndfile],[sndfile >= 1.0.16],[sndfile.h],[sndfile],[sf_open])
 SV_MODULE_REQUIRED([samplerate],[samplerate >= 0.1.2],[samplerate.h],[samplerate],[src_new])
-SV_MODULE_REQUIRED([vamp],[vamp >= 2.1],[vamp/vamp.h],[],[])
-SV_MODULE_REQUIRED([vamphostsdk],[vamp-hostsdk >= 2.5],[vamp-hostsdk/PluginLoader.h],[vamp-hostsdk],[libvamphostsdk_v_2_5_present])
 SV_MODULE_REQUIRED([sord],[sord-0 >= 0.5],[sord/sord.h],[sord-0],[sord_world_new])
 SV_MODULE_REQUIRED([serd],[serd-0 >= 0.5],[serd/serd.h],[serd-0],[serd_reader_read_file])
 
