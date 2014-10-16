@@ -77,11 +77,11 @@
 :event_7
     event:time [
         tl:beginsAt "PT0.000000000S"^^xsd:duration ;
-        tl:duration "PT5.201269840S"^^xsd:duration ;
+        tl:duration "PT4.992290248S"^^xsd:duration ;
         tl:onTimeLine :signal_timeline_1 ;
         a tl:Interval
     ] ;
-    af:feature "677.241" ;
+    af:feature "703.191" ;
     vamp:computed_by :transform_5_detectionfunction ;
     a :event_type_6 ;
     rdfs:label "(mean value, continuous-time average)" .
@@ -104,11 +104,11 @@
 :event_10
     event:time [
         tl:beginsAt "PT0.000000000S"^^xsd:duration ;
-        tl:duration "PT5.201269840S"^^xsd:duration ;
+        tl:duration "PT4.992290248S"^^xsd:duration ;
         tl:onTimeLine :signal_timeline_1 ;
         a tl:Interval
     ] ;
-    af:feature "162.585" ;
+    af:feature "169.391" ;
     vamp:computed_by :transform_8_detectionfunction ;
     a :event_type_9 ;
     rdfs:label "(mean value, continuous-time average)" .
@@ -131,11 +131,11 @@
 :event_13
     event:time [
         tl:beginsAt "PT0.000000000S"^^xsd:duration ;
-        tl:duration "PT5.201269840S"^^xsd:duration ;
+        tl:duration "PT4.992290248S"^^xsd:duration ;
         tl:onTimeLine :signal_timeline_1 ;
         a tl:Interval
     ] ;
-    af:feature "168" ;
+    af:feature "169" ;
     vamp:computed_by :transform_11_detectionfunction ;
     a :event_type_12 ;
     rdfs:label "(median value, continuous-time average)" .
@@ -158,11 +158,11 @@
 :event_16
     event:time [
         tl:beginsAt "PT0.000000000S"^^xsd:duration ;
-        tl:duration "PT5.201269840S"^^xsd:duration ;
+        tl:duration "PT4.992290248S"^^xsd:duration ;
         tl:onTimeLine :signal_timeline_1 ;
         a tl:Interval
     ] ;
-    af:feature "0" ;
+    af:feature "164" ;
     vamp:computed_by :transform_14_detectionfunction ;
     a :event_type_15 ;
     rdfs:label "(modal value, continuous-time average)" .

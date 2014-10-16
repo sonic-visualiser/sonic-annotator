@@ -54,9 +54,16 @@ using Vamp::HostExt::PluginWrapper;
 FeatureExtractionManager::FeatureExtractionManager() :
     m_summariesOnly(false),
     // We can read using an arbitrary fixed block size --
-    // PluginBufferingAdapter handles this for us.  It's likely to be
-    // quicker to use larger sizes than smallish ones like 1024
-    m_blockSize(16384),
+    // PluginBufferingAdapter handles this for us. But while this
+    // doesn't affect the step and block size actually passed to the
+    // plugin, it does affect the overall time range of the audio
+    // input (which gets rounded to the nearest block boundary). So
+    // although a larger blocksize will normally run faster, and we
+    // used a blocksize of 16384 in earlier releases of Sonic
+    // Annotator for that reason, a smaller blocksize produces
+    // "better" results and this is particularly relevant now we
+    // support the start and duration flags for a transform.
+    m_blockSize(1024),
     m_defaultSampleRate(0),
     m_sampleRate(0),
     m_channels(0),
