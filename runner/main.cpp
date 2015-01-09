@@ -294,6 +294,11 @@ void printHelp(QString myname, QString w)
         cerr << "                      Summarise in segments, with segment boundaries" << endl;
         cerr << "                      at A, B, ... seconds." << endl;
         cerr << endl;
+        cerr << "      --segments-from <F>" << endl;
+        cerr << "                      Summarise in segments, with segment boundaries" << endl;
+        cerr << "                      at times read from the text file <F>. (one time per" << endl;
+        cerr << "                      line, in seconds)." << endl;
+        cerr << endl;
         cerr << "  -m, --multiplex     If multiple input audio files are given, use mono" << endl;
         cerr << "                      mixdowns of all files as the input channels for a single" << endl;
         cerr << "                      invocation of each transform, instead of running the" << endl;
