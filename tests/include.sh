@@ -1,8 +1,20 @@
 
-mypath=`dirname $0`
+set -e
 
-version=1.1
-nextversion=1.2
+mypath=$(dirname $0)
+
+case "$(pwd)/$mypath" in
+    *" "*)
+	echo 1>&2
+	echo "ERROR: Test scripts do not handle paths containing spaces (yes, I know)" 1>&2
+	echo "(Path is: \"$(pwd)/$mypath\")" 1>&2
+	exit 1;;
+    *)
+    ;;
+esac
+
+version=1.2
+nextversion=1.3
 
 testdir=$mypath/..
 r=$testdir/../sonic-annotator

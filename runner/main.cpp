@@ -453,6 +453,60 @@ expandPlaylists(QStringList sources)
     return expanded;
 }
 
+bool
+readSegmentBoundaries(QString url, 
+                      Vamp::HostExt::PluginSummarisingAdapter::SegmentBoundaries &boundaries)
+{
+    FileSource source(url);
+    if (!source.isAvailable()) {
+        cerr << "File or URL \"" << url << "\" could not be retrieved" << endl;
+        return false;
+    }
+    source.waitForData();
+
+    QString filename = source.getLocalFilename();
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        cerr << "File \"" << filename << "\" could not be read" << endl;
+        return false;
+    }
+
+    QTextStream in(&file);
+    int lineNo = 0;
+    
+    while (!in.atEnd()) {
+
+        ++lineNo;
+        
+        QString line = in.readLine();
+        if (line.startsWith("#")) continue;
+
+        QStringList bits = line.split(",", QString::SkipEmptyParts);
+        QString importantBit;
+        if (!bits.empty()) {
+            bits = bits[0].split(" ", QString::SkipEmptyParts);
+        }
+        if (!bits.empty()) {
+            importantBit = bits[0];
+        }
+        if (importantBit == QString()) {
+            cerr << "WARNING: Skipping line " << lineNo << " (no content found)"
+                 << endl;
+            continue;
+        }
+        bool good = false;
+        boundaries.insert(Vamp::RealTime::fromSeconds
+                          (importantBit.toDouble(&good)));
+        if (!good) {
+            cerr << "Unparseable or non-numeric segment boundary at line "
+                 << lineNo << endl;
+            return false;
+        }
+    }
+
+    return true;
+}
+
 int main(int argc, char **argv)
 {
     QCoreApplication application(argc, argv);
@@ -598,6 +652,20 @@ int main(int argc, char **argv)
                         cerr << helpStr << endl;
                         exit(2);
                     }
+                }
+            }
+        } else if (arg == "--segments-from") {
+            if (last) {
+                cerr << myname << ": argument expected for \""
+                     << arg << "\" option" << endl;
+                cerr << helpStr << endl;
+                exit(2);
+            } else {
+                QString segmentFilename = args[++i];
+                if (!readSegmentBoundaries(segmentFilename, boundaries)) {
+                    cerr << myname << ": failed to read segment boundaries from file" << endl;
+                    cerr << helpStr << endl;
+                    exit(2);
                 }
             }
         } else if (arg == "-m" || arg == "--multiplex") {

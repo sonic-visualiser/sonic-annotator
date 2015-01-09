@@ -27,6 +27,8 @@ expected=$mypath/expected/summaries
 stransform=$mypath/transforms/detectionfunction.n3 
 sexpected=$mypath/expected/summaries-from-rdf
 
+seglist=$mypath/transforms/segmentlist
+
 $r -t $transform -w csv --csv-stdout $infile > $tmpfile 2>/dev/null || \
     fail "Fails to run transform $transform"
 
@@ -62,6 +64,12 @@ $r -t $transform -w csv --csv-stdout --summary-only -S median --segments 0,9.9 $
 
 compare $tmpfile ${expected}-segments.csv || \
     faildiff "Output mismatch for transform $stransform with segments" $tmpfile ${expected}-segments.csv
+
+$r -t $transform -w csv --csv-stdout --summary-only -S median --segments-from $seglist $infile2 > $tmpfile 2>/dev/null || \
+    fail "Fails to run transform $stransform with CSV output and segments from segment list"
+
+compare $tmpfile ${expected}-segments.csv || \
+    faildiff "Output mismatch for transform $stransform with segments from segment list" $tmpfile ${expected}-segments.csv
 
 $r -t $stransform -w rdf --rdf-stdout $infile > $tmpfile 2>/dev/null || \
     fail "Fails to run transform $stransform with RDF output"
