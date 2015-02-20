@@ -28,6 +28,9 @@ MultiplexedReader::MultiplexedReader(QList<AudioFileReader *> readers) :
 	if (!r->isOK()) {
 	    m_channelCount = 0;
 	    m_error = r->getError();
+        } else if (r->getSampleRate() != m_sampleRate) {
+            m_channelCount = 0;
+            m_error = "Readers provided to MultiplexedReader must have the same sample rate";
 	} else {
 	    if (r->getFrameCount() > m_frameCount) {
 		m_frameCount = r->getFrameCount();
