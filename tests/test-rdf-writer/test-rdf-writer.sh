@@ -49,4 +49,11 @@ for rdfarg in "" "--rdf-plain" ; do
 
 done
 
+# Check the output encoding -- should be valid UTF-8 always
+
+for code in ucs-2 iso-8859-1; do
+    $r -t $transformdir/onsets.n3 -w rdf --rdf-stdout $audiopath/id3v2-$code.mp3 2>/dev/null | uconv --from-code utf-8 --to-code utf-8 --from-callback stop >/dev/null ||
+	fail "RDF/Turtle output from $code input is not valid utf-8 according to uconv"
+done
+
 exit 0
