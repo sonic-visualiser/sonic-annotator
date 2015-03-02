@@ -23,6 +23,7 @@
 
 #include <QRegExp>
 #include <QTextStream>
+#include <QTextCodec>
 
 using namespace std;
 using namespace Vamp;
@@ -85,7 +86,8 @@ LabFeatureWriter::write(QString trackId,
 
     TransformId transformId = transform.getIdentifier();
 
-    QTextStream *sptr = getOutputStream(trackId, transformId);
+    QTextStream *sptr = getOutputStream
+        (trackId, transformId, QTextCodec::codecForName("UTF-8"));
     if (!sptr) {
         throw FailedToOpenOutputStream(trackId, transformId);
     }
@@ -121,7 +123,9 @@ LabFeatureWriter::finish()
          i != m_pending.end(); ++i) {
         DataId tt = i->first;
         Plugin::Feature f = i->second;
-        QTextStream *sptr = getOutputStream(tt.first, tt.second.getIdentifier());
+        QTextStream *sptr = getOutputStream
+            (tt.first, tt.second.getIdentifier(),
+             QTextCodec::codecForName("UTF-8"));
         if (!sptr) {
             throw FailedToOpenOutputStream(tt.first, tt.second.getIdentifier());
         }

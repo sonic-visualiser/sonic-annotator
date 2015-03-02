@@ -23,6 +23,7 @@ using Vamp::PluginBase;
 #include "rdf/PluginRDFIndexer.h"
 
 #include <QFileInfo>
+#include <QTextCodec>
 
 #include "version.h"
 
@@ -97,7 +98,8 @@ JAMSFeatureWriter::write(QString trackId,
 {
     QString transformId = transform.getIdentifier();
 
-    QTextStream *sptr = getOutputStream(trackId, transformId);
+    QTextStream *sptr = getOutputStream
+        (trackId, transformId, QTextCodec::codecForName("UTF-8"));
     if (!sptr) {
         throw FailedToOpenOutputStream(trackId, transformId);
     }
