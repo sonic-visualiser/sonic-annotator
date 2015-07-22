@@ -23,25 +23,6 @@ trap "rm -f $tmpjson $outfile1 $outfile2 $outfile3 $outfile4 $outfile5 $outfile6
 
 transformdir=$mypath/transforms
 
-failshow() {
-    echo "Test failed: $1"
-    if [ -n "$2" ]; then
-	echo "Output follows:"
-	echo "--"
-	cat $2
-	echo "--"
-    fi
-    exit 1
-}	
-
-check_json() {
-    test -f $1 || \
-	fail "Fails to write output to expected location $1 for $2"
-    cat $1 | json_verify -q || \
-	failshow "Writes invalid JSON to location $1 for $2" $1
-    rm -f $1
-}    
-
 
 ctx="onsets transform, one audio file, default JSON writer destination"
 
