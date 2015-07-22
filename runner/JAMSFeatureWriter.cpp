@@ -147,14 +147,17 @@ JAMSFeatureWriter::write(QString trackId,
             d += QString(", \"value\": [ ");
             for (int j = 0; j < int(f.values.size()); ++j) {
                 if (isnan(f.values[j])) {
-                    d += "\"NaN\" ";
+                    d += "\"NaN\"";
                 } else if (isinf(f.values[j])) {
-                    d += "\"Inf\" ";
+                    d += "\"Inf\"";
                 } else {
-                    d += QString("%1 ").arg(f.values[j]);
+                    d += QString("%1").arg(f.values[j]);
+                }
+                if (j + 1 < int(f.values.size())) {
+                    d += ", ";
                 }
             }
-            d += "]";
+            d += " ]";
         }
             
         d += " }";
