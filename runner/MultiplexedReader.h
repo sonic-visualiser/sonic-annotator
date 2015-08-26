@@ -33,8 +33,7 @@ public:
     virtual QString getError() const { return m_error; }
     virtual bool isQuicklySeekable() const { return m_quicklySeekable; }
 
-    virtual void getInterleavedFrames(int start, int count,
-				      SampleBlock &frames) const;
+    virtual SampleBlock getInterleavedFrames(sv_frame_t start, sv_frame_t count) const;
 
     virtual int getDecodeCompletion() const;
 

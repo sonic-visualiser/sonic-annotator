@@ -38,7 +38,7 @@ exists(config.pri) {
     }
 }
 
-CONFIG += qt thread warn_on stl rtti exceptions console
+CONFIG += qt thread warn_on stl rtti exceptions console c++11
 QT += xml network
 QT -= gui widgets
 

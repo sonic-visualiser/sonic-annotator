@@ -49,20 +49,18 @@ MultiplexedReader::~MultiplexedReader()
     }
 }
 
-void
-MultiplexedReader::getInterleavedFrames(int start, int frameCount,
-					SampleBlock &block) const
+SampleBlock
+MultiplexedReader::getInterleavedFrames(sv_frame_t start, sv_frame_t frameCount) const
 {
     int out_chans = m_readers.size();
 
     // Allocate and zero
-    block = SampleBlock(frameCount * out_chans, 0.f);
+    SampleBlock block(frameCount * out_chans, 0.f);
 
     for (int out_chan = 0; out_chan < out_chans; ++out_chan) {
 
 	AudioFileReader *reader = m_readers[out_chan];
-	SampleBlock readerBlock;
-	reader->getInterleavedFrames(start, frameCount, readerBlock);
+	SampleBlock readerBlock = getInterleavedFrames(start, frameCount);
 
 	int in_chans = reader->getChannelCount();
 
@@ -81,6 +79,8 @@ MultiplexedReader::getInterleavedFrames(int start, int frameCount,
             }
 	}
     }
+
+    return block;
 }
 
 int

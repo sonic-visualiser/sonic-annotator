@@ -52,7 +52,7 @@ private:
 	virtual NoteList getNotes() const {
 	    return m_notes;
 	}
-	virtual NoteList getNotesWithin(int, int) const {
+	virtual NoteList getNotesWithin(sv_frame_t, sv_frame_t) const {
 	    // Not required by MIDIFileWriter, not supported
 	    return NoteList();
 	}

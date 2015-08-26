@@ -750,8 +750,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
         //!!! inefficient, although much of the inefficiency may be
         // susceptible to compiler optimisation
         
-        SampleBlock frames;
-        reader->getInterleavedFrames(i, m_blockSize, frames);
+        SampleBlock frames = reader->getInterleavedFrames(i, m_blockSize);
         
         // We have to do our own channel handling here; we can't just
         // leave it to the plugin adapter because the same plugin
