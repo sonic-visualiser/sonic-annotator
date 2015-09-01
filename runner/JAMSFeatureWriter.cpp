@@ -32,7 +32,7 @@ JAMSFeatureWriter::JAMSFeatureWriter() :
                       SupportOneFilePerTrack |
                       SupportOneFileTotal |
 		      SupportStdOut,
-                      "json"),
+                      "json"), // file extension is json even with jams writer
     m_network(false),
     m_networkRetrieved(false),
     m_n(1),
@@ -61,12 +61,6 @@ JAMSFeatureWriter::getSupportedParameters() const
     p.hasArg = false;
     pl.push_back(p);
 
-    p.name = "format";
-    p.description = "JSON format to use. Currently the only supported value is \"jams\". Other formats may be supported in future.";
-    p.hasArg = true;
-    p.mandatory = true;
-    pl.push_back(p);
-
     return pl;
 }
 
@@ -79,13 +73,6 @@ JAMSFeatureWriter::setParameters(map<string, string> &params)
          i != params.end(); ++i) {
         if (i->first == "network") {
             m_network = true;
-        } else if (i->first == "format") {
-            if (i->second == "jams") {
-                m_format = i->second;
-            } else {
-                throw std::runtime_error
-                    ("Unknown or invalid --json-format parameter \"" + i->second + "\"");
-            }
         }
     }
 }
@@ -329,7 +316,7 @@ JAMSFeatureWriter::loadRDFDescription(const Transform &transform)
 	cerr << "NOTE: No RDF description for plugin ID \""
 	     << pluginId << "\"" << endl;
 	if (!m_network) {
-	    cerr << "      Consider using the --json-network option to retrieve plugin descriptions"  << endl;
+	    cerr << "      Consider using the --jams-network option to retrieve plugin descriptions"  << endl;
 	    cerr << "      from the network where possible." << endl;
 	}
     }
@@ -391,7 +378,7 @@ JAMSFeatureWriter::identifyTask(const Transform &transform)
 
 	} else {
 
-	    cerr << "WARNING: Cannot currently write dense or track-level outputs to JSON format (only sparse ones). Will proceed using UnknownTask type, but this probably isn't going to work" << endl;
+	    cerr << "WARNING: Cannot currently write dense or track-level outputs to JAMS format (only sparse ones). Will proceed using UnknownTask type, but this probably isn't going to work" << endl;
 	}
     }	    
 

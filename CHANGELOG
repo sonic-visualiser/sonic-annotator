@@ -1,4 +1,24 @@
 
+Changes in Sonic Annotator 1.2 since the previous release 1.1:
+
+Front-end changes:
+
+ - Add the --segments-from option, providing the ability to read
+   segment boundaries from a file
+
+Back-end (feature writer) changes:
+
+ - Rename the JSON feature writer to JAMS. There may be other JSON
+   formats supported in future
+
+Bug fixes:
+
+ - Fix invalid JSON written by JAMS feature writer for dense
+   features.
+ - Fix invalid UTF-8 output from RDF feature writer when processing
+   MP3 files having ID3 tags in non-ASCII, non-UTF8 encodings
+
+
 Changes in Sonic Annotator 1.1 since the previous release 1.0:
 
 Front-end changes:

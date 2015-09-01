@@ -10,13 +10,13 @@ trap "rm -f $tmpjson" 0
 
 transformdir=$mypath/transforms
 
-mandatory="-w json --json-format jams"
+mandatory="-w jams"
 
 # This does not yet test for correct values, only for parseable json
 
 for output in instants curve-oss curve-fsr curve-fsr-timed curve-vsr grid-oss grid-fsr notes-regions; do
 
-    $r -d "$testplug:$output" $mandatory --json-one-file "$tmpjson" --json-force "$silentfile" 2>/dev/null || \
+    $r -d "$testplug:$output" $mandatory --jams-one-file "$tmpjson" --jams-force "$silentfile" 2>/dev/null || \
 	fail "Failed to run for plugin $testplug with output $output"
 
     check_json "$tmpjson" "test plugin output $output"

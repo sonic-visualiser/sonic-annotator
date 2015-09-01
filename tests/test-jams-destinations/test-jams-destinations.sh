@@ -23,10 +23,10 @@ trap "rm -f $tmpjson $outfile1 $outfile2 $outfile3 $outfile4 $outfile5 $outfile6
 
 transformdir=$mypath/transforms
 
-mandatory="-w json --json-format jams"
+mandatory="-w jams"
 
 
-ctx="onsets transform, one audio file, default JSON writer destination"
+ctx="onsets transform, one audio file, default JAMS writer destination"
 
 rm -f $audiopath/$outfile1
 
@@ -36,7 +36,7 @@ $r -t $transformdir/onsets.n3 $mandatory $infile1 2>/dev/null || \
 check_json $audiopath/$outfile1 "$ctx"
 
 
-ctx="onsets transform, one audio file with dots in filename, default JSON writer destination"
+ctx="onsets transform, one audio file with dots in filename, default JAMS writer destination"
 
 rm -f $audiopath/$outfile1
 
@@ -50,7 +50,7 @@ check_json $audiopath/$outfile1dot "$ctx"
 rm -f $infile1dot $audiopath/$outfile1dot
 
 
-ctx="onsets and df transforms, one audio file, default JSON writer destination"
+ctx="onsets and df transforms, one audio file, default JAMS writer destination"
 
 rm -f $audiopath/$outfile1
 
@@ -60,7 +60,7 @@ $r -t $transformdir/onsets.n3 -t $transformdir/detectionfunction.n3 $mandatory $
 check_json $audiopath/$outfile1 "$ctx"
 
 
-ctx="onsets transform, two audio files, default JSON writer destination"
+ctx="onsets transform, two audio files, default JAMS writer destination"
 
 rm -f $audiopath/$outfile1
 rm -f $audiopath/$outfile2
@@ -72,52 +72,52 @@ check_json $audiopath/$outfile1 "$ctx"
 check_json $audiopath/$outfile2 "$ctx"
 
 
-ctx="onsets transform, two audio files, one-file JSON writer"
+ctx="onsets transform, two audio files, one-file JAMS writer"
 
-$r -t $transformdir/onsets.n3 $mandatory --json-one-file $tmpjson $infile1 $infile2 2>/dev/null || \
+$r -t $transformdir/onsets.n3 $mandatory --jams-one-file $tmpjson $infile1 $infile2 2>/dev/null || \
     fail "Fails to run with $ctx"
 
 check_json $tmpjson "$ctx"
 
 
-ctx="onsets transform, two audio files, stdout JSON writer"
+ctx="onsets transform, two audio files, stdout JAMS writer"
 
-$r -t $transformdir/onsets.n3 $mandatory --json-stdout $infile1 $infile2 2>/dev/null >$tmpjson || \
+$r -t $transformdir/onsets.n3 $mandatory --jams-stdout $infile1 $infile2 2>/dev/null >$tmpjson || \
     fail "Fails to run with $ctx"
 
 check_json $tmpjson "$ctx"
 
 
-ctx="onsets transform, one audio file, many-files JSON writer"
+ctx="onsets transform, one audio file, many-files JAMS writer"
 
 rm -f $audiopath/$outfile3
 
-$r -t $transformdir/onsets.n3 $mandatory --json-many-files $infile1 2>/dev/null || \
+$r -t $transformdir/onsets.n3 $mandatory --jams-many-files $infile1 2>/dev/null || \
     fail "Fails to run with $ctx"
 
 check_json $audiopath/$outfile3 "$ctx"
 
 
-ctx="onsets transform, two audio files, many-files JSON writer"
+ctx="onsets transform, two audio files, many-files JAMS writer"
 
 rm -f $audiopath/$outfile3
 rm -f $audiopath/$outfile5
 
-$r -t $transformdir/onsets.n3 $mandatory --json-many-files $infile1 $infile2 2>/dev/null || \
+$r -t $transformdir/onsets.n3 $mandatory --jams-many-files $infile1 $infile2 2>/dev/null || \
     fail "Fails to run with $ctx"
 
 check_json $audiopath/$outfile3 "$ctx"
 check_json $audiopath/$outfile5 "$ctx"
 
 
-ctx="onsets and df transforms, two audio files, many-files JSON writer"
+ctx="onsets and df transforms, two audio files, many-files JAMS writer"
 
 rm -f $audiopath/$outfile3
 rm -f $audiopath/$outfile4
 rm -f $audiopath/$outfile5
 rm -f $audiopath/$outfile6
 
-$r -t $transformdir/onsets.n3 -t $transformdir/detectionfunction.n3 $mandatory --json-many-files $infile1 $infile2 2>/dev/null || \
+$r -t $transformdir/onsets.n3 -t $transformdir/detectionfunction.n3 $mandatory --jams-many-files $infile1 $infile2 2>/dev/null || \
     fail "Fails to run with $ctx"
 
 check_json $audiopath/$outfile3 "$ctx"
@@ -130,7 +130,7 @@ ctx="output base directory"
 
 rm -f ./$outfile1
 
-$r -t $transformdir/onsets.n3 -t $transformdir/detectionfunction.n3 $mandatory --json-basedir . $infile1 2>/dev/null || \
+$r -t $transformdir/onsets.n3 -t $transformdir/detectionfunction.n3 $mandatory --jams-basedir . $infile1 2>/dev/null || \
     fail "Fails to run with $ctx"
 
 check_json ./$outfile1 "$ctx"
@@ -141,7 +141,7 @@ ctx="output base directory and many-files"
 rm -f ./$outfile3
 rm -f ./$outfile5
 
-$r -t $transformdir/onsets.n3 $mandatory --json-basedir . --json-many-files $infile1 $infile2 2>/dev/null || \
+$r -t $transformdir/onsets.n3 $mandatory --jams-basedir . --jams-many-files $infile1 $infile2 2>/dev/null || \
     fail "Fails to run with $ctx"
 
 check_json ./$outfile3 "$ctx"
@@ -150,11 +150,11 @@ check_json ./$outfile5 "$ctx"
 
 ctx="nonexistent output base directory"
 
-$r -t $transformdir/onsets.n3 $mandatory --json-basedir ./DOES_NOT_EXIST $infile1 2>/dev/null && \
+$r -t $transformdir/onsets.n3 $mandatory --jams-basedir ./DOES_NOT_EXIST $infile1 2>/dev/null && \
     fail "Fails with $ctx by completing successfully (should refuse and bail out)"
 
 
-ctx="existing output file and no --json-force"
+ctx="existing output file and no --jams-force"
 
 touch $audiopath/$outfile1
 
@@ -162,11 +162,11 @@ $r -t $transformdir/onsets.n3 $mandatory $infile1 2>/dev/null && \
     fail "Fails by completing successfully when output file already exists (should refuse and bail out)"
 
 
-ctx="existing output file and --json-force"
+ctx="existing output file and --jams-force"
 
 touch $audiopath/$outfile1
 
-$r -t $transformdir/onsets.n3 $mandatory --json-force $infile1 2>/dev/null || \
+$r -t $transformdir/onsets.n3 $mandatory --jams-force $infile1 2>/dev/null || \
     fail "Fails to run with $ctx"
 
 check_json $audiopath/$outfile1 "$ctx"

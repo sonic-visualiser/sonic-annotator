@@ -17,8 +17,8 @@ for x in \
     lab-destinations \
     midi-writer \
     midi-destinations \
-    json-writer \
-    json-destinations \
+    jams-writer \
+    jams-destinations \
     summaries \
     multiple-audio \
     ; do

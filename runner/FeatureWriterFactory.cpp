@@ -36,7 +36,7 @@ FeatureWriterFactory::getWriterTags()
     tags.insert("csv");
     tags.insert("lab");
     tags.insert("midi");
-    tags.insert("json");
+    tags.insert("jams");
     return tags;
 }
 
@@ -55,7 +55,7 @@ FeatureWriterFactory::createWriter(string tag)
         return new LabFeatureWriter();
     } else if (tag == "midi") {
         return new MIDIFeatureWriter();
-    } else if (tag == "json") {
+    } else if (tag == "jams") {
         return new JAMSFeatureWriter();
     }
 
