@@ -12,7 +12,7 @@ rapper --version >/dev/null || \
     fail "Can't find required rapper program"
 
 iconv --version >/dev/null || \
-    fail "Can't find required uconv program"
+    fail "Can't find required iconv program"
 
 echo '{}' | json_verify >/dev/null || \
     fail "Can't find required json_verify program, or it doesn't seem to work"
