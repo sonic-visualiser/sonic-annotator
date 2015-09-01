@@ -22,6 +22,8 @@ using Vamp::PluginBase;
 #include "base/Exceptions.h"
 #include "data/fileio/MIDIFileWriter.h"
 
+//#define DEBUG_MIDI_FEATURE_WRITER 1
+
 MIDIFeatureWriter::MIDIFeatureWriter() :
     FileFeatureWriter(SupportOneFilePerTrackTransform |
                       SupportOneFilePerTrack |
@@ -37,7 +39,7 @@ MIDIFeatureWriter::~MIDIFeatureWriter()
 string
 MIDIFeatureWriter::getDescription() const
 {
-    return "Write features to MIDI files. All features are written as MIDI notes. If a feature has at least one value, its first value will be used as the note pitch, the second value (if present) for velocity. If a feature has units of Hz, then its pitch will be converted from frequency to an integer value in MIDI range, otherwise it will be written directly. Multiple (up to 16) transforms can be written to a single MIDI file, where they will be given separate MIDI channel numbers.";
+    return "Write features to MIDI files. All features are written as MIDI notes. If a feature has at least one value, its first value will be used as the note pitch, the second value (if present) for velocity. If a feature has units of Hz, then its pitch will be converted from frequency to an integer value in MIDI range, otherwise it will simply be rounded to the nearest integer and written directly. Multiple (up to 16) transforms can be written to a single MIDI file, where they will be given separate MIDI channel numbers.";
 }
 
 MIDIFeatureWriter::ParameterList
@@ -108,6 +110,11 @@ MIDIFeatureWriter::write(QString trackId,
         if (feature.hasDuration) {
             duration = Vamp::RealTime::realTime2Frame(feature.duration, sampleRate);
         }
+
+#ifdef DEBUG_MIDI_FEATURE_WRITER
+        cerr << "feature timestamp = " << feature.timestamp << ", sampleRate = " << sampleRate << ", frame = " << frame << endl;
+        cerr << "feature duration = " << feature.duration << ", sampleRate = " << sampleRate << ", duration = " << duration << endl;
+#endif
         
         int pitch = 60;
         if (feature.values.size() > 0) {

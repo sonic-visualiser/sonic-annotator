@@ -48,20 +48,52 @@ csvcompare_ignorefirst() {
     return `[ -z "$out" ]`
 }
 
+midicompare() {
+    a="$1"
+    b="$2"
+    od -c "$a" > "${a}__"
+    od -c "$b" > "${b}__"
+    cmp -s "${a}__" "${b}__"
+    rv=$?
+    rm "${a}__" "${b}__"
+    return $rv
+}
+
 faildiff() {
     echo "Test failed: $1"
     if [ -n "$2" -a -n "$3" ]; then
 	echo "Output follows:"
 	echo "--"
-	cat $2
+	cat "$2"
 	echo "--"
 	echo "Expected output follows:"
 	echo "--"
-	cat $3
+	cat "$3"
 	echo "--"
 	echo "Diff:"
 	echo "--"
-	sdiff -w78 $2 $3
+	sdiff -w78 "$2" "$3"
+	echo "--"
+    fi
+    exit 1
+}
+
+faildiff_od() {
+    echo "Test failed: $1"
+    if [ -n "$2" -a -n "$3" ]; then
+	echo "Output follows:"
+	echo "--"
+	od -c "$2"
+	echo "--"
+	echo "Expected output follows:"
+	echo "--"
+	od -c "$3"
+	echo "--"
+	echo "Diff:"
+	echo "--"
+	od -w8 -c "$3" > "${3}__"
+	od -w8 -c "$2" | sdiff -w78 - "${3}__"
+	rm "${3}__"
 	echo "--"
     fi
     exit 1

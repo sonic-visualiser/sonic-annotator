@@ -16,6 +16,7 @@ for x in \
     lab-writer \
     lab-destinations \
     midi-destinations \
+    midi-writer \
     json-destinations \
     json-writer \
     summaries \
