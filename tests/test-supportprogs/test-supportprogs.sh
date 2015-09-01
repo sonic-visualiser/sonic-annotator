@@ -11,7 +11,7 @@ xmllint --version 2>/dev/null || \
 rapper --version >/dev/null || \
     fail "Can't find required rapper program"
 
-uconv --version >/dev/null || \
+iconv --version >/dev/null || \
     fail "Can't find required uconv program"
 
 echo '{}' | json_verify >/dev/null || \
