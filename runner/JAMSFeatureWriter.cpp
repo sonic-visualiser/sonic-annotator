@@ -57,8 +57,14 @@ JAMSFeatureWriter::getSupportedParameters() const
     Parameter p;
 
     p.name = "network";
-    p.description = "Attempt to retrieve RDF descriptions of plugins from network, if not available locally";
+    p.description = "Attempt to retrieve RDF descriptions of plugins from network, if not available locally.";
     p.hasArg = false;
+    pl.push_back(p);
+
+    p.name = "format";
+    p.description = "JSON format to use. Currently the only supported value is \"jams\". Other formats may be supported in future.";
+    p.hasArg = true;
+    p.mandatory = true;
     pl.push_back(p);
 
     return pl;
@@ -73,6 +79,13 @@ JAMSFeatureWriter::setParameters(map<string, string> &params)
          i != params.end(); ++i) {
         if (i->first == "network") {
             m_network = true;
+        } else if (i->first == "format") {
+            if (i->second == "jams") {
+                m_format = i->second;
+            } else {
+                throw std::runtime_error
+                    ("Unknown or invalid --json-format parameter \"" + i->second + "\"");
+            }
         }
     }
 }

@@ -95,6 +95,7 @@ private:
 
     QString writeTransformToObjectContents(const Transform &);
 
+    std::string m_format;
     bool m_network;
     bool m_networkRetrieved;
     int m_n;

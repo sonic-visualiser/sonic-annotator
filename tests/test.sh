@@ -15,10 +15,10 @@ for x in \
     csv-destinations \
     lab-writer \
     lab-destinations \
-    midi-destinations \
     midi-writer \
-    json-destinations \
+    midi-destinations \
     json-writer \
+    json-destinations \
     summaries \
     multiple-audio \
     ; do

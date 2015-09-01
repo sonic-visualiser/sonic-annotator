@@ -187,7 +187,7 @@ void printUsage(QString myname)
     cerr << "Sonic Annotator v" << RUNNER_VERSION << endl;
     cerr << "A utility for batch feature extraction from audio files." << endl;
     cerr << "Mark Levy, Chris Sutton and Chris Cannam, Queen Mary, University of London." << endl;
-    cerr << "Copyright 2007-2014 Queen Mary, University of London." << endl;
+    cerr << "Copyright 2007-2015 Queen Mary, University of London." << endl;
     cerr << endl;
     cerr << "This program is free software.  You may redistribute copies of it under the" << endl;
     cerr << "terms of the GNU General Public License <http://www.gnu.org/licenses/gpl.html>." << endl;
@@ -209,6 +209,17 @@ void printUsage(QString myname)
     cerr << "path, local \"file://\" URL, or remote \"http://\" or \"ftp://\" URL;" << endl;
     cerr << "and <plugin> is a plugin output identified as vamp:libname:plugin:output." << endl;
     cerr << endl;
+}
+
+void printOptionHelp(std::string writer, FeatureWriter::Parameter &p)
+{
+    cerr << "  --" << writer << "-" << p.name << " ";
+    int spaceage = 16 - int(writer.length()) - int(p.name.length());
+    if (p.hasArg) { cerr << "<X> "; spaceage -= 4; }
+    for (int k = 0; k < spaceage; ++k) cerr << " ";
+    QString s(p.description.c_str());
+    s = wrap(s, 56, 22);
+    cerr << s << endl;
 }
 
 void printHelp(QString myname, QString w)
@@ -347,23 +358,33 @@ void printHelp(QString myname, QString w)
         }
         cerr << "Feature writer \"" << writer << "\":" << endl << endl;
         cerr << "  " << wrap(w->getDescription().c_str(), 76, 2) << endl << endl;
-        cerr << "Additional options for writer type \"" << writer << "\":" << endl;
-        cerr << endl;
         FeatureWriter::ParameterList params = w->getSupportedParameters();
         delete w;
         if (params.empty()) {
             cerr << "  No additional options are available for this writer." << endl << endl;
             return;
         }
-        for (FeatureWriter::ParameterList::const_iterator j = params.begin();
-             j != params.end(); ++j) {
-            cerr << "  --" << writer << "-" << j->name << " ";
-            int spaceage = 16 - int(writer.length()) - int(j->name.length());
-            if (j->hasArg) { cerr << "<X> "; spaceage -= 4; }
-            for (int k = 0; k < spaceage; ++k) cerr << " ";
-            QString s(j->description.c_str());
-            s = wrap(s, 56, 22);
-            cerr << s << endl;
+        FeatureWriter::ParameterList mandatory;
+        bool haveOptional = false;
+        for (auto &p: params) {
+            if (p.mandatory) mandatory.push_back(p);
+            else haveOptional = true;
+        }
+        if (!mandatory.empty()) {
+            cerr << "Mandatory parameters for writer type \"" << writer << "\":" << endl;
+            cerr << endl;
+            for (auto &p: mandatory) {
+                printOptionHelp(writer, p);
+            }
+            cerr << endl;
+        }
+        if (haveOptional) {
+            cerr << "Additional options for writer type \"" << writer << "\":" << endl;
+            cerr << endl;
+            for (auto &p: params) {
+                if (p.mandatory) continue;
+                printOptionHelp(writer, p);
+            }
         }
     }
 
@@ -893,8 +914,35 @@ int main(int argc, char **argv)
                 }
             }
         }
-        
-        writer->setParameters(writerArgs);
+
+        for (auto &p: pl) {
+            if (p.mandatory) {
+                bool found = false;
+                for (auto &w: writerArgs) {
+                    if (w.first == p.name) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    QString literal = QString("--%1-%2")
+                        .arg(i->c_str()).arg(p.name.c_str());
+                    cerr << myname << ": "
+                         << "the \"" << literal << "\" parameter is mandatory"
+                         << endl;
+                    cerr << helpStr << endl;
+                    exit(2);
+                }
+            }
+        }
+
+        try {
+            writer->setParameters(writerArgs);
+        } catch (std::exception &ex) {
+            cerr << myname << ": " << ex.what() << endl;
+            cerr << helpStr << endl;
+            exit(2);
+        }
         
         writers.push_back(writer);
     }

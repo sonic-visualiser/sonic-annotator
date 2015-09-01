@@ -885,7 +885,6 @@ FeatureExtractionManager::writeSummaries(QString audioSource, Plugin *plugin)
          ti != pi->second.end(); ++ti) {
         
         const Transform &transform = ti->first;
-        const vector<FeatureWriter *> &writers = ti->second;
 
         Transform::SummaryType summaryType = transform.getSummaryType();
         PluginSummarisingAdapter::SummaryType pType =

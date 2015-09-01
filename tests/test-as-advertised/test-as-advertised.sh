@@ -31,6 +31,10 @@ for type in $types; do
     # that have no values (but are only point events).  I don't know
     # how reasonable that is, but it's clearly intentional.  It also
     # writes to a subdirectory $basedir/$catid/$trackid.$output
+    #
+    # * The "json" reader has a mandatory --json-format parameter that
+    # currently only accepts one argument ("jams"). It should fail if
+    # run with any other value or without this parameter.
 
     case $type in
 	audiodb) 
@@ -41,6 +45,16 @@ for type in $types; do
 	default) 
 	    $r -t $onsets -w $type $tmpwav > $tmpdir/test.out 2>/dev/null || \
 		fail "Fails to run with reader type \"$type\" and default options"
+	    ;;
+	json)
+	    $r -t $onsets -w $type $tmpwav 2>/dev/null && \
+		fail "Wrongly succeeds in running with reader type \"$type\" and default options"
+	    $r -t $onsets -w $type $tmpwav --json-format blah 2>/dev/null && \
+		fail "Wrongly succeeds in running with reader type \"$type\" and unknown json-format option"
+	    $r -t $onsets -w $type $tmpwav --json-format 2>/dev/null && \
+		fail "Wrongly succeeds in running with reader type \"$type\" and empty json-format option"
+	    $r -t $onsets -w $type $tmpwav --json-format jams 2>/dev/null || \
+		fail "Fails to run with reader type \"$type\" and correct json-format option"
 	    ;;
 	*)
 	    $r -t $onsets -w $type $tmpwav 2>/dev/null || \
