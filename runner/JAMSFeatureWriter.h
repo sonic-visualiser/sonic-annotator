@@ -46,7 +46,7 @@ public:
 
     virtual void finish();
 
-    virtual QString getWriterTag() const { return "json"; }
+    virtual QString getWriterTag() const { return "jams"; }
 
 private:
     enum Task {
