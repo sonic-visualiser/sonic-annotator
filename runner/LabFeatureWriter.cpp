@@ -32,7 +32,8 @@ LabFeatureWriter::LabFeatureWriter() :
     FileFeatureWriter(SupportOneFilePerTrackTransform |
                       SupportStdOut,
                       "lab"),
-    m_forceEnd(false)
+    m_forceEnd(false),
+    m_digits(6)
 {
 }
 
@@ -58,6 +59,11 @@ LabFeatureWriter::getSupportedParameters() const
     p.hasArg = false;
     pl.push_back(p);
 
+    p.name = "digits";
+    p.description = "Specify the number of significant digits to use when printing transform outputs. Outputs are represented internally using single-precision floating-point, so digits beyond the 8th or 9th place are usually meaningless. The default is 6.";
+    p.hasArg = true;
+    pl.push_back(p);
+
     return pl;
 }
 
@@ -70,6 +76,14 @@ LabFeatureWriter::setParameters(map<string, string> &params)
          i != params.end(); ++i) {
         if (i->first == "fill-ends") {
             m_forceEnd = true;
+        } else if (i->first == "digits") {
+            int digits = atoi(i->second.c_str());
+            if (digits <= 0 || digits > 100) {
+                cerr << "LabFeatureWriter: ERROR: Invalid or out-of-range value for number of significant digits: " << i->second << endl;
+                cerr << "LabFeatureWriter: NOTE: Continuing with default settings" << endl;
+            } else {
+                m_digits = digits;
+            }
         }
     }
 }
@@ -169,7 +183,7 @@ LabFeatureWriter::writeFeature(QTextStream &stream,
     }
     
     for (unsigned int j = 0; j < f.values.size(); ++j) {
-        stream << sep << f.values[j];
+        stream << sep << QString("%1").arg(f.values[j], 0, 'g', m_digits);
     }
     
     if (f.label != "") {

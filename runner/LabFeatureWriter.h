@@ -17,8 +17,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _LAB_FEATURE_WRITER_H_
-#define _LAB_FEATURE_WRITER_H_
+#ifndef LAB_FEATURE_WRITER_H
+#define LAB_FEATURE_WRITER_H
 
 #include <string>
 #include <map>
@@ -65,6 +65,8 @@ private:
     void writeFeature(QTextStream &,
                       const Vamp::Plugin::Feature &f,
                       const Vamp::Plugin::Feature *optionalNextFeature);
+
+    int m_digits;
 };
 
 #endif

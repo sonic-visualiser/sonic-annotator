@@ -7,7 +7,7 @@ tmplab=$mypath/tmp_1_$$.lab
 
 trap "rm -f $tmplab" 0
 
-for output in notes-regions curve-vsr; do
+for output in notes-regions curve-vsr grid-oss; do
 
     flag=""
 
@@ -30,7 +30,7 @@ done
 # actually redundant, it's equivalent to -w csv --csv-separator '\t'
 # --csv-end-times --csv-omit-filename
 
-for output in notes-regions curve-vsr; do
+for output in notes-regions curve-vsr grid-oss; do
 
     flag=""
 
@@ -47,6 +47,18 @@ for output in notes-regions curve-vsr; do
 
     csvcompare "$tmplab" "$mypath/expected/$output-$flag.lab" || \
 	faildiff "Output differs from expected for CSV writer with output $output and $flag flag" "$tmplab" "$mypath/expected/$output-$flag.lab"
+done
+
+for output in grid-oss; do
+    for digits in 0 6 2; do
+
+	$r -d "$testplug:$output" -w lab --lab-stdout --lab-digits "$digits" "$infile" 2>/dev/null > "$tmplab" || \
+	    fail "Failed to run for plugin $testplug with output $output and digits $digits"
+
+	csvcompare "$tmplab" "$mypath/expected/$output-$digits.lab" || \
+	    faildiff "Output differs from expected for CSV writer with output $output and digits $digits" "$tmplab" "$mypath/expected/$output-$digits.lab"
+
+    done
 done
 
 exit 0
