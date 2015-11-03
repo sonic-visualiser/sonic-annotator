@@ -233,6 +233,9 @@ bool FeatureExtractionManager::addFeatureExtractor
                 // option print out only Vamp transforms
                 cerr << "ERROR: Failed to load plugin for transform \""
                      << transform.getIdentifier().toStdString() << "\"" << endl;
+                if (pb) {
+                    cerr << "NOTE: (A plugin was loaded, but apparently not a Vamp plugin)" << endl;
+                }
                 delete pb;
                 return false;
             }
@@ -414,7 +417,13 @@ bool FeatureExtractionManager::addDefaultFeatureExtractor
 
     Transform transform = tf->getDefaultTransformFor(transformId, m_sampleRate);
 
-    return addFeatureExtractor(transform, writers);
+    bool result = addFeatureExtractor(transform, writers);
+    if (!result) {
+        if (transform.getType() == Transform::UnknownType) {
+            cerr << "(Maybe mixed up filename with transform, or --transform with --default?)" << endl;
+        }
+    }
+    return result;
 }
 
 bool FeatureExtractionManager::addFeatureExtractorFromFile
