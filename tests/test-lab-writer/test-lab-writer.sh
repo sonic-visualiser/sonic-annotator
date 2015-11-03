@@ -55,7 +55,8 @@ for output in grid-oss; do
 	$r -d "$testplug:$output" -w lab --lab-stdout --lab-digits "$digits" "$infile" 2>/dev/null > "$tmplab" || \
 	    fail "Failed to run for plugin $testplug with output $output and digits $digits"
 
-	csvcompare "$tmplab" "$mypath/expected/$output-$digits.lab" || \
+	# no fuzz here
+	cmp -s "$tmplab" "$mypath/expected/$output-$digits.lab" || \
 	    faildiff "Output differs from expected for CSV writer with output $output and digits $digits" "$tmplab" "$mypath/expected/$output-$digits.lab"
 
     done
