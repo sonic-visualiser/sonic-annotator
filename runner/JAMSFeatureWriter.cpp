@@ -36,7 +36,8 @@ JAMSFeatureWriter::JAMSFeatureWriter() :
     m_network(false),
     m_networkRetrieved(false),
     m_n(1),
-    m_m(1)
+    m_m(1),
+    m_digits(6)
 {
 }
 
@@ -56,6 +57,11 @@ JAMSFeatureWriter::getSupportedParameters() const
     ParameterList pl = FileFeatureWriter::getSupportedParameters();
     Parameter p;
 
+    p.name = "digits";
+    p.description = "Specify the number of significant digits to use when printing transform outputs. Outputs are represented internally using single-precision floating-point, so digits beyond the 8th or 9th place are usually meaningless. The default is 6.";
+    p.hasArg = true;
+    pl.push_back(p);
+
     p.name = "network";
     p.description = "Attempt to retrieve RDF descriptions of plugins from network, if not available locally.";
     p.hasArg = false;
@@ -73,6 +79,14 @@ JAMSFeatureWriter::setParameters(map<string, string> &params)
          i != params.end(); ++i) {
         if (i->first == "network") {
             m_network = true;
+        } else if (i->first == "digits") {
+            int digits = atoi(i->second.c_str());
+            if (digits <= 0 || digits > 100) {
+                cerr << "JAMSFeatureWriter: ERROR: Invalid or out-of-range value for number of significant digits: " << i->second << endl;
+                cerr << "JAMSFeatureWriter: NOTE: Continuing with default settings" << endl;
+            } else {
+                m_digits = digits;
+            }
         }
     }
 }
@@ -125,17 +139,19 @@ JAMSFeatureWriter::write(QString trackId,
 	
         Plugin::Feature f(features[i]);
 
+        QString timestr = f.timestamp.toString().c_str();
+        timestr.replace(QRegExp("^ +"), "");
+
         if (f.hasDuration) {
+
+            QString endstr = (f.timestamp + f.duration).toString().c_str();
+            endstr.replace(QRegExp("^ +"), "");
+        
             d += QString
                 ("\"start\": { \"value\": %1 }, "
-                 "\"end\": { \"value\": %2 }")
-                .arg(realTime2Sec(f.timestamp))
-                .arg(realTime2Sec
-                     (f.timestamp +
-                      (f.hasDuration ? f.duration : Vamp::RealTime::zeroTime)));
+                 "\"end\": { \"value\": %2 }").arg(timestr).arg(endstr);
         } else {
-            d += QString("\"time\": { \"value\": %1 }")
-                .arg(realTime2Sec(f.timestamp));
+            d += QString("\"time\": { \"value\": %1 }").arg(timestr);
         }
         
         if (f.label != "") {
@@ -151,7 +167,7 @@ JAMSFeatureWriter::write(QString trackId,
                 } else if (isinf(f.values[j])) {
                     d += "\"Inf\"";
                 } else {
-                    d += QString("%1").arg(f.values[j]);
+                    d += QString("%1").arg(f.values[j], 0, 'g', m_digits);
                 }
                 if (j + 1 < int(f.values.size())) {
                     d += ", ";
@@ -439,11 +455,13 @@ JAMSFeatureWriter::writeTransformToObjectContents(const Transform &t)
     }
 
     if (t.getStartTime() != RealTime::zeroTime) {
-        json += ntpl.arg("start").arg(t.getStartTime().toDouble());
+        json += ntpl.arg("start")
+            .arg(t.getStartTime().toDouble(), 0, 'g', 9);
     }
 
     if (t.getDuration() != RealTime::zeroTime) {
-        json += ntpl.arg("duration").arg(t.getDuration().toDouble());
+        json += ntpl.arg("duration")
+            .arg(t.getDuration().toDouble(), 0, 'g', 9);
     }
 
     if (t.getSampleRate() != 0) {
@@ -460,7 +478,9 @@ JAMSFeatureWriter::writeTransformToObjectContents(const Transform &t)
             }
             QString name = i->first;
             float value = i->second;
-            json += QString("        \"%1\": %2").arg(name).arg(value);
+            json += QString("        \"%1\": %2")
+                .arg(name)
+                .arg(value, 0, 'g', 8); // parameter values always to high precision
         }
         json += QString("\n      },\n");
     }

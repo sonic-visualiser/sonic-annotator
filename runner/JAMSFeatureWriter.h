@@ -100,6 +100,7 @@ private:
     bool m_networkRetrieved;
     int m_n;
     int m_m;
+    int m_digits;
 };
 
 #endif

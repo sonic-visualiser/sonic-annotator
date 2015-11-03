@@ -1,0 +1,37 @@
+{
+"file_metadata": {
+  "filename": "20sec-silence.wav"
+},
+"unknown": [
+{ 
+  "annotation_metadata": {
+    "annotation_tools": "Sonic Annotator v1.3",
+    "data_source": "Automatic feature extraction",
+    "annotator": {
+      "plugin_id": "vamp:vamp-test-plugin:vamp-test-plugin",
+      "output_id": "instants",
+      "plugin_version": "3",
+      "step_size": 1024,
+      "block_size": 1024,
+      "sample_rate": 44100,
+      "parameters": {
+        "produce_output": 1
+      },
+      "transform_id": "vamp:vamp-test-plugin:vamp-test-plugin:instants"
+    }
+  },
+  "data": [
+    { "time": { "value": 0.000000000 }, "label": { "value": "1 of 10 at 0" } },
+    { "time": { "value": 1.500000000 }, "label": { "value": "2 of 10 at 1.5" } },
+    { "time": { "value": 3.000000000 }, "label": { "value": "3 of 10 at 3" } },
+    { "time": { "value": 4.500000000 }, "label": { "value": "4 of 10 at 4.5" } },
+    { "time": { "value": 6.000000000 }, "label": { "value": "5 of 10 at 6" } },
+    { "time": { "value": 7.500000000 }, "label": { "value": "6 of 10 at 7.5" } },
+    { "time": { "value": 9.000000000 }, "label": { "value": "7 of 10 at 9" } },
+    { "time": { "value": 10.500000000 }, "label": { "value": "8 of 10 at 10.5" } },
+    { "time": { "value": 12.000000000 }, "label": { "value": "9 of 10 at 12" } },
+    { "time": { "value": 13.500000000 }, "label": { "value": "10 of 10 at 13.5" } }
+  ]
+}
+]
+}

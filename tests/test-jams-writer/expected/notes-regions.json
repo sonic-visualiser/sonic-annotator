@@ -1,0 +1,37 @@
+{
+"file_metadata": {
+  "filename": "20sec-silence.wav"
+},
+"unknown": [
+{ 
+  "annotation_metadata": {
+    "annotation_tools": "Sonic Annotator v1.3",
+    "data_source": "Automatic feature extraction",
+    "annotator": {
+      "plugin_id": "vamp:vamp-test-plugin:vamp-test-plugin",
+      "output_id": "notes-regions",
+      "plugin_version": "3",
+      "step_size": 1024,
+      "block_size": 1024,
+      "sample_rate": 44100,
+      "parameters": {
+        "produce_output": 1
+      },
+      "transform_id": "vamp:vamp-test-plugin:vamp-test-plugin:notes-regions"
+    }
+  },
+  "data": [
+    { "start": { "value": 0.000000000 }, "end": { "value": 1.750000000 }, "label": { "value": "1 of 10: 0 at 0 dur. 1.75" }, "value": [ 0 ] },
+    { "start": { "value": 1.000000000 }, "end": { "value": 1.500000000 }, "label": { "value": "2 of 10: 0.1 at 1 dur. 0.5" }, "value": [ 0.1 ] },
+    { "start": { "value": 2.000000000 }, "end": { "value": 3.750000000 }, "label": { "value": "3 of 10: 0.2 at 2 dur. 1.75" }, "value": [ 0.2 ] },
+    { "start": { "value": 3.000000000 }, "end": { "value": 3.500000000 }, "label": { "value": "4 of 10: 0.3 at 3 dur. 0.5" }, "value": [ 0.3 ] },
+    { "start": { "value": 4.000000000 }, "end": { "value": 5.750000000 }, "label": { "value": "5 of 10: 0.4 at 4 dur. 1.75" }, "value": [ 0.4 ] },
+    { "start": { "value": 5.000000000 }, "end": { "value": 5.500000000 }, "label": { "value": "6 of 10: 0.5 at 5 dur. 0.5" }, "value": [ 0.5 ] },
+    { "start": { "value": 6.000000000 }, "end": { "value": 7.750000000 }, "label": { "value": "7 of 10: 0.6 at 6 dur. 1.75" }, "value": [ 0.6 ] },
+    { "start": { "value": 7.000000000 }, "end": { "value": 7.500000000 }, "label": { "value": "8 of 10: 0.7 at 7 dur. 0.5" }, "value": [ 0.7 ] },
+    { "start": { "value": 8.000000000 }, "end": { "value": 9.750000000 }, "label": { "value": "9 of 10: 0.8 at 8 dur. 1.75" }, "value": [ 0.8 ] },
+    { "start": { "value": 9.000000000 }, "end": { "value": 9.500000000 }, "label": { "value": "10 of 10: 0.9 at 9 dur. 0.5" }, "value": [ 0.9 ] }
+  ]
+}
+]
+}

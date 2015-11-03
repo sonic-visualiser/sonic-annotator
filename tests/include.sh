@@ -13,8 +13,8 @@ case "$(pwd)/$mypath" in
     ;;
 esac
 
-version=1.2
-nextversion=1.3
+version=1.3
+nextversion=1.4
 
 testdir=$mypath/..
 r=$testdir/../sonic-annotator
@@ -57,6 +57,12 @@ midicompare() {
     rv=$?
     rm "${a}__" "${b}__"
     return $rv
+}
+
+jsoncompare() {
+    a="$1"
+    b="$2"
+    cmp -s "$a" "$b"
 }
 
 faildiff() {

@@ -1,0 +1,11 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix vamp: <http://purl.org/ontology/vamp/>.
+@prefix examples: <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#>.
+@prefix : <#>.
+
+:transform0 a vamp:Transform;
+	vamp:plugin examples:amplitudefollower ;
+	vamp:output examples:amplitudefollower_output_amplitude .
+
+
+
