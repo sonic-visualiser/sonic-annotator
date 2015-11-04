@@ -744,9 +744,9 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
                 FeatureWriter::TrackMetadata m;
                 m.title = reader->getTitle();
                 m.maker = reader->getMaker();
-                if (m.title != "" || m.maker != "") {
-                    writers[j]->setTrackMetadata(audioSource, m);
-                }
+                m.duration = RealTime::frame2RealTime(reader->getFrameCount(),
+                                                      reader->getSampleRate());
+                writers[j]->setTrackMetadata(audioSource, m);
             }
         }
     }

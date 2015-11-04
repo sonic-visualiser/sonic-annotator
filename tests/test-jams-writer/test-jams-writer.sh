@@ -24,7 +24,26 @@ for output in instants curve-oss curve-fsr curve-fsr-timed curve-vsr grid-oss gr
 
 done
 
-# Now check for valid results, for a subset
+# If JAMS is installed, we can report on whether the outputs are valid
+# JAMS schema files or not -- unfortunately we can't comply with the
+# schema for most real plugins, so we can only make indicative reports
+# for most. This is such a limited test that we make it optional; it's
+# a bit much to expect everyone to have JAMS installed just for
+# this. Also the JAMS verifier doesn't currently always work for me
+# (e.g. it doesn't seem to work correctly with Python 3 at the moment)
+# so let's not make this fatal either.
+
+if jams_to_lab.py --help >/dev/null 2>&1; then
+
+    $r -t "$transformdir/onsets.n3" $mandatory --jams-one-file "$tmpjson" --jams-force "$infile" 2>/dev/null || \
+	fail "Failed to run for onsets"
+
+    if ! jams_to_lab.py "$tmpjson" test; then
+	echo "WARNING: JAMS schema verification failed for onsets"
+    fi
+fi
+
+# Now check against expected output, for a subset
 
 for output in instants curve-fsr grid-oss notes-regions; do
 

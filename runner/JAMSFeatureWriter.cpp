@@ -142,25 +142,42 @@ JAMSFeatureWriter::write(QString trackId,
         QString timestr = f.timestamp.toString().c_str();
         timestr.replace(QRegExp("^ +"), "");
 
+        QString durstr = "0.0";
         if (f.hasDuration) {
-
-            QString endstr = (f.timestamp + f.duration).toString().c_str();
-            endstr.replace(QRegExp("^ +"), "");
-        
-            d += QString
-                ("\"start\": { \"value\": %1 }, "
-                 "\"end\": { \"value\": %2 }").arg(timestr).arg(endstr);
-        } else {
-            d += QString("\"time\": { \"value\": %1 }").arg(timestr);
+            durstr = f.duration.toString().c_str();
+            durstr.replace(QRegExp("^ +"), "");
         }
+        
+        d += QString("\"time\": %1, \"duration\": %2, \"confidence\": 1.0")
+            .arg(timestr).arg(durstr);
+
+        // here we have to differ from the JAMS 0.2.0 spec. It allows
+        // a single "value" element which can be either a number or a
+        // string, depending on the selected task. But we may have
+        // many values and may have a label as well, and no way to
+        // know whether these can be made to conform to the JAMS task
+        // schema. We should just write what we have. If we only have
+        // a label, we can write that out as "value" as JAMS requests,
+        // but if we have a (numerical) value and a label, we really
+        // have to write them separately, and if we have multiple
+        // values we'll have to use an array. The chances of actually
+        // ending up with a schema-compliant JAMS format are quite
+        // small, which suggests JAMS isn't a great idea for this
+        // after all!
         
         if (f.label != "") {
-            d += QString(", \"label\": { \"value\": \"%2\" }")
-                .arg(f.label.c_str());
+            if (f.values.empty()) {
+                d += QString(", \"value\": \"%2\"").arg(f.label.c_str());
+            } else {
+                d += QString(", \"label\": \"%2\"").arg(f.label.c_str());
+            }
         }
 
-        if (f.values.size() > 0) {
-            d += QString(", \"value\": [ ");
+        if (!f.values.empty()) {
+            d += QString(", \"value\": ");
+            if (f.values.size() > 1) {
+                d += "[ ";
+            }
             for (int j = 0; j < int(f.values.size()); ++j) {
                 if (isnan(f.values[j])) {
                     d += "\"NaN\"";
@@ -173,7 +190,9 @@ JAMSFeatureWriter::write(QString trackId,
                     d += ", ";
                 }
             }
-            d += " ]";
+            if (f.values.size() > 1) {
+                d += " ]";
+            }
         }
             
         d += " }";
@@ -222,10 +241,16 @@ JAMSFeatureWriter::finish()
 
             stream << "{\n"
                    << QString("\"file_metadata\": {\n"
-                              "  \"filename\": \"%1\"")
+                              "  \"jams_version\": \"0.2.0\",\n"
+                              "  \"identifiers\": { \"filename\": \"%1\" }")
                 .arg(QFileInfo(trackId).fileName());
 
             if (m_trackMetadata.find(trackId) != m_trackMetadata.end()) {
+
+                QString durstr = m_trackMetadata[trackId].duration.toString().c_str();
+                durstr.replace(QRegExp("^ +"), "");
+                stream << QString(",\n  \"duration\": %1").arg(durstr);
+
                 if (m_trackMetadata[trackId].maker != "") {
                     stream << QString(",\n  \"artist\": \"%1\"")
                         .arg(m_trackMetadata[trackId].maker);
@@ -237,6 +262,7 @@ JAMSFeatureWriter::finish()
             }
 
             stream << "\n},\n";
+            stream << "\"annotations\": [\n";
 
             bool firstInTrack = true;
 
@@ -244,14 +270,6 @@ JAMSFeatureWriter::finish()
                  ti != m_streamTasks[sptr].end(); ++ti) {
                 
                 Task task = *ti;
-
-                if (!firstInTrack) {
-                    stream << ",\n";
-                }
-
-                stream << "\"" << getTaskKey(task) << "\": [\n";
-                
-                bool firstInTask = true;
 
                 for (DataIds::const_iterator di = m_streamData[sptr].begin();
                      di != m_streamData[sptr].end(); ++di) {
@@ -265,13 +283,14 @@ JAMSFeatureWriter::finish()
 
                     QString data = m_data[did];
 
-                    if (!firstInTask) {
+                    if (!firstInTrack) {
                         stream << ",\n";
                     }
 
+                    stream << "{\n  \"namespace\": \"" << getTaskKey(task) << "\",\n";
+
                     stream << QString
-                        ("{ \n"
-                         "  \"annotation_metadata\": {\n"
+                        ("  \"annotation_metadata\": {\n"
                          "    \"annotation_tools\": \"Sonic Annotator v%2\",\n"
                          "    \"data_source\": \"Automatic feature extraction\",\n"
                          "    \"annotator\": {\n"
@@ -285,12 +304,11 @@ JAMSFeatureWriter::finish()
                     stream << data;
 
                     stream << "\n  ]\n}";
-                    firstInTask = false;
+                    firstInTrack = false;
                 }
-
-                stream << "\n]";
-                firstInTrack = false;
             }
+
+            stream << "\n]";
 
             stream << "\n}";
             firstInStream = false;

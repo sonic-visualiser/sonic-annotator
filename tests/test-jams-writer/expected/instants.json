@@ -1,9 +1,12 @@
 {
 "file_metadata": {
-  "filename": "20sec-silence.wav"
+  "jams_version": "0.2.0",
+  "identifiers": { "filename": "20sec-silence.wav" },
+  "duration": 20.003265306
 },
-"unknown": [
-{ 
+"annotations": [
+{
+  "namespace": "unknown",
   "annotation_metadata": {
     "annotation_tools": "Sonic Annotator v1.3",
     "data_source": "Automatic feature extraction",
@@ -21,16 +24,16 @@
     }
   },
   "data": [
-    { "time": { "value": 0.000000000 }, "label": { "value": "1 of 10 at 0" } },
-    { "time": { "value": 1.500000000 }, "label": { "value": "2 of 10 at 1.5" } },
-    { "time": { "value": 3.000000000 }, "label": { "value": "3 of 10 at 3" } },
-    { "time": { "value": 4.500000000 }, "label": { "value": "4 of 10 at 4.5" } },
-    { "time": { "value": 6.000000000 }, "label": { "value": "5 of 10 at 6" } },
-    { "time": { "value": 7.500000000 }, "label": { "value": "6 of 10 at 7.5" } },
-    { "time": { "value": 9.000000000 }, "label": { "value": "7 of 10 at 9" } },
-    { "time": { "value": 10.500000000 }, "label": { "value": "8 of 10 at 10.5" } },
-    { "time": { "value": 12.000000000 }, "label": { "value": "9 of 10 at 12" } },
-    { "time": { "value": 13.500000000 }, "label": { "value": "10 of 10 at 13.5" } }
+    { "time": 0.000000000, "duration": 0.0, "confidence": 1.0, "value": "1 of 10 at 0" },
+    { "time": 1.500000000, "duration": 0.0, "confidence": 1.0, "value": "2 of 10 at 1.5" },
+    { "time": 3.000000000, "duration": 0.0, "confidence": 1.0, "value": "3 of 10 at 3" },
+    { "time": 4.500000000, "duration": 0.0, "confidence": 1.0, "value": "4 of 10 at 4.5" },
+    { "time": 6.000000000, "duration": 0.0, "confidence": 1.0, "value": "5 of 10 at 6" },
+    { "time": 7.500000000, "duration": 0.0, "confidence": 1.0, "value": "6 of 10 at 7.5" },
+    { "time": 9.000000000, "duration": 0.0, "confidence": 1.0, "value": "7 of 10 at 9" },
+    { "time": 10.500000000, "duration": 0.0, "confidence": 1.0, "value": "8 of 10 at 10.5" },
+    { "time": 12.000000000, "duration": 0.0, "confidence": 1.0, "value": "9 of 10 at 12" },
+    { "time": 13.500000000, "duration": 0.0, "confidence": 1.0, "value": "10 of 10 at 13.5" }
   ]
 }
 ]

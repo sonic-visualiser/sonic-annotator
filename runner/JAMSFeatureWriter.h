@@ -14,8 +14,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _JAMS_FEATURE_WRITER_H_
-#define _JAMS_FEATURE_WRITER_H_
+#ifndef JAMS_FEATURE_WRITER_H
+#define JAMS_FEATURE_WRITER_H
 
 #include "transform/FileFeatureWriter.h"
 

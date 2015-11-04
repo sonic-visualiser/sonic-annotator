@@ -17,5 +17,8 @@ iconv --version >/dev/null || \
 echo '{}' | json_verify >/dev/null || \
     fail "Can't find required json_verify program, or it doesn't seem to work"
 
+echo '{}' | json_reformat >/dev/null || \
+    fail "Can't find required json_reformat program, or it doesn't seem to work"
+
 exit 0
 

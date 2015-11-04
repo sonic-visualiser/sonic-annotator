@@ -62,7 +62,12 @@ midicompare() {
 jsoncompare() {
     a="$1"
     b="$2"
+    cat "$a" | json_reformat > "${a}__"
+    cat "$b" | json_reformat > "${b}__"
     cmp -s "$a" "$b"
+    rv=$?
+    rm "${a}__" "${b}__"
+    return $rv
 }
 
 faildiff() {
