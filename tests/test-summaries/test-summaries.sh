@@ -78,10 +78,10 @@ rapper -i turtle $tmpfile -o turtle 2>/dev/null | grep -v '^@prefix :' | grep -v
     fail "Fails to produce parseable RDF/TTL for transform $stransform"
 
 rapper -i turtle ${sexpected}.n3 -o turtle 2>/dev/null | grep -v '^@prefix :' | grep -v 'file:/' > $expcanonical ||
-    fail "Internal error: Failed to canonicalise expected output file $expected.n3"
+    fail "Internal error: Failed to canonicalise expected output file $sexpected.n3"
 
 compare $tmpcanonical $expcanonical || \
-    faildiff "Output mismatch for canonicalised version of transform $stransform" $tmpcanonical $expcanonical
+    faildiff "Output mismatch against expected $sexpected.n3 for canonicalised version of transform $stransform" $tmpcanonical $expcanonical
 
 exit 0
 
