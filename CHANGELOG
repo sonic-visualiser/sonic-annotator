@@ -1,3 +1,16 @@
+Changes in Sonic Annotator 1.3 since the previous release 1.2:
+
+Back-end (feature writer) changes:
+
+ - Add the --csv-digits, --lab-digits, and --jams-digits options to
+   control the number of significant figures printed for feature values
+
+ - Update the JAMS writer to JAMS 0.2.0 format
+
+ - Show a more useful error message when user provides a filename
+   instead of a transform id to the -d option (happened to me when
+   cut-and-pasting command lines and I was quite baffled at first)
+
 
 Changes in Sonic Annotator 1.2 since the previous release 1.1:
 
