@@ -1,5 +1,5 @@
 
-AC_INIT([Sonic Annotator], [1.2], cannam@all-day-breakfast.com)
+AC_INIT([Sonic Annotator], [], cannam@all-day-breakfast.com)
 
 AC_CONFIG_SRCDIR(runner/main.cpp)
 
@@ -108,7 +108,7 @@ AC_SUBST(CXX)
 AC_SUBST(QMAKE_CONFIG)
 
 AC_CONFIG_SUBDIRS([svcore])
-AC_CONFIG_FILES([config.pri version.h])
+AC_CONFIG_FILES([config.pri])
 
 AC_OUTPUT
 
