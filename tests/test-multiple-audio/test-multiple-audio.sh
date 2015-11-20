@@ -99,3 +99,13 @@ expected=$mypath/expected/playlist
 csvcompare $tmpfile $expected.csv || \
     faildiff "Output mismatch for transform $transform with summaries and mixed local/remote 2-file input" $tmpfile $expected.csv
 
+
+# 9. As 3, but multiplexing rather than extracting separately from each file
+
+$r -t $transform --multiplex -w csv --csv-stdout $audiopath/3clicks.mp3 $audiopath/6clicks.ogg --summary-only 2>/dev/null | sed 's,^"[^"]*/,",' > $tmpfile || \
+    fail "Fails to run transform $transform with 2-file input"
+
+expected=$mypath/expected/multiplexed
+csvcompare $tmpfile $expected.csv || \
+    faildiff "Output mismatch for transform $transform with summaries and 2-file multiplexed input" $tmpfile $expected.csv
+
