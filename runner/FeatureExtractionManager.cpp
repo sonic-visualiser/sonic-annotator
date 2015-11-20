@@ -616,6 +616,12 @@ FeatureExtractionManager::prepareReader(QString source)
     if (!reader) {
         throw FailedToOpenFile(source);
     }
+    if (reader->getChannelCount() != m_channels ||
+        reader->getNativeRate() != m_sampleRate) {
+        cerr << "NOTE: File will be mixed or resampled for processing, to: "
+             << m_channels << "ch at " 
+             << m_sampleRate << "Hz" << endl;
+    }
     return reader;
 }
 
@@ -628,12 +634,6 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
     cerr << "Audio file \"" << audioSource.toStdString() << "\": "
          << reader->getChannelCount() << "ch at " 
          << reader->getNativeRate() << "Hz" << endl;
-    if (reader->getChannelCount() != m_channels ||
-        reader->getNativeRate() != m_sampleRate) {
-        cerr << "NOTE: File will be mixed or resampled for processing, to: "
-             << m_channels << "ch at " 
-             << m_sampleRate << "Hz" << endl;
-    }
 
     // allocate audio buffers
     float **data = new float *[m_channels];

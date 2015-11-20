@@ -60,7 +60,7 @@ MultiplexedReader::getInterleavedFrames(sv_frame_t start, sv_frame_t frameCount)
     for (int out_chan = 0; out_chan < out_chans; ++out_chan) {
 
 	AudioFileReader *reader = m_readers[out_chan];
-	SampleBlock readerBlock = getInterleavedFrames(start, frameCount);
+	SampleBlock readerBlock = reader->getInterleavedFrames(start, frameCount);
 
 	int in_chans = reader->getChannelCount();
 
