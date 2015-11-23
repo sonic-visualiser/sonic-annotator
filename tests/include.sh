@@ -13,8 +13,8 @@ case "$(pwd)/$mypath" in
     ;;
 esac
 
-version=1.3
-nextversion=1.4
+version=1.4
+nextversion=1.5
 
 testdir=$mypath/..
 r=$testdir/../sonic-annotator
@@ -60,11 +60,13 @@ midicompare() {
 }
 
 jsoncompare() {
+    # The Sonic Annotator version number appears in the JAMS output --
+    # filter that out, and also reformat to ignore whitespace differences
     a="$1"
     b="$2"
-    cat "$a" | json_reformat > "${a}__"
-    cat "$b" | json_reformat > "${b}__"
-    cmp -s "$a" "$b"
+    cat "$a" | sed 's/Sonic Annotator v[0-9.]*/Sonic Annotator vXXX/' | json_reformat > "${a}__"
+    cat "$b" | sed 's/Sonic Annotator v[0-9.]*/Sonic Annotator vXXX/' | json_reformat > "${b}__"
+    cmp -s "${a}__" "${b}__"
     rv=$?
     rm "${a}__" "${b}__"
     return $rv
