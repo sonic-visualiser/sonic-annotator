@@ -25,6 +25,9 @@ AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 
+# We are daringly making use of C++11 now
+AX_CXX_COMPILE_STDCXX_11(noext)
+
 AC_HEADER_STDC
 
 # These are the flags Autoconf guesses for us; we use them later if
