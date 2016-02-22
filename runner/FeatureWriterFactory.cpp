@@ -25,6 +25,7 @@
 #include "MIDIFeatureWriter.h"
 #include "JAMSFeatureWriter.h"
 #include "LabFeatureWriter.h"
+#include "JsonLDFeatureWriter.h"
 
 set<string>
 FeatureWriterFactory::getWriterTags()
@@ -37,6 +38,7 @@ FeatureWriterFactory::getWriterTags()
     tags.insert("lab");
     tags.insert("midi");
     tags.insert("jams");
+    tags.insert("jsld");
     return tags;
 }
 
@@ -57,6 +59,8 @@ FeatureWriterFactory::createWriter(string tag)
         return new MIDIFeatureWriter();
     } else if (tag == "jams") {
         return new JAMSFeatureWriter();
+    } else if (tag == "jsld") {
+        return new JsonLDFeatureWriter();
     }
 
     return 0;

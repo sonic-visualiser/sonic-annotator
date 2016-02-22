@@ -101,7 +101,8 @@ HEADERS += \
         runner/JAMSFeatureWriter.h \
         runner/LabFeatureWriter.h \
         runner/MIDIFeatureWriter.h \
-        runner/MultiplexedReader.h
+        runner/MultiplexedReader.h \
+    runner/JsonLDFeatureWriter.h
 
 SOURCES += \
         vamp-plugin-sdk/src/vamp-hostsdk/PluginBufferingAdapter.cpp \
@@ -120,7 +121,8 @@ SOURCES += \
         runner/JAMSFeatureWriter.cpp \
         runner/LabFeatureWriter.cpp \
         runner/MIDIFeatureWriter.cpp \
-        runner/MultiplexedReader.cpp
+        runner/MultiplexedReader.cpp \
+    runner/JsonLDFeatureWriter.cpp
 
 !win32 {
     QMAKE_POST_LINK=/bin/bash tests/test.sh
