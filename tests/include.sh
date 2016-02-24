@@ -83,7 +83,7 @@ faildiff() {
 	echo "--"
 	cat "$3"
 	echo "--"
-	echo "Diff:"
+	echo "Diff (output on left, expected on right):"
 	echo "--"
 	sdiff -w78 "$2" "$3"
 	echo "--"
