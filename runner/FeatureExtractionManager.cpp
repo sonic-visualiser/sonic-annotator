@@ -323,6 +323,8 @@ bool FeatureExtractionManager::addFeatureExtractor
                  << " (adapter step and block size " << m_blockSize << ")"
                  << endl;
 
+//            cerr << "NOTE: That transform is: " << transform.toXmlString() << endl;
+            
             if (pida) {
                 cerr << "NOTE: PluginInputDomainAdapter timestamp adjustment is "
 
@@ -382,8 +384,11 @@ bool FeatureExtractionManager::addFeatureExtractor
 
         m_transformPluginMap[transform] = plugin;
 
+//        cerr << "NOTE: Assigned plugin " << plugin << " for transform: " << transform.toXmlString() << endl;
+
         if (!(originalTransform == transform)) {
             m_transformPluginMap[originalTransform] = plugin;
+//            cerr << "NOTE: Also assigned plugin " << plugin << " for original transform: " << originalTransform.toXmlString() << endl;
         }
 
     } else {
@@ -742,7 +747,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 
         PluginMap::iterator pi = m_plugins.find(plugin);
 
-        std::cerr << "Calling reset on " << plugin << std::endl;
+//        std::cerr << "Calling reset on " << plugin << std::endl;
         plugin->reset();
 
         for (TransformWriterMap::iterator ti = pi->second.begin();
@@ -923,6 +928,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
         }
 
         if (!m_summaries.empty()) {
+            // Summaries requested on the command line, for all transforms
             PluginSummarisingAdapter *adapter =
                 dynamic_cast<PluginSummarisingAdapter *>(plugin);
             if (!adapter) {
@@ -939,12 +945,13 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
                     featureSet = adapter->getSummaryForAllOutputs
                         (getSummaryType(*sni),
                          PluginSummarisingAdapter::ContinuousTimeAverage);
-                    writeFeatures(audioSource, plugin, featureSet,//!!! *sni);
+                    writeFeatures(audioSource, plugin, featureSet,
                                   Transform::stringToSummaryType(sni->c_str()));
                 }
             }
         }
 
+        // Summaries specified in transform definitions themselves
         writeSummaries(audioSource, plugin);
     }
 
@@ -966,11 +973,15 @@ FeatureExtractionManager::writeSummaries(QString audioSource, Plugin *plugin)
         
         const Transform &transform = ti->first;
 
+//        cerr << "FeatureExtractionManager::writeSummaries: plugin is " << plugin
+//             << ", found transform: " << transform.toXmlString() << endl;
+        
         Transform::SummaryType summaryType = transform.getSummaryType();
         PluginSummarisingAdapter::SummaryType pType =
             (PluginSummarisingAdapter::SummaryType)summaryType;
 
         if (transform.getSummaryType() == Transform::NoSummary) {
+//            cerr << "(no summary, continuing)" << endl;
             continue;
         }
 
@@ -984,7 +995,7 @@ FeatureExtractionManager::writeSummaries(QString audioSource, Plugin *plugin)
         Plugin::FeatureSet featureSet = adapter->getSummaryForAllOutputs
             (pType, PluginSummarisingAdapter::ContinuousTimeAverage);
 
-//        cout << "summary type " << int(pType) << " for transform:" << endl << transform.toXmlString().toStdString()<< endl << "... feature set with " << featureSet.size() << " elts" << endl;
+//        cerr << "summary type " << int(pType) << " for transform:" << endl << transform.toXmlString().toStdString()<< endl << "... feature set with " << featureSet.size() << " elts" << endl;
 
         writeFeatures(audioSource, plugin, featureSet, summaryType);
     }
@@ -998,21 +1009,25 @@ void FeatureExtractionManager::writeFeatures(QString audioSource,
     // caller should have ensured plugin is in m_plugins
     PluginMap::iterator pi = m_plugins.find(plugin);
 
+    // Write features from the feature set passed in, according to the
+    // transforms listed for the given plugin with the given summary type
+    
     for (TransformWriterMap::const_iterator ti = pi->second.begin();
          ti != pi->second.end(); ++ti) {
         
         const Transform &transform = ti->first;
         const vector<FeatureWriter *> &writers = ti->second;
-        
-        if (transform.getSummaryType() != Transform::NoSummary &&
-            m_summaries.empty() &&
-            summaryType == Transform::NoSummary) {
-            continue;
-        }
 
-        if (transform.getSummaryType() != Transform::NoSummary &&
-            summaryType != Transform::NoSummary &&
-            transform.getSummaryType() != summaryType) {
+//        cerr << "writeFeatures: plugin " << plugin << " has transform: " << transform.toXmlString() << endl;
+
+        if (transform.getSummaryType() == Transform::NoSummary &&
+            !m_summaries.empty()) {
+//            cerr << "transform has no summary, but summaries requested on command line, so going for it anyway" << endl;
+        } else if (transform.getSummaryType() != summaryType) {
+            // Either we're not writing a summary and the transform
+            // has one, or we're writing a summary but the transform
+            // has none or a different one; either way, skip it
+//            cerr << "summary type differs from passed-in one " << summaryType << endl;
             continue;
         }
 
@@ -1030,6 +1045,8 @@ void FeatureExtractionManager::writeFeatures(QString audioSource,
         Plugin::FeatureSet::const_iterator fsi = features.find(outputIndex);
         if (fsi == features.end()) continue;
 
+//        cerr << "this transform has " << writers.size() << " writer(s)" << endl;
+        
         for (int j = 0; j < (int)writers.size(); ++j) {
             writers[j]->write
                 (audioSource, transform, desc, fsi->second,

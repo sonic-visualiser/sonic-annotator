@@ -114,8 +114,8 @@ private:
     OutputIndexMap m_pluginOutputIndices;
 
     typedef set<std::string> SummaryNameSet;
-    SummaryNameSet m_summaries;
-    bool m_summariesOnly;
+    SummaryNameSet m_summaries; // requested on command line for all transforms
+    bool m_summariesOnly; // command line flag
     Vamp::HostExt::PluginSummarisingAdapter::SegmentBoundaries m_boundaries;
 
     AudioFileReader *prepareReader(QString audioSource);

@@ -857,8 +857,7 @@ int main(int argc, char **argv)
     if (!requestedSummaryTypes.empty()) {
         if (!manager.setSummaryTypes(requestedSummaryTypes,
                                      boundaries)) {
-            cerr << myname
-                 << ": failed to set requested summary types" << endl;
+            cerr << myname << ": failed to set requested summary types" << endl;
             exit(1);
         }
     }

@@ -13,6 +13,7 @@
 	vamp:output examples:percussiononsets_output_detectionfunction ;
 	vamp:summary_type "median" .
 
+# This is not a summary and so should not appear with --summary-only
 :transform2 a vamp:Transform;
 	vamp:plugin examples:percussiononsets ;
 	vamp:output examples:percussiononsets_output_onsets .
@@ -22,11 +23,19 @@
 	vamp:output examples:percussiononsets_output_detectionfunction ;
 	vamp:summary_type "mode" .
 
+# This has different step and block sizes from the default
+# (:transform0), and so should be listed separately with different
+# values in the output
 :transform4 a vamp:Transform;
 	vamp:plugin examples:percussiononsets ;
 	vamp:output examples:percussiononsets_output_detectionfunction ;
-	vamp:step_size 2048 ;
-	vamp:block_size 4096 ;
+	vamp:step_size 4096 ;
+	vamp:block_size 8192 ;
 	vamp:summary_type "mean" .
+
+# This is not a summary and so should not appear with --summary-only
+:transform5 a vamp:Transform;
+	vamp:plugin examples:percussiononsets ;
+	vamp:output examples:percussiononsets_output_detectionfunction .
 
  
