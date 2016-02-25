@@ -80,7 +80,7 @@ MY_LIBS = -Lsvcore/release -Ldataquay/release $$MY_LIBS
 
 LIBS = $$MY_LIBS $$LIBS
 
-#PRE_TARGETDEPS += svcore/libsvcore.a
+PRE_TARGETDEPS += svcore/libsvcore.a
 
 HEADERS += \
         vamp-plugin-sdk/vamp-hostsdk/PluginBase.h \
