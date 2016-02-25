@@ -5,6 +5,7 @@ mypath=`dirname $0`
 for x in \
     supportprogs \
     helpfulflags \
+    parse-errors \
     transforms-basic \
     audioformat \
     vamp-test-plugin \
