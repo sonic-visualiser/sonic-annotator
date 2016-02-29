@@ -12,7 +12,7 @@ transform=$mypath/transforms/detectionfunction.n3
 urlbase=http://vamp-plugins.org/sonic-annotator/testfiles
 
 have_network=yes
-if ! ping -c 1 8.8.8.8 2>/dev/null ; then
+if ! ping -c 1 8.8.8.8 2>/dev/null 1>&2 ; then
     echo "(network appears unavailable, skipping networking tests)"
     have_network=no
 fi
