@@ -13,6 +13,8 @@ mac* {
     LIBS += -Lsv-dependency-builds/osx/lib
 }
 
+INCLUDEPATH += vamp-plugin-sdk
+
 exists(config.pri) {
     include(config.pri)
 }
@@ -48,10 +50,6 @@ QT -= gui widgets
 # look for win32 features
 win32-x-g++:QMAKE_LFLAGS += -Wl,-subsystem,console
 
-# If you have compiled your Vamp plugin SDK with FFTW (using its
-# HAVE_FFTW3 flag), you can define the same flag here to ensure the
-# program saves and restores FFTW wisdom in its configuration properly
-#
 DEFINES += HAVE_FFTW3
 
 TARGET = sonic-annotator
@@ -113,6 +111,7 @@ SOURCES += \
         vamp-plugin-sdk/src/vamp-hostsdk/PluginSummarisingAdapter.cpp \
         vamp-plugin-sdk/src/vamp-hostsdk/PluginWrapper.cpp \
         vamp-plugin-sdk/src/vamp-hostsdk/RealTime.cpp \
+        vamp-plugin-sdk/src/vamp-hostsdk/Files.cpp \
 	runner/main.cpp \
 	runner/DefaultFeatureWriter.cpp \
 	runner/FeatureExtractionManager.cpp \

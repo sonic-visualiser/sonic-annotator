@@ -83,5 +83,6 @@ rapper -i turtle ${sexpected}.n3 -o turtle 2>/dev/null | grep -v '^@prefix :' | 
 compare $tmpcanonical $expcanonical || \
     faildiff "Output mismatch against expected $sexpected.n3 for canonicalised version of transform $stransform" $tmpcanonical $expcanonical
 
-exit 0
+bash "$mypath/test-summaries-testplugin.sh"
+
 
