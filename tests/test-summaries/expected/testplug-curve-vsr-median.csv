@@ -1,0 +1,16 @@
+# Sonic Annotator's summary method integrates the values across
+# time. If an output lacks duration for its features, each feature is
+# considered to extend until the timestamp of the following feature,
+# and the final feature is considered to extend until the end of the
+# input or the last-ending output, whichever is later.
+#
+# The curve-vsr output is therefore considered to have 9 values (0.0
+# to 0.8) that span 0.75 seconds each, followed by one value (0.9)
+# that spans the 3 seconds from 6.75 to 9.75 where the final output of
+# the plugin ends (that's the notes-regions output).
+#
+# Since the values from this output are already sorted and are
+# distinct, the integrated median is just whatever is in effect at
+# time 9.75 / 2.0 = 4.875. This value is 0.6.
+#
+0.000000000,9.750000000,median,0.6,"(median value, continuous-time average)"
