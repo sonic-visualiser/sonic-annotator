@@ -8,10 +8,19 @@ tmpfile2=$mypath/tmp_2_$$
 
 trap "rm -f $tmpfile $tmpfile2" 0
 
-for output in curve-vsr grid-fsr notes-regions; do
+for output in curve-vsr grid-fsr; do
 
     for summary in min max mean median mode sum variance sd count; do
 
+	# grid-fsr is bulkier, and we're only really concerned that
+	# we're getting a sane result per bin, so just do min and max
+	# there
+	if [ "$output" = "grid-fsr" ]; then
+	    case "$summary" in
+		mean|median|mode|sum|variance|sd|count) continue;;
+	    esac
+	fi
+	
 	id="$testplug:$output"
 	expected="$mypath/expected/testplug-$output-$summary.csv"
 
