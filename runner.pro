@@ -27,6 +27,7 @@ exists(config.pri) {
     LIBS += -lbz2 -lfftw3 -lfftw3f -lsndfile -lFLAC -logg -lvorbis -lvorbisenc -lvorbisfile -logg -lmad -lid3tag -lsamplerate -lz -lsord-0 -lserd-0
 
     win* {
+        DEFINES += _USE_MATH_DEFINES
         LIBS += -lwinmm -lws2_32
     }
     macx* {
