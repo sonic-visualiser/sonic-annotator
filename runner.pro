@@ -1,5 +1,7 @@
 TEMPLATE = app
 
+INCLUDEPATH += vamp-plugin-sdk
+
 win32-g++ {
     INCLUDEPATH += sv-dependency-builds/win32-mingw/include
     LIBS += -Lsv-dependency-builds/win32-mingw/lib
@@ -13,8 +15,6 @@ mac* {
     LIBS += -Lsv-dependency-builds/osx/lib
 }
 
-INCLUDEPATH += vamp-plugin-sdk
-
 exists(config.pri) {
     include(config.pri)
 }
@@ -24,7 +24,7 @@ exists(config.pri) {
     CONFIG += release
     DEFINES += NDEBUG BUILD_RELEASE NO_TIMING
 
-    DEFINES += HAVE_BZ2 HAVE_FFTW3 HAVE_FFTW3F HAVE_SNDFILE HAVE_SAMPLERATE HAVE_VAMP HAVE_VAMPHOSTSDK HAVE_DATAQUAY HAVE_MAD HAVE_ID3TAG
+    DEFINES += HAVE_BZ2 HAVE_FFTW3 HAVE_FFTW3F HAVE_SNDFILE HAVE_SAMPLERATE HAVE_DATAQUAY HAVE_MAD HAVE_ID3TAG
 
     LIBS += -lbz2 -lfftw3 -lfftw3f -lsndfile -lFLAC -logg -lvorbis -lvorbisenc -lvorbisfile -logg -lmad -lid3tag -lsamplerate -lz -lsord-0 -lserd-0
 
@@ -50,7 +50,7 @@ QT -= gui widgets
 # look for win32 features
 win32-x-g++:QMAKE_LFLAGS += -Wl,-subsystem,console
 
-DEFINES += HAVE_FFTW3
+DEFINES += HAVE_FFTW3 HAVE_VAMP HAVE_VAMPHOSTSDK
 
 TARGET = sonic-annotator
 
