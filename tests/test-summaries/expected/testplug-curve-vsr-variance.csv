@@ -1,0 +1,20 @@
+# Sonic Annotator's summary method integrates the values across
+# time. If an output lacks duration for its features, each feature is
+# considered to extend until the timestamp of the following feature,
+# and the final feature is considered to extend until the end of the
+# input or the last-ending output, whichever is later.
+#
+# The curve-vsr output is therefore considered to have 9 values (0.0
+# to 0.8) that span 0.75 seconds each, followed by one value (0.9)
+# that spans the 3 seconds from 6.75 to 9.75 where the final output of
+# the plugin ends (that's the notes-regions output).
+#
+# We can consider the last feature the same as four features of 0.75
+# seconds each (i.e. the same durations as the first 9) each with the
+# same value, 0.9.
+#
+# The mean m is then 7.2 / 13 = 0.553846 approx, and the variance is
+# the sum for each of the 13 (partly fictitious) values v of (v-m)^2,
+# divided by 13. This works out as 0.0994083 ish.
+#
+0.000000000,9.750000000,variance,0.0994083,"(variance, continuous-time average)"

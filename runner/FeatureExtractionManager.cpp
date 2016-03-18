@@ -323,6 +323,8 @@ bool FeatureExtractionManager::addFeatureExtractor
                  << " (adapter step and block size " << m_blockSize << ")"
                  << endl;
 
+//            cerr << "NOTE: That transform is: " << transform.toXmlString() << endl;
+            
             if (pida) {
                 cerr << "NOTE: PluginInputDomainAdapter timestamp adjustment is "
 
@@ -382,8 +384,11 @@ bool FeatureExtractionManager::addFeatureExtractor
 
         m_transformPluginMap[transform] = plugin;
 
+//        cerr << "NOTE: Assigned plugin " << plugin << " for transform: " << transform.toXmlString() << endl;
+
         if (!(originalTransform == transform)) {
             m_transformPluginMap[originalTransform] = plugin;
+//            cerr << "NOTE: Also assigned plugin " << plugin << " for original transform: " << originalTransform.toXmlString() << endl;
         }
 
     } else {
@@ -427,11 +432,36 @@ bool FeatureExtractionManager::addDefaultFeatureExtractor
 }
 
 bool FeatureExtractionManager::addFeatureExtractorFromFile
-(QString transformXmlFile, const vector<FeatureWriter*> &writers)
+(QString transformFile, const vector<FeatureWriter*> &writers)
 {
-    bool tryRdf = true;
+    // We support two formats for transform description files, XML (in
+    // a format specific to Sonic Annotator) and RDF/Turtle. The RDF
+    // format can describe multiple transforms in a single file, the
+    // XML only one.
+    
+    // Possible errors we should report:
+    //
+    // 1. File does not exist or cannot be opened
+    // 2. File is ostensibly XML, but is not parseable
+    // 3. File is ostensibly Turtle, but is not parseable
+    // 4. File is XML, but contains no valid transform (e.g. is unrelated XML)
+    // 5. File is Turtle, but contains no valid transform(s)
+    // 6. File is Turtle and contains both valid and invalid transform(s)
 
-    if (transformXmlFile.endsWith(".xml") || transformXmlFile.endsWith(".XML")) {
+    {
+        // We don't actually need to open this here yet, we just hoist
+        // it to the top for error reporting purposes
+        QFile file(transformFile);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            // Error case 1. File does not exist or cannot be opened
+            cerr << "ERROR: Failed to open transform file \"" << transformFile
+                 << "\" for reading" << endl;
+            return false;
+        }
+    }
+    
+    bool tryRdf = true;
+    if (transformFile.endsWith(".xml") || transformFile.endsWith(".XML")) {
         // We don't support RDF-XML (and nor does the underlying
         // parser library) so skip the RDF parse if the filename
         // suggests XML, to avoid puking out a load of errors from
@@ -439,44 +469,90 @@ bool FeatureExtractionManager::addFeatureExtractorFromFile
         tryRdf = false;
     }
 
+    bool tryXml = true;
+    if (transformFile.endsWith(".ttl") || transformFile.endsWith(".TTL") ||
+        transformFile.endsWith(".ntriples") || transformFile.endsWith(".NTRIPLES") ||
+        transformFile.endsWith(".n3") || transformFile.endsWith(".N3")) {
+        tryXml = false;
+    }
+
+    QString rdfError, xmlError;
+    
     if (tryRdf) {
+
         RDFTransformFactory factory
-            (QUrl::fromLocalFile(QFileInfo(transformXmlFile).absoluteFilePath())
+            (QUrl::fromLocalFile(QFileInfo(transformFile).absoluteFilePath())
              .toString());
         ProgressPrinter printer("Parsing transforms RDF file");
         std::vector<Transform> transforms = factory.getTransforms(&printer);
-        if (!factory.isOK()) {
-            cerr << "WARNING: FeatureExtractionManager::addFeatureExtractorFromFile: Failed to parse transforms file: " << factory.getErrorString().toStdString() << endl;
-            if (factory.isRDF()) {
-                return false; // no point trying it as XML
-            }
-        }
-        if (!transforms.empty()) {
-            bool success = true;
-            for (int i = 0; i < (int)transforms.size(); ++i) {
-                if (!addFeatureExtractor(transforms[i], writers)) {
-                    success = false;
+
+        if (factory.isOK()) {
+            if (transforms.empty()) {
+                cerr << "ERROR: Transform file \"" << transformFile
+                     << "\" is valid RDF but defines no transforms" << endl;
+                return false;
+            } else {
+                bool success = true;
+                for (int i = 0; i < (int)transforms.size(); ++i) {
+                    if (!addFeatureExtractor(transforms[i], writers)) {
+                        success = false;
+                    }
                 }
+                return success;
             }
-            return success;
+        } else { // !factory.isOK()
+            if (factory.isRDF()) {
+                cerr << "ERROR: Invalid transform RDF file \"" << transformFile
+                     << "\": " << factory.getErrorString() << endl;
+                return false;
+            }
+
+            // the not-RDF case: fall through without reporting an
+            // error, so we try the file as XML, and if that fails, we
+            // print a general unparseable-file error
+            rdfError = factory.getErrorString();
         }
     }
 
-    QFile file(transformXmlFile);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        cerr << "ERROR: Failed to open transform XML file \""
-             << transformXmlFile.toStdString() << "\" for reading" << endl;
-        return false;
+    if (tryXml) {
+        
+        QFile file(transformFile);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            cerr << "ERROR: Failed to open transform file \""
+                 << transformFile.toStdString() << "\" for reading" << endl;
+            return false;
+        }
+        
+        QTextStream *qts = new QTextStream(&file);
+        QString qs = qts->readAll();
+        delete qts;
+        file.close();
+    
+        Transform transform(qs);
+        xmlError = transform.getErrorString();
+
+        if (xmlError == "") {
+
+            if (transform.getIdentifier() == "") {
+                cerr << "ERROR: Transform file \"" << transformFile
+                     << "\" is valid XML but defines no transform" << endl;
+                return false;
+            }
+
+            return addFeatureExtractor(transform, writers);
+        }
     }
 
-    QTextStream *qts = new QTextStream(&file);
-    QString qs = qts->readAll();
-    delete qts;
-    file.close();
+    cerr << "ERROR: Transform file \"" << transformFile
+         << "\" could not be parsed" << endl;
+    if (rdfError != "") {
+        cerr << "ERROR: RDF parser reported: " << rdfError << endl;
+    }
+    if (xmlError != "") {
+        cerr << "ERROR: XML parser reported: " << xmlError << endl;
+    }
 
-    Transform transform(qs);
-
-    return addFeatureExtractor(transform, writers);
+    return false;
 }
 
 void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex)
@@ -489,7 +565,7 @@ void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex
 
     if (m_channels == 0 || m_defaultSampleRate == 0) {
 
-        ProgressPrinter retrievalProgress("Determining default rate and channel count from first input file...");
+        ProgressPrinter retrievalProgress("Retrieving first input file to determine default rate and channel count...");
 
         FileSource source(audioSource, &retrievalProgress);
         if (!source.isAvailable()) {
@@ -524,14 +600,14 @@ void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex
             if (m_channels == 0) {
                 m_channels = reader->getChannelCount();
                 cerr << "Taking default channel count of "
-                     << reader->getChannelCount() << " from file" << endl;
+                     << reader->getChannelCount() << " from audio file" << endl;
             }
         }
 
         if (m_defaultSampleRate == 0) {
             m_defaultSampleRate = reader->getNativeRate();
             cerr << "Taking default sample rate of "
-                 << reader->getNativeRate() << "Hz from file" << endl;
+                 << reader->getNativeRate() << "Hz from audio file" << endl;
             cerr << "(Note: Default may be overridden by transforms)" << endl;
         }
 
@@ -616,6 +692,12 @@ FeatureExtractionManager::prepareReader(QString source)
     if (!reader) {
         throw FailedToOpenFile(source);
     }
+    if (reader->getChannelCount() != m_channels ||
+        reader->getNativeRate() != m_sampleRate) {
+        cerr << "NOTE: File will be mixed or resampled for processing, to: "
+             << m_channels << "ch at " 
+             << m_sampleRate << "Hz" << endl;
+    }
     return reader;
 }
 
@@ -628,12 +710,6 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
     cerr << "Audio file \"" << audioSource.toStdString() << "\": "
          << reader->getChannelCount() << "ch at " 
          << reader->getNativeRate() << "Hz" << endl;
-    if (reader->getChannelCount() != m_channels ||
-        reader->getNativeRate() != m_sampleRate) {
-        cerr << "NOTE: File will be mixed or resampled for processing, to: "
-             << m_channels << "ch at " 
-             << m_sampleRate << "Hz" << endl;
-    }
 
     // allocate audio buffers
     float **data = new float *[m_channels];
@@ -671,7 +747,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 
         PluginMap::iterator pi = m_plugins.find(plugin);
 
-        std::cerr << "Calling reset on " << plugin << std::endl;
+//        std::cerr << "Calling reset on " << plugin << std::endl;
         plugin->reset();
 
         for (TransformWriterMap::iterator ti = pi->second.begin();
@@ -852,6 +928,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
         }
 
         if (!m_summaries.empty()) {
+            // Summaries requested on the command line, for all transforms
             PluginSummarisingAdapter *adapter =
                 dynamic_cast<PluginSummarisingAdapter *>(plugin);
             if (!adapter) {
@@ -868,12 +945,13 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
                     featureSet = adapter->getSummaryForAllOutputs
                         (getSummaryType(*sni),
                          PluginSummarisingAdapter::ContinuousTimeAverage);
-                    writeFeatures(audioSource, plugin, featureSet,//!!! *sni);
+                    writeFeatures(audioSource, plugin, featureSet,
                                   Transform::stringToSummaryType(sni->c_str()));
                 }
             }
         }
 
+        // Summaries specified in transform definitions themselves
         writeSummaries(audioSource, plugin);
     }
 
@@ -895,11 +973,15 @@ FeatureExtractionManager::writeSummaries(QString audioSource, Plugin *plugin)
         
         const Transform &transform = ti->first;
 
+//        cerr << "FeatureExtractionManager::writeSummaries: plugin is " << plugin
+//             << ", found transform: " << transform.toXmlString() << endl;
+        
         Transform::SummaryType summaryType = transform.getSummaryType();
         PluginSummarisingAdapter::SummaryType pType =
             (PluginSummarisingAdapter::SummaryType)summaryType;
 
         if (transform.getSummaryType() == Transform::NoSummary) {
+//            cerr << "(no summary, continuing)" << endl;
             continue;
         }
 
@@ -913,7 +995,7 @@ FeatureExtractionManager::writeSummaries(QString audioSource, Plugin *plugin)
         Plugin::FeatureSet featureSet = adapter->getSummaryForAllOutputs
             (pType, PluginSummarisingAdapter::ContinuousTimeAverage);
 
-//        cout << "summary type " << int(pType) << " for transform:" << endl << transform.toXmlString().toStdString()<< endl << "... feature set with " << featureSet.size() << " elts" << endl;
+//        cerr << "summary type " << int(pType) << " for transform:" << endl << transform.toXmlString().toStdString()<< endl << "... feature set with " << featureSet.size() << " elts" << endl;
 
         writeFeatures(audioSource, plugin, featureSet, summaryType);
     }
@@ -927,21 +1009,25 @@ void FeatureExtractionManager::writeFeatures(QString audioSource,
     // caller should have ensured plugin is in m_plugins
     PluginMap::iterator pi = m_plugins.find(plugin);
 
+    // Write features from the feature set passed in, according to the
+    // transforms listed for the given plugin with the given summary type
+    
     for (TransformWriterMap::const_iterator ti = pi->second.begin();
          ti != pi->second.end(); ++ti) {
         
         const Transform &transform = ti->first;
         const vector<FeatureWriter *> &writers = ti->second;
-        
-        if (transform.getSummaryType() != Transform::NoSummary &&
-            m_summaries.empty() &&
-            summaryType == Transform::NoSummary) {
-            continue;
-        }
 
-        if (transform.getSummaryType() != Transform::NoSummary &&
-            summaryType != Transform::NoSummary &&
-            transform.getSummaryType() != summaryType) {
+//        cerr << "writeFeatures: plugin " << plugin << " has transform: " << transform.toXmlString() << endl;
+
+        if (transform.getSummaryType() == Transform::NoSummary &&
+            !m_summaries.empty()) {
+//            cerr << "transform has no summary, but summaries requested on command line, so going for it anyway" << endl;
+        } else if (transform.getSummaryType() != summaryType) {
+            // Either we're not writing a summary and the transform
+            // has one, or we're writing a summary but the transform
+            // has none or a different one; either way, skip it
+//            cerr << "summary type differs from passed-in one " << summaryType << endl;
             continue;
         }
 
@@ -959,6 +1045,8 @@ void FeatureExtractionManager::writeFeatures(QString audioSource,
         Plugin::FeatureSet::const_iterator fsi = features.find(outputIndex);
         if (fsi == features.end()) continue;
 
+//        cerr << "this transform has " << writers.size() << " writer(s)" << endl;
+        
         for (int j = 0; j < (int)writers.size(); ++j) {
             writers[j]->write
                 (audioSource, transform, desc, fsi->second,

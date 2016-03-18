@@ -1,5 +1,7 @@
 TEMPLATE = app
 
+INCLUDEPATH += vamp-plugin-sdk
+
 win32-g++ {
     INCLUDEPATH += sv-dependency-builds/win32-mingw/include
     LIBS += -Lsv-dependency-builds/win32-mingw/lib
@@ -22,7 +24,7 @@ exists(config.pri) {
     CONFIG += release
     DEFINES += NDEBUG BUILD_RELEASE NO_TIMING
 
-    DEFINES += HAVE_BZ2 HAVE_FFTW3 HAVE_FFTW3F HAVE_SNDFILE HAVE_SAMPLERATE HAVE_VAMP HAVE_VAMPHOSTSDK HAVE_DATAQUAY HAVE_MAD HAVE_ID3TAG
+    DEFINES += HAVE_BZ2 HAVE_FFTW3 HAVE_FFTW3F HAVE_SNDFILE HAVE_SAMPLERATE HAVE_DATAQUAY HAVE_MAD HAVE_ID3TAG
 
     LIBS += -lbz2 -lfftw3 -lfftw3f -lsndfile -lFLAC -logg -lvorbis -lvorbisenc -lvorbisfile -logg -lmad -lid3tag -lsamplerate -lz -lsord-0 -lserd-0
 
@@ -49,11 +51,7 @@ QT -= gui widgets
 # look for win32 features
 win32-x-g++:QMAKE_LFLAGS += -Wl,-subsystem,console
 
-# If you have compiled your Vamp plugin SDK with FFTW (using its
-# HAVE_FFTW3 flag), you can define the same flag here to ensure the
-# program saves and restores FFTW wisdom in its configuration properly
-#
-DEFINES += HAVE_FFTW3
+DEFINES += HAVE_FFTW3 HAVE_VAMP HAVE_VAMPHOSTSDK
 
 TARGET = sonic-annotator
 
@@ -81,7 +79,7 @@ MY_LIBS = -Lsvcore/release -Ldataquay/release $$MY_LIBS
 
 LIBS = $$MY_LIBS $$LIBS
 
-#PRE_TARGETDEPS += svcore/libsvcore.a
+PRE_TARGETDEPS += svcore/libsvcore.a
 
 HEADERS += \
         vamp-plugin-sdk/vamp-hostsdk/PluginBase.h \
@@ -113,6 +111,7 @@ SOURCES += \
         vamp-plugin-sdk/src/vamp-hostsdk/PluginSummarisingAdapter.cpp \
         vamp-plugin-sdk/src/vamp-hostsdk/PluginWrapper.cpp \
         vamp-plugin-sdk/src/vamp-hostsdk/RealTime.cpp \
+        vamp-plugin-sdk/src/vamp-hostsdk/Files.cpp \
 	runner/main.cpp \
 	runner/DefaultFeatureWriter.cpp \
 	runner/FeatureExtractionManager.cpp \

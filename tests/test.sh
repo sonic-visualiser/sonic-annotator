@@ -5,22 +5,23 @@ mypath=`dirname $0`
 for x in \
     supportprogs \
     helpfulflags \
+    parse-errors \
     transforms-basic \
     audioformat \
     vamp-test-plugin \
     as-advertised \
-    rdf-writer \
-    rdf-destinations \
+    summaries \
+    multiple-audio \
     csv-writer \
     csv-destinations \
     lab-writer \
     lab-destinations \
+    rdf-writer \
+    rdf-destinations \
     midi-writer \
     midi-destinations \
     jams-writer \
     jams-destinations \
-    summaries \
-    multiple-audio \
     ; do
 
     echo -n "$x: "

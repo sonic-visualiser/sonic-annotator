@@ -137,6 +137,10 @@ wrap(QString s, int len, int pfx = 0)
     return ws;
 }
 
+static QString wrapCol(QString s) {
+    return wrap(s, 56, 22);
+}
+
 static bool
 isVersionNewerThan(QString a, QString b) // from VersionTester in svapp
 {
@@ -186,8 +190,8 @@ void printUsage(QString myname)
     cerr << endl;
     cerr << "Sonic Annotator v" << RUNNER_VERSION << endl;
     cerr << "A utility for batch feature extraction from audio files." << endl;
-    cerr << "Mark Levy, Chris Sutton and Chris Cannam, Queen Mary, University of London." << endl;
-    cerr << "Copyright 2007-2015 Queen Mary, University of London." << endl;
+    cerr << "Mark Levy, Chris Sutton, and Chris Cannam, Queen Mary, University of London." << endl;
+    cerr << "Copyright 2007-2016 Queen Mary, University of London." << endl;
     cerr << endl;
     cerr << "This program is free software.  You may redistribute copies of it under the" << endl;
     cerr << "terms of the GNU General Public License <http://www.gnu.org/licenses/gpl.html>." << endl;
@@ -199,7 +203,7 @@ void printUsage(QString myname)
     cerr << "  " << myname
          << " [-mrnf] -T translist.txt [..] -w <writer> [..] <audio> [..]" << endl;
     cerr << "  " << myname
-         << " [-mrnf] -d <plugin> [..] -w <writer> [..] <audio> [...]" << endl;
+         << " [-mrnf] -d <id> [..] -w <writer> [..] <audio> [...]" << endl;
     cerr << "  " << myname
          << " -s <transform>" << endl;
     cerr << "  " << myname
@@ -207,7 +211,7 @@ void printUsage(QString myname)
     cerr << endl;
     cerr << "Where <audio> is an audio file or URL to use as input: either a local file" << endl;
     cerr << "path, local \"file://\" URL, or remote \"http://\" or \"ftp://\" URL;" << endl;
-    cerr << "and <plugin> is a plugin output identified as vamp:libname:plugin:output." << endl;
+    cerr << "and <id> is a transform id of the form vamp:libname:plugin:output." << endl;
     cerr << endl;
 }
 
@@ -218,7 +222,7 @@ void printOptionHelp(std::string writer, FeatureWriter::Parameter &p)
     if (p.hasArg) { cerr << "<X> "; spaceage -= 4; }
     for (int k = 0; k < spaceage; ++k) cerr << " ";
     QString s(p.description.c_str());
-    s = wrap(s, 56, 22);
+    s = wrapCol(s);
     cerr << s << endl;
 }
 
@@ -261,92 +265,112 @@ void printHelp(QString myname, QString w)
         if (++i != writers.end()) writerText += ", ";
         else writerText += ".";
     }
-    writerText = wrap(writerText, 56, 22);
+    writerText = wrapCol(writerText);
 
     if (writer == "" || writers.find(writer) == writers.end()) {
 
         cerr << "Transformation options:" << endl;
         cerr << endl;
-        cerr << "  -t, --transform <T> Apply transform described in transform file <T> to" << endl;
-        cerr << "                      all input audio files. You may supply this option" << endl;
-        cerr << "                      multiple times. You must supply this option or -T at" << endl;
-        cerr << "                      least once for any work to be done. Transform format" << endl;
-        cerr << "                      may be SV transform XML or Vamp transform RDF/Turtle." << endl;
-        cerr << "                      See accompanying documentation for transform examples." << endl;
-        cerr << endl;
-        cerr << "  -T, --transforms <T> Apply all transforms described in transform files" << endl;
-        cerr << "                      whose names are listed in text file <T>. You may supply" << endl;
-        cerr << "                      this option multiple times." << endl;
-        cerr << endl;
-        cerr << "  -d, --default <I>   Apply the default transform for transform id <I>. This" << endl;
-        cerr << "                      is equivalent to generating a skeleton transform for this" << endl;
-        cerr << "                      id (using the -s option, below) and then applying that," << endl;
-        cerr << "                      unmodified, with the -t option in the normal way. Note" << endl;
-        cerr << "                      that results may vary, as the implementation's default" << endl;
-        cerr << "                      processing parameters are not guaranteed. Do not use" << endl;
-        cerr << "                      this in production systems. You may supply this option" << endl;
-        cerr << "                      multiple times, and mix it with -t and -T." << endl;
-        cerr << endl;
-        cerr << "  -w, --writer <W>    Write output using writer type <W>." << endl;
-        cerr << "                      " << writerText << endl;
-        cerr << "                      You may supply this option multiple times. You must" << endl;
-        cerr << "                      supply this option at least once for any work to be done." << endl;
-        cerr << endl;
-        cerr << "  -S, --summary <S>   In addition to the result features, write summary feature" << endl;
-        cerr << "                      of summary type <S>." << endl;
-        cerr << "                      Supported summary types are min, max, mean, median, mode," << endl;
-        cerr << "                      sum, variance, sd, count." << endl;
-        cerr << "                      You may supply this option multiple times." << endl;
-        cerr << endl;
-        cerr << "      --summary-only  Write only summary features; do not write the regular" << endl;
-        cerr << "                      result features." << endl;
-        cerr << endl;
-        cerr << "      --segments <A>,<B>[,...]" << endl;
-        cerr << "                      Summarise in segments, with segment boundaries" << endl;
-        cerr << "                      at A, B, ... seconds." << endl;
-        cerr << endl;
-        cerr << "      --segments-from <F>" << endl;
-        cerr << "                      Summarise in segments, with segment boundaries" << endl;
-        cerr << "                      at times read from the text file <F>. (one time per" << endl;
-        cerr << "                      line, in seconds)." << endl;
-        cerr << endl;
-        cerr << "  -m, --multiplex     If multiple input audio files are given, use mono" << endl;
-        cerr << "                      mixdowns of all files as the input channels for a single" << endl;
-        cerr << "                      invocation of each transform, instead of running the" << endl;
-        cerr << "                      transform against all files separately. The first file" << endl;
-        cerr << "                      will be used for output reference name and sample rate." << endl;
-        cerr << endl;
-        cerr << "  -r, --recursive     If any of the <audio> arguments is found to be a local" << endl;
-        cerr << "                      directory, search the tree starting at that directory" << endl;
-        cerr << "                      for all supported audio files and take all of those as" << endl;
-        cerr << "                      input instead." << endl;
-        cerr << endl;
-        cerr << "  -n, --normalise     Normalise input audio files to signal absolute max = 1.f." << endl;
-        cerr << endl;
-        cerr << "  -f, --force         Continue with subsequent files following an error." << endl;
-        cerr << endl;
-        cerr << "Housekeeping options:" << endl;
-        cerr << endl;
+        cerr << "  -t, --transform <T> "
+             << wrapCol("Apply transform described in transform file <T> to"
+                        " all input audio files. You may supply this option" 
+                        " multiple times. You must supply this option, -T, or -d" 
+                        " at least once for any work to be done. Transform format" 
+                        " may be SV transform XML or Vamp transform RDF/Turtle."
+                        " A skeleton transform file for"
+                        " a given transform id can be generated using the"
+                        " -s option (see below). See accompanying"
+                        " documentation for transform examples.")
+             << endl << endl;
+        cerr << "  -T, --transforms <T> "
+             << wrapCol("Apply all transforms described in transform files"
+                        " whose names are listed in text file <T>. You may supply"
+                        " this option multiple times.")
+             << endl << endl;
+        cerr << "  -d, --default <I>   "
+             << wrapCol("Apply the default transform for transform id <I>. This"
+                        " is equivalent to generating a skeleton transform for the"
+                        " id (using the -s option, below) and then applying that,"
+                        " unmodified, with the -t option in the normal way. Note"
+                        " that results may vary, as default"
+                        " processing parameters may change between releases of "
+                        + myname + " as well as of individual plugins. Do not use"
+                        " this in production systems. You may supply this option"
+                        " multiple times, and mix it with -t and -T.")
+             << endl << endl;
+        cerr << "  -w, --writer <W>    Write output using writer type <W>.\n"
+             << "                      " << writerText << endl
+             << "                      "
+             << wrapCol("You may supply this option multiple times. You must"
+                        " supply this option at least once for any work to be done.")
+             << endl << endl;
+        cerr << "  -S, --summary <S>   "
+             << wrapCol("In addition to the result features, write summary feature"
+                        " of summary type <S>.") << endl
+             << "                      "
+             << wrapCol("Supported summary types are min, max, mean, median, mode,"
+                        " sum, variance, sd, count.") << endl
+             << "                      You may supply this option multiple times."
+             << endl << endl;
+        cerr << "      --summary-only  "
+             << wrapCol("Write only summary features; do not write the regular"
+                        " result features.")
+             << endl << endl;
+        cerr << "      --segments <A>,<B>[,...]\n                      "
+             << wrapCol("Summarise in segments, with segment boundaries"
+                        " at A, B, ... seconds.")
+             << endl << endl;
+        cerr << "      --segments-from <F>\n                      "
+             << wrapCol("Summarise in segments, with segment boundaries"
+                        " at times read from the text file <F>. (one time per"
+                        " line, in seconds).")
+             << endl << endl;
+        cerr << "  -m, --multiplex     "
+             << wrapCol("If multiple input audio files are given, use mono"
+                        " mixdowns of the files as the input channels for a single"
+                        " invocation of each transform, instead of running the"
+                        " transform against all files separately. The first file"
+                        " will be used for output reference name and sample rate.")
+             << endl << endl;
+        cerr << "  -r, --recursive     "
+             << wrapCol("If any of the <audio> arguments is found to be a local"
+                        " directory, search the tree starting at that directory"
+                        " for all supported audio files and take all of those as"
+                        " input in place of it.")
+             << endl << endl;
+        cerr << "  -n, --normalise     "
+             << wrapCol("Normalise each input audio file to signal abs max = 1.f.")
+             << endl << endl;
+        cerr << "  -f, --force         "
+             << wrapCol("Continue with subsequent files following an error.")
+             << endl << endl;
+        cerr << "Housekeeping options:"
+             << endl << endl;
         cerr << "  -l, --list          List available transform ids to standard output." << endl;
         cerr << "      --list-writers  List supported writer types to standard output." << endl;
         cerr << "      --list-formats  List supported input audio formats to standard output." << endl;
         cerr << endl;
-        cerr << "  -s, --skeleton <I>  Generate a skeleton transform file for transform id <I>" << endl;
-        cerr << "                      and write it to standard output." << endl;
-        cerr << endl;
+        cerr << "  -s, --skeleton <I>  "
+             << wrapCol("Generate a skeleton RDF transform file for transform id"
+                        " <I>, with default parameters for that transform, and write it"
+                        " to standard output.")
+             << endl << endl;
         cerr << "  -v, --version       Show the version number and exit." << endl;
         cerr << endl;
-        cerr << "      --minversion <V> Exit with successful return code if the version of" << endl;
-        cerr << "                      " << myname << " is at least <V>, failure otherwise." << endl;
-        cerr << "                      For scripts that depend on certain option support." << endl;
-        cerr << endl;
+        cerr << "      --minversion <V> "
+             << wrapCol("Exit with successful return code if the version of "
+                        + myname + " is at least <V>, failure otherwise."
+                        " For scripts that depend on certain option support.")
+             << endl << endl;
         cerr << "  -h, --help          Show help." << endl;
         cerr << "  -h, --help <W>      Show help for writer type W." << endl;
         cerr << "                      " << writerText << endl;
 
-        cerr << endl;
-        cerr << "If no -w (or --writer) options are supplied, either the -l -s -v or -h option" << endl;
-        cerr << "(or long equivalent) must be given instead." << endl;
+        cerr << endl
+             << wrap("If no -w (or --writer) options are supplied, one of the"
+                     " housekeeping options (-l -s -v -h or long equivalent) must"
+                     " be given instead.", 78, 0)
+             << endl;
 
     } else {
 
@@ -857,8 +881,7 @@ int main(int argc, char **argv)
     if (!requestedSummaryTypes.empty()) {
         if (!manager.setSummaryTypes(requestedSummaryTypes,
                                      boundaries)) {
-            cerr << myname
-                 << ": failed to set requested summary types" << endl;
+            cerr << myname << ": failed to set requested summary types" << endl;
             exit(1);
         }
     }
