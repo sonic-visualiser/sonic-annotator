@@ -191,7 +191,7 @@ void printUsage(QString myname)
     cerr << "Sonic Annotator v" << RUNNER_VERSION << endl;
     cerr << "A utility for batch feature extraction from audio files." << endl;
     cerr << "Mark Levy, Chris Sutton, and Chris Cannam, Queen Mary, University of London." << endl;
-    cerr << "Copyright 2007-2015 Queen Mary, University of London." << endl;
+    cerr << "Copyright 2007-2016 Queen Mary, University of London." << endl;
     cerr << endl;
     cerr << "This program is free software.  You may redistribute copies of it under the" << endl;
     cerr << "terms of the GNU General Public License <http://www.gnu.org/licenses/gpl.html>." << endl;
