@@ -29,7 +29,7 @@ $r -t $transform -w csv --csv-stdout -r --summary-only $audiopath > $tmpfile1 2>
 
 expected=$mypath/expected/all-files
 csvcompare $tmpfile1 $expected.csv || \
-    faildiff "Output mismatch for transform $transform with summaries and recursive dir option" $tmpfile $expected.csv
+    faildiff "Output mismatch for transform $transform with summaries and recursive dir option" $tmpfile1 $expected.csv
 
 
 # 2. Local playlist file referring to local audio files
