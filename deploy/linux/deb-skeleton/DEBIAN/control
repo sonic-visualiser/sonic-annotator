@@ -10,4 +10,3 @@ Description: Utility for batch audio feature extraction using Vamp plugins
  Sonic Annotator is a utility program for batch feature extraction from
  audio files.  It runs Vamp audio analysis plugins on audio files, and
  can write the result features in a selection of formats.
- 
