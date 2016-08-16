@@ -97,12 +97,6 @@ JAMSFeatureWriter::setTrackMetadata(QString trackId, TrackMetadata metadata)
     m_trackMetadata[trackId] = metadata;
 }
 
-static double
-realTime2Sec(const Vamp::RealTime &r)
-{
-    return r / Vamp::RealTime(1, 0);
-}
-
 void
 JAMSFeatureWriter::write(QString trackId,
 			 const Transform &transform,
