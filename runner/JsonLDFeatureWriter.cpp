@@ -357,7 +357,7 @@ JsonLDFeatureWriter::loadRDFDescription(const Transform &transform)
 	cerr << "NOTE: No RDF description for plugin ID \""
 	     << pluginId << "\"" << endl;
 	if (!m_network) {
-	    cerr << "      Consider using the --jams-network option to retrieve plugin descriptions"  << endl;
+	    cerr << "      Consider using the --jsld-network option to retrieve plugin descriptions"  << endl;
 	    cerr << "      from the network where possible." << endl;
 	}
     }
@@ -419,7 +419,7 @@ JsonLDFeatureWriter::identifyTask(const Transform &transform)
 
 	} else {
 
-	    cerr << "WARNING: Cannot currently write dense or track-level outputs to JAMS format (only sparse ones). Will proceed using UnknownTask type, but this probably isn't going to work" << endl;
+	    cerr << "WARNING: Cannot currently write dense or track-level outputs to JSON-LD format (only sparse ones). Will proceed using UnknownTask type, but this probably isn't going to work" << endl;
 	}
     }	    
 
