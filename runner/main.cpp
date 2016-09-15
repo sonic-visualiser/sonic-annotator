@@ -362,6 +362,11 @@ void printHelp(QString myname, QString w)
                         + myname + " is at least <V>, failure otherwise."
                         " For scripts that depend on certain option support.")
              << endl << endl;
+        cerr << "      --transform-minversion <I> <V>\n"
+             << "                      "
+             << wrapCol("Exit with successful return code if the plugin providing "
+                        " transform id <I> is at least <V>, failure otherwise.")
+             << endl << endl;
         cerr << "  -h, --help          Show help." << endl;
         cerr << "  -h, --help <W>      Show help for writer type W." << endl;
         cerr << "                      " << writerText << endl;
@@ -442,6 +447,26 @@ printSkeleton(QString id)
         (transform, ":transform");
     cout << rdf;
 }    
+
+static int
+checkTransformMinVersion(QString myname, QString id, int version)
+{
+    Transform transform =
+        TransformFactory::getInstance()->getDefaultTransformFor(id);
+    QString pvs = transform.getPluginVersion();
+    bool ok = false;
+    int pv = pvs.toInt(&ok);
+    if (!ok) {
+        cerr << myname << ": transform version \"" << pvs << "\" is not an integer"
+             << endl;
+        return 1;
+    }
+    if (pv >= version) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
 
 void
 findSourcesRecursive(QString dirname, QStringList &addTo, int &found)
@@ -581,6 +606,7 @@ int main(int argc, char **argv)
     bool summaryOnly = false;
     QString skeletonFor = "";
     QString minVersion = "";
+    pair<QString, QString> transformMinVersion;
     QString myname = args[0];
     myname = QFileInfo(myname).baseName();
     QStringList otherArgs;
@@ -748,6 +774,18 @@ int main(int argc, char **argv)
             }
             minVersion = args[++i];
             continue;
+        } else if (arg == "--transform-minversion") {
+            if (last || (i+2) == args.size() ||
+                args[i+1].startsWith("-") ||
+                args[i+2].startsWith("-")) {
+                cerr << myname << ": usage: "
+                     << myname << " " << arg << " <version>" << endl;
+                cerr << helpStr << endl;
+                exit(2);
+            }
+            transformMinVersion = { args[i+1], args[i+2] };
+            i += 2;
+            continue;
         } else if (arg == "-s" || arg == "--skeleton") {
             if (last || args[i+1].startsWith("-")) {
                 cerr << myname << ": usage: "
@@ -827,6 +865,21 @@ int main(int argc, char **argv)
             exit(2);
         }
         exit(checkMinVersion(myname, minVersion));
+    }
+    if (transformMinVersion.first != "") {
+        if (!requestedWriterTags.empty()) {
+            cerr << helpStr << endl;
+            exit(2);
+        }
+        bool ok = false;
+        int version = transformMinVersion.second.toInt(&ok);
+        if (!ok) {
+            cerr << myname << ": plugin version \"" << transformMinVersion.second
+                 << "\" must be an integer" << endl;
+            cerr << helpStr << endl;
+            exit(2);
+        }            
+        exit(checkTransformMinVersion(myname, transformMinVersion.first, version));
     }
 
     if (requestedTransformFiles.empty() &&

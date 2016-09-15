@@ -41,4 +41,10 @@ $r --minversion $nextversion 2>/dev/null && \
 $r --minversion 63.9 2>/dev/null && \
     fail "Returned success code when run with --minversion 63.9"
 
+$r --transform-minversion $percplug 1 || \
+    fail "Returned failure code when run with --transform-minversion $percplug 1"
+
+$r --transform-minversion $percplug 50 2>/dev/null && \
+    fail "Returned success code when run with --transform-minversion $percplug 50"
+
 exit 0
