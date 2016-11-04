@@ -13,8 +13,8 @@ case "$(pwd)/$mypath" in
     ;;
 esac
 
-version=1.4
-nextversion=1.5
+version=1.5
+nextversion=1.6
 
 testdir=$mypath/..
 r=$testdir/../sonic-annotator
