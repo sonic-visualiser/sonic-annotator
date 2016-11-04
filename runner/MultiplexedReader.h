@@ -30,14 +30,15 @@ public:
     MultiplexedReader(QList<AudioFileReader *> readers);
     virtual ~MultiplexedReader();
 
-    virtual QString getError() const { return m_error; }
-    virtual bool isQuicklySeekable() const { return m_quicklySeekable; }
+    virtual QString getError() const override { return m_error; }
+    virtual bool isQuicklySeekable() const override { return m_quicklySeekable; }
 
-    virtual SampleBlock getInterleavedFrames(sv_frame_t start, sv_frame_t count) const;
+    virtual std::vector<float> getInterleavedFrames
+    (sv_frame_t start, sv_frame_t count) const override;
 
-    virtual int getDecodeCompletion() const;
+    virtual int getDecodeCompletion() const override;
 
-    virtual bool isUpdating() const;
+    virtual bool isUpdating() const override;
 
 protected:
     QString m_error;
