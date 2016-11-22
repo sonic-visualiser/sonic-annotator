@@ -23,6 +23,7 @@
 #include <vamp-hostsdk/PluginWrapper.h>
 #include <vamp-hostsdk/PluginLoader.h>
 
+#include "base/Debug.h"
 #include "base/Exceptions.h"
 
 #include <iostream>
@@ -51,7 +52,8 @@ using Vamp::HostExt::PluginWrapper;
 #include <QFile>
 #include <QFileInfo>
 
-FeatureExtractionManager::FeatureExtractionManager() :
+FeatureExtractionManager::FeatureExtractionManager(bool verbose) :
+    m_verbose(verbose),
     m_summariesOnly(false),
     // We can read using an arbitrary fixed block size --
     // PluginBufferingAdapter handles this for us. But while this
@@ -73,6 +75,9 @@ FeatureExtractionManager::FeatureExtractionManager() :
 
 FeatureExtractionManager::~FeatureExtractionManager()
 {
+    SVDEBUG << "FeatureExtractionManager::~FeatureExtractionManager: cleaning up"
+            << endl;
+    
     for (PluginMap::iterator pi = m_plugins.begin();
          pi != m_plugins.end(); ++pi) {
         delete pi->first;
@@ -80,6 +85,8 @@ FeatureExtractionManager::~FeatureExtractionManager()
     foreach (AudioFileReader *r, m_readyReaders) {
         delete r;
     }
+
+    SVDEBUG << "FeatureExtractionManager::~FeatureExtractionManager: done" << endl;
 }
 
 void FeatureExtractionManager::setChannels(int channels)
@@ -119,7 +126,7 @@ FeatureExtractionManager::setSummaryTypes(const set<string> &names,
     for (SummaryNameSet::const_iterator i = names.begin();
          i != names.end(); ++i) {
         if (getSummaryType(*i) == PluginSummarisingAdapter::UnknownSummaryType) {
-            cerr << "ERROR: Unknown summary type \"" << *i << "\"" << endl;
+            SVCERR << "ERROR: Unknown summary type \"" << *i << "\"" << endl;
             return false;
         }
     }
@@ -156,7 +163,7 @@ convertWindowType(WindowType t)
     case ParzenWindow:
         // Not supported in Vamp SDK, fall through
     default:
-        cerr << "ERROR: Unknown or unsupported window type \"" << t << "\", using Hann (\"" << HanningWindow << "\")" << endl;
+        SVCERR << "ERROR: Unknown or unsupported window type \"" << t << "\", using Hann (\"" << HanningWindow << "\")" << endl;
         return PluginInputDomainAdapter::HanningWindow;
     }
 }
@@ -168,11 +175,11 @@ bool FeatureExtractionManager::addFeatureExtractor
 
     if (transform.getSampleRate() == 0) {
         if (m_sampleRate == 0) {
-            cerr << "NOTE: Transform does not specify a sample rate, using default rate of " << m_defaultSampleRate << endl;
+            SVCERR << "NOTE: Transform does not specify a sample rate, using default rate of " << m_defaultSampleRate << endl;
             transform.setSampleRate(m_defaultSampleRate);
             m_sampleRate = m_defaultSampleRate;
         } else {
-            cerr << "NOTE: Transform does not specify a sample rate, using previous transform's rate of " << m_sampleRate << endl;
+            SVCERR << "NOTE: Transform does not specify a sample rate, using previous transform's rate of " << m_sampleRate << endl;
             transform.setSampleRate(m_sampleRate);
         }
     }
@@ -182,8 +189,8 @@ bool FeatureExtractionManager::addFeatureExtractor
     }
 
     if (transform.getSampleRate() != m_sampleRate) {
-        cerr << "WARNING: Transform sample rate " << transform.getSampleRate() << " does not match previously specified transform rate of " << m_sampleRate << " -- only a single rate is supported for each run" << endl;
-        cerr << "WARNING: Using previous rate of " << m_sampleRate << " for this transform as well" << endl;
+        SVCERR << "WARNING: Transform sample rate " << transform.getSampleRate() << " does not match previously specified transform rate of " << m_sampleRate << " -- only a single rate is supported for each run" << endl;
+        SVCERR << "WARNING: Using previous rate of " << m_sampleRate << " for this transform as well" << endl;
         transform.setSampleRate(m_sampleRate);
     }
 
@@ -208,7 +215,7 @@ bool FeatureExtractionManager::addFeatureExtractor
             test.setOutput(transform.getOutput());
             test.setSummaryType(transform.getSummaryType());
             if (transform == test) {
-                cerr << "NOTE: Already have transform identical to this one (for \""
+                SVCERR << "NOTE: Already have transform identical to this one (for \""
                      << transform.getIdentifier().toStdString()
                      << "\") in every detail except output identifier and/or "
                      << "summary type; sharing its plugin instance" << endl;
@@ -231,10 +238,10 @@ bool FeatureExtractionManager::addFeatureExtractor
             if (!plugin) {
                 //!!! todo: handle non-Vamp plugins too, or make the main --list
                 // option print out only Vamp transforms
-                cerr << "ERROR: Failed to load plugin for transform \""
+                SVCERR << "ERROR: Failed to load plugin for transform \""
                      << transform.getIdentifier().toStdString() << "\"" << endl;
                 if (pb) {
-                    cerr << "NOTE: (A plugin was loaded, but apparently not a Vamp plugin)" << endl;
+                    SVCERR << "NOTE: (A plugin was loaded, but apparently not a Vamp plugin)" << endl;
                 }
                 delete pb;
                 return false;
@@ -294,12 +301,12 @@ bool FeatureExtractionManager::addFeatureExtractor
             }
 
             if (!plugin->initialise(m_channels, m_blockSize, m_blockSize)) {
-                cerr << "ERROR: Plugin initialise (channels = " << m_channels << ", stepSize = " << m_blockSize << ", blockSize = " << m_blockSize << ") failed." << endl;    
+                SVCERR << "ERROR: Plugin initialise (channels = " << m_channels << ", stepSize = " << m_blockSize << ", blockSize = " << m_blockSize << ") failed." << endl;    
                 delete plugin;
                 return false;
             }
 
-//            cerr << "Initialised plugin" << endl;
+            SVDEBUG << "Initialised plugin" << endl;
 
             size_t actualStepSize = 0;
             size_t actualBlockSize = 0;
@@ -310,24 +317,23 @@ bool FeatureExtractionManager::addFeatureExtractor
             Plugin::OutputList outputs = plugin->getOutputDescriptors();
             for (int i = 0; i < (int)outputs.size(); ++i) {
 
-//                cerr << "Newly initialised plugin output " << i << " has bin count " << outputs[i].binCount << endl;
+                SVDEBUG << "Newly initialised plugin output " << i << " has bin count " << outputs[i].binCount << endl;
 
                 m_pluginOutputs[plugin][outputs[i].identifier] = outputs[i];
                 m_pluginOutputIndices[outputs[i].identifier] = i;
             }
 
-            cerr << "NOTE: Loaded and initialised plugin for transform \""
+            SVCERR << "NOTE: Loaded and initialised plugin for transform \""
                  << transform.getIdentifier().toStdString()
                  << "\" with plugin step size " << actualStepSize
                  << " and block size " << actualBlockSize
                  << " (adapter step and block size " << m_blockSize << ")"
                  << endl;
 
-//            cerr << "NOTE: That transform is: " << transform.toXmlString() << endl;
+            SVDEBUG << "NOTE: That transform is: " << transform.toXmlString() << endl;
             
             if (pida) {
-                cerr << "NOTE: PluginInputDomainAdapter timestamp adjustment is "
-
+                SVCERR << "NOTE: PluginInputDomainAdapter timestamp adjustment is "
                      << pida->getTimestampAdjustment() << endl;
             }
 
@@ -358,7 +364,7 @@ bool FeatureExtractionManager::addFeatureExtractor
         if (transform.getPluginVersion() != "") {
             if (QString("%1").arg(plugin->getPluginVersion())
                 != transform.getPluginVersion()) {
-                cerr << "ERROR: Transform specifies version "
+                SVCERR << "ERROR: Transform specifies version "
                      << transform.getPluginVersion()
                      << " of plugin \"" << plugin->getIdentifier()
                      << "\", but installed plugin is version "
@@ -375,7 +381,7 @@ bool FeatureExtractionManager::addFeatureExtractor
             if (m_pluginOutputs[plugin].find
                 (transform.getOutput().toLocal8Bit().data()) ==
                 m_pluginOutputs[plugin].end()) {
-                cerr << "ERROR: Transform requests nonexistent plugin output \""
+                SVCERR << "ERROR: Transform requests nonexistent plugin output \""
                      << transform.getOutput()
                      << "\"" << endl;
                 return false;
@@ -384,11 +390,11 @@ bool FeatureExtractionManager::addFeatureExtractor
 
         m_transformPluginMap[transform] = plugin;
 
-//        cerr << "NOTE: Assigned plugin " << plugin << " for transform: " << transform.toXmlString() << endl;
+        SVDEBUG << "NOTE: Assigned plugin " << plugin << " for transform: " << transform.toXmlString() << endl;
 
         if (!(originalTransform == transform)) {
             m_transformPluginMap[originalTransform] = plugin;
-//            cerr << "NOTE: Also assigned plugin " << plugin << " for original transform: " << originalTransform.toXmlString() << endl;
+            SVDEBUG << "NOTE: Also assigned plugin " << plugin << " for original transform: " << originalTransform.toXmlString() << endl;
         }
 
     } else {
@@ -412,10 +418,10 @@ bool FeatureExtractionManager::addDefaultFeatureExtractor
 
     if (m_sampleRate == 0) {
         if (m_defaultSampleRate == 0) {
-            cerr << "ERROR: Default transform requested, but no default sample rate available" << endl;
+            SVCERR << "ERROR: Default transform requested, but no default sample rate available" << endl;
             return false;
         } else {
-            cerr << "NOTE: Using default sample rate of " << m_defaultSampleRate << " for default transform" << endl;
+            SVCERR << "NOTE: Using default sample rate of " << m_defaultSampleRate << " for default transform" << endl;
             m_sampleRate = m_defaultSampleRate;
         }
     }
@@ -425,7 +431,7 @@ bool FeatureExtractionManager::addDefaultFeatureExtractor
     bool result = addFeatureExtractor(transform, writers);
     if (!result) {
         if (transform.getType() == Transform::UnknownType) {
-            cerr << "(Maybe mixed up filename with transform, or --transform with --default?)" << endl;
+            SVCERR << "(Maybe mixed up filename with transform, or --transform with --default?)" << endl;
         }
     }
     return result;
@@ -454,7 +460,7 @@ bool FeatureExtractionManager::addFeatureExtractorFromFile
         QFile file(transformFile);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             // Error case 1. File does not exist or cannot be opened
-            cerr << "ERROR: Failed to open transform file \"" << transformFile
+            SVCERR << "ERROR: Failed to open transform file \"" << transformFile
                  << "\" for reading" << endl;
             return false;
         }
@@ -484,11 +490,12 @@ bool FeatureExtractionManager::addFeatureExtractorFromFile
             (QUrl::fromLocalFile(QFileInfo(transformFile).absoluteFilePath())
              .toString());
         ProgressPrinter printer("Parsing transforms RDF file");
-        std::vector<Transform> transforms = factory.getTransforms(&printer);
+        std::vector<Transform> transforms = factory.getTransforms
+            (m_verbose ? &printer : 0);
 
         if (factory.isOK()) {
             if (transforms.empty()) {
-                cerr << "ERROR: Transform file \"" << transformFile
+                SVCERR << "ERROR: Transform file \"" << transformFile
                      << "\" is valid RDF but defines no transforms" << endl;
                 return false;
             } else {
@@ -502,7 +509,7 @@ bool FeatureExtractionManager::addFeatureExtractorFromFile
             }
         } else { // !factory.isOK()
             if (factory.isRDF()) {
-                cerr << "ERROR: Invalid transform RDF file \"" << transformFile
+                SVCERR << "ERROR: Invalid transform RDF file \"" << transformFile
                      << "\": " << factory.getErrorString() << endl;
                 return false;
             }
@@ -518,7 +525,7 @@ bool FeatureExtractionManager::addFeatureExtractorFromFile
         
         QFile file(transformFile);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            cerr << "ERROR: Failed to open transform file \""
+            SVCERR << "ERROR: Failed to open transform file \""
                  << transformFile.toStdString() << "\" for reading" << endl;
             return false;
         }
@@ -534,7 +541,7 @@ bool FeatureExtractionManager::addFeatureExtractorFromFile
         if (xmlError == "") {
 
             if (transform.getIdentifier() == "") {
-                cerr << "ERROR: Transform file \"" << transformFile
+                SVCERR << "ERROR: Transform file \"" << transformFile
                      << "\" is valid XML but defines no transform" << endl;
                 return false;
             }
@@ -543,13 +550,13 @@ bool FeatureExtractionManager::addFeatureExtractorFromFile
         }
     }
 
-    cerr << "ERROR: Transform file \"" << transformFile
+    SVCERR << "ERROR: Transform file \"" << transformFile
          << "\" could not be parsed" << endl;
     if (rdfError != "") {
-        cerr << "ERROR: RDF parser reported: " << rdfError << endl;
+        SVCERR << "ERROR: RDF parser reported: " << rdfError << endl;
     }
     if (xmlError != "") {
-        cerr << "ERROR: XML parser reported: " << xmlError << endl;
+        SVCERR << "ERROR: XML parser reported: " << xmlError << endl;
     }
 
     return false;
@@ -557,7 +564,7 @@ bool FeatureExtractionManager::addFeatureExtractorFromFile
 
 void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex)
 {
-    std::cerr << "Have audio source: \"" << audioSource.toStdString() << "\"" << std::endl;
+    SVCERR << "Have audio source: \"" << audioSource.toStdString() << "\"" << endl;
 
     // We don't actually do anything with it here, unless it's the
     // first audio source and we need it to establish default channel
@@ -567,14 +574,14 @@ void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex
 
         ProgressPrinter retrievalProgress("Retrieving first input file to determine default rate and channel count...");
 
-        FileSource source(audioSource, &retrievalProgress);
+        FileSource source(audioSource, m_verbose ? &retrievalProgress : 0);
         if (!source.isAvailable()) {
-            cerr << "ERROR: File or URL \"" << audioSource.toStdString()
+            SVCERR << "ERROR: File or URL \"" << audioSource.toStdString()
                  << "\" could not be located";
             if (source.getErrorString() != "") {
-                cerr << ": " << source.getErrorString();
+                SVCERR << ": " << source.getErrorString();
             }
-            cerr << endl;
+            SVCERR << endl;
             throw FileNotFound(audioSource);
         }
     
@@ -584,31 +591,30 @@ void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex
         // (then close, and open again later with actual desired rate &c)
 
         AudioFileReader *reader =
-            AudioFileReaderFactory::createReader(source, 0, 
-                                                 m_normalise,
-                                                 &retrievalProgress);
+            AudioFileReaderFactory::createReader
+            (source, 0, m_normalise, m_verbose ? &retrievalProgress : 0);
     
         if (!reader) {
             throw FailedToOpenFile(audioSource);
         }
 
-        retrievalProgress.done();
+        if (m_verbose) retrievalProgress.done();
 
-        cerr << "File or URL \"" << audioSource.toStdString() << "\" opened successfully" << endl;
+        SVCERR << "File or URL \"" << audioSource.toStdString() << "\" opened successfully" << endl;
 
         if (!willMultiplex) {
             if (m_channels == 0) {
                 m_channels = reader->getChannelCount();
-                cerr << "Taking default channel count of "
+                SVCERR << "Taking default channel count of "
                      << reader->getChannelCount() << " from audio file" << endl;
             }
         }
 
         if (m_defaultSampleRate == 0) {
             m_defaultSampleRate = reader->getNativeRate();
-            cerr << "Taking default sample rate of "
+            SVCERR << "Taking default sample rate of "
                  << reader->getNativeRate() << "Hz from audio file" << endl;
-            cerr << "(Note: Default may be overridden by transforms)" << endl;
+            SVCERR << "(Note: Default may be overridden by transforms)" << endl;
         }
 
         m_readyReaders[audioSource] = reader;
@@ -616,7 +622,7 @@ void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex
 
     if (willMultiplex) {
         ++m_channels; // channel count is simply number of sources
-        cerr << "Multiplexing, incremented target channel count to " 
+        SVCERR << "Multiplexing, incremented target channel count to " 
              << m_channels << endl;
     }
 }
@@ -682,19 +688,18 @@ FeatureExtractionManager::prepareReader(QString source)
     }
     if (!reader) {
         ProgressPrinter retrievalProgress("Retrieving audio data...");
-        FileSource fs(source, &retrievalProgress);
+        FileSource fs(source, m_verbose ? &retrievalProgress : 0);
         fs.waitForData();
-        reader = AudioFileReaderFactory::createReader(fs, m_sampleRate, 
-                                                      m_normalise,
-                                                      &retrievalProgress);
-        retrievalProgress.done();
+        reader = AudioFileReaderFactory::createReader
+            (fs, m_sampleRate, m_normalise, m_verbose ? &retrievalProgress : 0);
+        if (m_verbose) retrievalProgress.done();
     }
     if (!reader) {
         throw FailedToOpenFile(source);
     }
     if (reader->getChannelCount() != m_channels ||
         reader->getNativeRate() != m_sampleRate) {
-        cerr << "NOTE: File will be mixed or resampled for processing, to: "
+        SVCERR << "NOTE: File will be mixed or resampled for processing, to: "
              << m_channels << "ch at " 
              << m_sampleRate << "Hz" << endl;
     }
@@ -707,7 +712,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 {
     // Note: This also deletes reader
 
-    cerr << "Audio file \"" << audioSource.toStdString() << "\": "
+    SVCERR << "Audio file \"" << audioSource.toStdString() << "\": "
          << reader->getChannelCount() << "ch at " 
          << reader->getNativeRate() << "Hz" << endl;
 
@@ -737,7 +742,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 
     size_t frameCount = reader->getFrameCount();
     
-//    cerr << "file has " << frameCount << " frames" << endl;
+    SVDEBUG << "FeatureExtractionManager: file has " << frameCount << " frames" << endl;
 
     int earliestStartFrame = 0;
     int latestEndFrame = frameCount;
@@ -747,7 +752,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 
         PluginMap::iterator pi = m_plugins.find(plugin);
 
-//        std::cerr << "Calling reset on " << plugin << std::endl;
+        SVDEBUG << "FeatureExtractionManager: Calling reset on " << plugin << endl;
         plugin->reset();
 
         for (TransformWriterMap::iterator ti = pi->second.begin();
@@ -769,11 +774,12 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
             if (!haveExtents || startFrame + duration > latestEndFrame) {
                 latestEndFrame = startFrame + duration;
             }
+
 /*
-            cerr << "startFrame for transform " << startFrame << endl;
-            cerr << "duration for transform " << duration << endl;
-            cerr << "earliestStartFrame becomes " << earliestStartFrame << endl;
-            cerr << "latestEndFrame becomes " << latestEndFrame << endl;
+            SVDEBUG << "startFrame for transform " << startFrame << endl;
+            SVDEBUG << "duration for transform " << duration << endl;
+            SVDEBUG << "earliestStartFrame becomes " << earliestStartFrame << endl;
+            SVDEBUG << "latestEndFrame becomes " << latestEndFrame << endl;
 */
             haveExtents = true;
 
@@ -782,24 +788,23 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
                 m_pluginOutputs[plugin].end()) {
                 // We shouldn't actually reach this point:
                 // addFeatureExtractor tests whether the output exists
-                cerr << "ERROR: Nonexistent plugin output \"" << outputId << "\" requested for transform \""
+                SVCERR << "ERROR: Nonexistent plugin output \"" << outputId << "\" requested for transform \""
                      << transform.getIdentifier().toStdString() << "\", ignoring this transform"
                      << endl;
-/*
-                cerr << "Known outputs for all plugins are as follows:" << endl;
+
+                SVDEBUG << "Known outputs for all plugins are as follows:" << endl;
                 for (PluginOutputMap::const_iterator k = m_pluginOutputs.begin();
                      k != m_pluginOutputs.end(); ++k) {
-                    cerr << "Plugin " << k->first << ": ";
+                    SVDEBUG << "Plugin " << k->first << ": ";
                     if (k->second.empty()) {
-                        cerr << "(none)";
+                        SVDEBUG << "(none)";
                     }
                     for (OutputMap::const_iterator i = k->second.begin();
                          i != k->second.end(); ++i) {
-                        cerr << "\"" << i->first << "\" ";
+                        SVDEBUG << "\"" << i->first << "\" ";
                     }
-                    cerr << endl;
+                    SVDEBUG << endl;
                 }
-*/
             }
         }
     }
@@ -911,10 +916,10 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 
         int pp = progress;
         progress = int(((i - startFrame) * 100.0) / (endFrame - startFrame) + 0.1);
-        if (progress > pp) extractionProgress.setProgress(progress);
+        if (progress > pp && m_verbose) extractionProgress.setProgress(progress);
     }
 
-//    std::cerr << "FeatureExtractionManager: deleting audio file reader" << std::endl;
+    SVDEBUG << "FeatureExtractionManager: deleting audio file reader" << endl;
 
     lifemgr.destroy(); // deletes reader, data
         
@@ -932,7 +937,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
             PluginSummarisingAdapter *adapter =
                 dynamic_cast<PluginSummarisingAdapter *>(plugin);
             if (!adapter) {
-                cerr << "WARNING: Summaries requested, but plugin is not a summarising adapter" << endl;
+                SVCERR << "WARNING: Summaries requested, but plugin is not a summarising adapter" << endl;
             } else {
                 for (SummaryNameSet::const_iterator sni = m_summaries.begin();
                      sni != m_summaries.end(); ++sni) {
@@ -955,7 +960,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
         writeSummaries(audioSource, plugin);
     }
 
-    extractionProgress.done();
+    if (m_verbose) extractionProgress.done();
 
     finish();
     
@@ -973,29 +978,29 @@ FeatureExtractionManager::writeSummaries(QString audioSource, Plugin *plugin)
         
         const Transform &transform = ti->first;
 
-//        cerr << "FeatureExtractionManager::writeSummaries: plugin is " << plugin
-//             << ", found transform: " << transform.toXmlString() << endl;
+        SVDEBUG << "FeatureExtractionManager::writeSummaries: plugin is " << plugin
+                << ", found transform: " << transform.toXmlString() << endl;
         
         Transform::SummaryType summaryType = transform.getSummaryType();
         PluginSummarisingAdapter::SummaryType pType =
             (PluginSummarisingAdapter::SummaryType)summaryType;
 
         if (transform.getSummaryType() == Transform::NoSummary) {
-//            cerr << "(no summary, continuing)" << endl;
+            SVDEBUG << "FeatureExtractionManager::writeSummaries: no summary for this transform" << endl;
             continue;
         }
 
         PluginSummarisingAdapter *adapter =
             dynamic_cast<PluginSummarisingAdapter *>(plugin);
         if (!adapter) {
-            cerr << "FeatureExtractionManager::writeSummaries: INTERNAL ERROR: Summary requested for transform, but plugin is not a summarising adapter" << endl;
+            SVCERR << "FeatureExtractionManager::writeSummaries: INTERNAL ERROR: Summary requested for transform, but plugin is not a summarising adapter" << endl;
             continue;
         }
 
         Plugin::FeatureSet featureSet = adapter->getSummaryForAllOutputs
             (pType, PluginSummarisingAdapter::ContinuousTimeAverage);
 
-//        cerr << "summary type " << int(pType) << " for transform:" << endl << transform.toXmlString().toStdString()<< endl << "... feature set with " << featureSet.size() << " elts" << endl;
+        SVDEBUG << "summary type " << int(pType) << " for transform:" << endl << transform.toXmlString().toStdString()<< endl << "... feature set with " << featureSet.size() << " elts" << endl;
 
         writeFeatures(audioSource, plugin, featureSet, summaryType);
     }
@@ -1018,16 +1023,16 @@ void FeatureExtractionManager::writeFeatures(QString audioSource,
         const Transform &transform = ti->first;
         const vector<FeatureWriter *> &writers = ti->second;
 
-//        cerr << "writeFeatures: plugin " << plugin << " has transform: " << transform.toXmlString() << endl;
+//        SVDEBUG << "writeFeatures: plugin " << plugin << " has transform: " << transform.toXmlString() << endl;
 
         if (transform.getSummaryType() == Transform::NoSummary &&
             !m_summaries.empty()) {
-//            cerr << "transform has no summary, but summaries requested on command line, so going for it anyway" << endl;
+            SVDEBUG << "transform has no summary, but summaries requested on command line, so going for it anyway" << endl;
         } else if (transform.getSummaryType() != summaryType) {
             // Either we're not writing a summary and the transform
             // has one, or we're writing a summary but the transform
             // has none or a different one; either way, skip it
-//            cerr << "summary type differs from passed-in one " << summaryType << endl;
+            SVDEBUG << "summary type differs from passed-in one " << summaryType << endl;
             continue;
         }
 
@@ -1045,7 +1050,7 @@ void FeatureExtractionManager::writeFeatures(QString audioSource,
         Plugin::FeatureSet::const_iterator fsi = features.find(outputIndex);
         if (fsi == features.end()) continue;
 
-//        cerr << "this transform has " << writers.size() << " writer(s)" << endl;
+//        SVDEBUG << "this transform has " << writers.size() << " writer(s)" << endl;
         
         for (int j = 0; j < (int)writers.size(); ++j) {
             writers[j]->write

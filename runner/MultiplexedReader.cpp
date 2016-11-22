@@ -21,6 +21,11 @@ MultiplexedReader::MultiplexedReader(QList<AudioFileReader *> readers) :
     m_channelCount = readers.size();
     m_sampleRate = readers[0]->getSampleRate();
     
+    SVDEBUG << "MultiplexedReader: channel count: " << m_channelCount
+            << " (i.e. " << m_channelCount << " reader(s) to multiplex)" << endl;
+    SVDEBUG << "MultiplexedReader: sample rate from first reader: "
+            << m_sampleRate << endl;
+    
     m_frameCount = 0;
     m_quicklySeekable = true;
     

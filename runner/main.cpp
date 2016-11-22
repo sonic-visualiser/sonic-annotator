@@ -36,6 +36,7 @@ using std::string;
 #include "base/Exceptions.h"
 #include "base/TempDirectory.h"
 #include "base/ProgressPrinter.h"
+#include "base/Debug.h"
 
 #include "data/fileio/AudioFileReaderFactory.h"
 #include "data/fileio/PlaylistFileReader.h"
@@ -344,6 +345,9 @@ void printHelp(QString myname, QString w)
         cerr << "  -f, --force         "
              << wrapCol("Continue with subsequent files following an error.")
              << endl << endl;
+        cerr << "  -q, --quiet         "
+             << wrapCol("Suppress informational output that would otherwise be printed to stderr and to a log file. Sonic Annotator may run faster with this option, especially if the application data directory is on a shared storage resource, but no diagnostic information will be available except for the application's return code.")
+             << endl << endl;
         cerr << "Housekeeping options:"
              << endl << endl;
         cerr << "  -l, --list          List available transform ids to standard output." << endl;
@@ -600,6 +604,7 @@ int main(int argc, char **argv)
     bool multiplex = false;
     bool recursive = false;
     bool normalise = false;
+    bool quiet = false;
     bool list = false;
     bool listWriters = false;
     bool listFormats = false;
@@ -756,6 +761,9 @@ int main(int argc, char **argv)
         } else if (arg == "-f" || arg == "--force") {
             force = true;
             continue;
+        } else if (arg == "-q" || arg == "--quiet") {
+            quiet = true;
+            continue;
         } else if (arg == "--list-writers") {
             listWriters = true;
             continue;
@@ -802,6 +810,11 @@ int main(int argc, char **argv)
         }
     }
 
+    if (quiet) {
+        SVDebug::silence();
+        SVCerr::silence();
+    }
+    
     if (list) {
         if (!requestedWriterTags.empty() || skeletonFor != "") {
             cerr << helpStr << endl;
@@ -910,15 +923,6 @@ int main(int argc, char **argv)
 
     QSettings settings;
 
-#ifdef HAVE_FFTW3
-    settings.beginGroup("FFTWisdom");
-    QString wisdom = settings.value("wisdom").toString();
-    if (wisdom != "") {
-        fftw_import_wisdom_from_string(wisdom.toLocal8Bit().data());
-    }
-    settings.endGroup();
-#endif
-
     settings.beginGroup("RDF");
     if (!settings.contains("rdf-indices")) {
         QStringList list;
@@ -927,7 +931,7 @@ int main(int argc, char **argv)
     }
     settings.endGroup();
 
-    FeatureExtractionManager manager;
+    FeatureExtractionManager manager(!quiet);
 
     manager.setNormalise(normalise);
 
@@ -1148,8 +1152,7 @@ int main(int argc, char **argv)
             int n = 0;
             for (QStringList::const_iterator i = goodSources.begin();
                  i != goodSources.end(); ++i) {
-                std::cerr << "Extracting features for: \"" << i->toStdString()
-                          << "\"" << std::endl;
+                SVCERR << "Extracting features for: \"" << *i << "\"" << endl;
                 ++n;
                 try {
                     for (int j = 0; j < (int)writers.size(); ++j) {
@@ -1157,17 +1160,17 @@ int main(int argc, char **argv)
                     }
                     manager.extractFeatures(*i);
                 } catch (const std::exception &e) {
-                    cerr << "ERROR: Feature extraction failed for \""
-                         << i->toStdString() << "\": " << e.what() << endl;
+                    SVCERR << "ERROR: Feature extraction failed for \""
+                           << i->toStdString() << "\": " << e.what() << endl;
                     if (force) {
                         // print a note only if we have more files to process
                         QStringList::const_iterator j = i;
                         if (++j != sources.end()) {
-                            cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
+                            SVCERR << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
                         }
                     } else {
-                        cerr << "NOTE: If you want to continue with processing any further files after an" << endl
-                             << "error like this, use the --force option" << endl;
+                        SVCERR << "NOTE: If you want to continue with processing any further files after an" << endl
+                               << "error like this, use the --force option" << endl;
                         good = false;
                         break;
                     }
@@ -1177,16 +1180,6 @@ int main(int argc, char **argv)
     }
     
     for (int i = 0; i < (int)writers.size(); ++i) delete writers[i];
-
-#ifdef HAVE_FFTW3
-    settings.beginGroup("FFTWisdom");
-    char *cwisdom = fftw_export_wisdom_to_string();
-    if (cwisdom) {
-        settings.setValue("wisdom", cwisdom);
-        fftw_free(cwisdom);
-    }
-    settings.endGroup();
-#endif
 
     TempDirectory::getInstance()->cleanup();
     
