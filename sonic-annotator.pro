@@ -16,4 +16,5 @@ sub_test_svcore_data_fileio.file = test-svcore-data-fileio.pro
 
 sub_runner.file = runner.pro
 
+CONFIG += ordered
 
