@@ -72,6 +72,8 @@ jsoncompare() {
     return $rv
 }
 
+SDIFF_WIDTH=140
+
 faildiff() {
     echo "Test failed: $1"
     if [ -n "$2" -a -n "$3" ]; then
@@ -79,13 +81,13 @@ faildiff() {
 	echo "--"
 	cat "$2"
 	echo "--"
-	echo "Expected output follows:"
+	echo "Expected output follows ($3):"
 	echo "--"
 	cat "$3"
 	echo "--"
 	echo "Diff (output on left, expected on right):"
 	echo "--"
-	sdiff -w78 "$2" "$3"
+	sdiff -w${SDIFF_WIDTH} "$2" "$3"
 	echo "--"
     fi
     exit 1
@@ -98,14 +100,14 @@ faildiff_od() {
 	echo "--"
 	od -c "$2"
 	echo "--"
-	echo "Expected output follows:"
+	echo "Expected output follows ($3):"
 	echo "--"
 	od -c "$3"
 	echo "--"
 	echo "Diff:"
 	echo "--"
 	od -w8 -c "$3" > "${3}__"
-	od -w8 -c "$2" | sdiff -w78 - "${3}__"
+	od -w8 -c "$2" | sdiff -w${SDIFF_WIDTH} - "${3}__"
 	rm "${3}__"
 	echo "--"
     fi
