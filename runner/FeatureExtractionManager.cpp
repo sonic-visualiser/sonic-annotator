@@ -1027,12 +1027,12 @@ void FeatureExtractionManager::writeFeatures(QString audioSource,
 
         if (transform.getSummaryType() == Transform::NoSummary &&
             !m_summaries.empty()) {
-            SVDEBUG << "transform has no summary, but summaries requested on command line, so going for it anyway" << endl;
+            SVDEBUG << "writeFeatures: transform has no summary, but summaries requested on command line, so going for it anyway" << endl;
         } else if (transform.getSummaryType() != summaryType) {
             // Either we're not writing a summary and the transform
             // has one, or we're writing a summary but the transform
             // has none or a different one; either way, skip it
-            SVDEBUG << "summary type differs from passed-in one " << summaryType << endl;
+            SVDEBUG << "writeFeatures: transform summary type " << transform.getSummaryType() << " differs from passed-in one " << summaryType << ", skipping" << endl;
             continue;
         }
 
