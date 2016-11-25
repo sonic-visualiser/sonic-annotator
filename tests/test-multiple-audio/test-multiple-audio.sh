@@ -7,7 +7,7 @@ tmpfile2=$mypath/tmp_2_$$
 
 trap "rm -f $tmpfile1 $tmpfile2" 0
 
-transform=$mypath/transforms/detectionfunction.n3 
+transform=$mypath/transforms/af.n3 
 
 urlbase=http://vamp-plugins.org/sonic-annotator/testfiles
 

@@ -1,0 +1,41 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix vamp: <http://purl.org/ontology/vamp/>.
+@prefix examples: <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#>.
+@prefix : <#>.
+
+:transform0 a vamp:Transform;
+	vamp:plugin examples:amplitudefollower ;
+	vamp:output examples:amplitudefollower_output_amplitude ;
+	vamp:summary_type "mean" .
+
+:transform1 a vamp:Transform;
+	vamp:plugin examples:amplitudefollower ;
+	vamp:output examples:amplitudefollower_output_amplitude ;
+	vamp:summary_type "median" .
+
+# This is not a summary and so should not appear with --summary-only
+:transform2 a vamp:Transform;
+	vamp:plugin examples:percussiononsets ;
+	vamp:output examples:percussiononsets_output_onsets .
+
+:transform3 a vamp:Transform;
+	vamp:plugin examples:amplitudefollower ;
+	vamp:output examples:amplitudefollower_output_amplitude ;
+	vamp:summary_type "mode" .
+
+# This has different step and block sizes from the default
+# (:transform0), and so should be listed separately with different
+# values in the output
+:transform4 a vamp:Transform;
+	vamp:plugin examples:amplitudefollower ;
+	vamp:output examples:amplitudefollower_output_amplitude ;
+	vamp:step_size 4096 ;
+	vamp:block_size 8192 ;
+	vamp:summary_type "mean" .
+
+# This is not a summary and so should not appear with --summary-only
+:transform5 a vamp:Transform;
+	vamp:plugin examples:amplitudefollower ;
+	vamp:output examples:amplitudefollower_output_amplitude .
+
+ 
