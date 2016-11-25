@@ -934,6 +934,11 @@ int main(int argc, char **argv)
     }
     settings.endGroup();
 
+    QLocale locale;
+    locale.setNumberOptions(QLocale::OmitGroupSeparator |
+                            QLocale::OmitLeadingZeroInExponent);
+    QLocale::setDefault(locale);
+    
     FeatureExtractionManager manager(!quiet);
 
     manager.setNormalise(normalise);
