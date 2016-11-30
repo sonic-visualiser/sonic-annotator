@@ -95,6 +95,10 @@ macx* {
 
     DEFINES += MALLOC_IS_ALIGNED HAVE_VDSP
     LIBS += \
+        -framework CoreAudio \
+	-framework CoreMidi \
+	-framework AudioUnit \
+	-framework AudioToolbox \
 	-framework CoreFoundation \
 	-framework CoreServices \
 	-framework Accelerate
