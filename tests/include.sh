@@ -13,7 +13,7 @@ case "$(pwd)/$mypath" in
     ;;
 esac
 
-version=1.5
+version=1.5pre
 nextversion=1.6
 
 testdir=$mypath/..
@@ -64,8 +64,8 @@ jsoncompare() {
     # filter that out, and also reformat to ignore whitespace differences
     a="$1"
     b="$2"
-    cat "$a" | sed 's/Sonic Annotator v[0-9.]*/Sonic Annotator vXXX/' | json_reformat > "${a}__"
-    cat "$b" | sed 's/Sonic Annotator v[0-9.]*/Sonic Annotator vXXX/' | json_reformat > "${b}__"
+    cat "$a" | sed 's/Sonic Annotator v[0-9a-z.]*/Sonic Annotator vXXX/' | json_reformat > "${a}__"
+    cat "$b" | sed 's/Sonic Annotator v[0-9a-z.]*/Sonic Annotator vXXX/' | json_reformat > "${b}__"
     cmp -s "${a}__" "${b}__"
     rv=$?
     rm "${a}__" "${b}__"
