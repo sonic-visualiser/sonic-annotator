@@ -590,9 +590,14 @@ void FeatureExtractionManager::addSource(QString audioSource, bool willMultiplex
         // Open to determine validity, channel count, sample rate only
         // (then close, and open again later with actual desired rate &c)
 
+        AudioFileReaderFactory::Parameters params;
+        params.normalisation = (m_normalise ?
+                                AudioFileReaderFactory::Normalisation::Peak :
+                                AudioFileReaderFactory::Normalisation::None);
+        
         AudioFileReader *reader =
             AudioFileReaderFactory::createReader
-            (source, 0, m_normalise, m_verbose ? &retrievalProgress : 0);
+            (source, params, m_verbose ? &retrievalProgress : 0);
     
         if (!reader) {
             throw FailedToOpenFile(audioSource);
@@ -686,14 +691,23 @@ FeatureExtractionManager::prepareReader(QString source)
             reader = 0;
         }
     }
+
     if (!reader) {
         ProgressPrinter retrievalProgress("Retrieving audio data...");
         FileSource fs(source, m_verbose ? &retrievalProgress : 0);
         fs.waitForData();
+
+        AudioFileReaderFactory::Parameters params;
+        params.targetRate = m_sampleRate;
+        params.normalisation = (m_normalise ?
+                                AudioFileReaderFactory::Normalisation::Peak :
+                                AudioFileReaderFactory::Normalisation::None);
+        
         reader = AudioFileReaderFactory::createReader
-            (fs, m_sampleRate, m_normalise, m_verbose ? &retrievalProgress : 0);
+            (fs, params, m_verbose ? &retrievalProgress : 0);
         if (m_verbose) retrievalProgress.done();
     }
+    
     if (!reader) {
         throw FailedToOpenFile(source);
     }
