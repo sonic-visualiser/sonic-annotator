@@ -28,15 +28,8 @@ for extension in wav ogg mp3 ; do
     $r -t $transform -w csv --csv-stdout $infile > $tmpfile2 2>/dev/null || \
 	fail "Fails to run transform $transform against audio file $infile"
 
-    if [ "$extension" = "wav" ]; then
-	csvcompare $tmpfile2 $expected || \
-	    faildiff "Output mismatch for transform $transform with audio file $infile" $tmpfile2 $expected
-    else
-	csvcompare $tmpfile2 $expected || \
-	    ( echo "NOTE: Output mismatch for transform $transform with audio file $infile" ; \
-	      echo "This may be the result of differences in the audio file decoder, so I am not" ; \
-	      echo "failing the test, but I recommend that you check the results." )
-    fi
+    csvcompare $tmpfile2 $expected || \
+	faildiff "Output mismatch for transform $transform for format $extension with audio file $infile" $tmpfile2 $expected
 done
 
 # Check the normalise flag

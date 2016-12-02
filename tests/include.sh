@@ -13,7 +13,7 @@ case "$(pwd)/$mypath" in
     ;;
 esac
 
-version=1.5
+version=1.5pre
 nextversion=1.6
 
 testdir=$mypath/..
@@ -64,13 +64,15 @@ jsoncompare() {
     # filter that out, and also reformat to ignore whitespace differences
     a="$1"
     b="$2"
-    cat "$a" | sed 's/Sonic Annotator v[0-9.]*/Sonic Annotator vXXX/' | json_reformat > "${a}__"
-    cat "$b" | sed 's/Sonic Annotator v[0-9.]*/Sonic Annotator vXXX/' | json_reformat > "${b}__"
+    cat "$a" | sed 's/Sonic Annotator v[0-9a-z.]*/Sonic Annotator vXXX/' | json_reformat > "${a}__"
+    cat "$b" | sed 's/Sonic Annotator v[0-9a-z.]*/Sonic Annotator vXXX/' | json_reformat > "${b}__"
     cmp -s "${a}__" "${b}__"
     rv=$?
     rm "${a}__" "${b}__"
     return $rv
 }
+
+SDIFF_WIDTH=140
 
 faildiff() {
     echo "Test failed: $1"
@@ -79,13 +81,13 @@ faildiff() {
 	echo "--"
 	cat "$2"
 	echo "--"
-	echo "Expected output follows:"
+	echo "Expected output follows ($3):"
 	echo "--"
 	cat "$3"
 	echo "--"
 	echo "Diff (output on left, expected on right):"
 	echo "--"
-	sdiff -w78 "$2" "$3"
+	sdiff -w${SDIFF_WIDTH} "$2" "$3"
 	echo "--"
     fi
     exit 1
@@ -98,14 +100,14 @@ faildiff_od() {
 	echo "--"
 	od -c "$2"
 	echo "--"
-	echo "Expected output follows:"
+	echo "Expected output follows ($3):"
 	echo "--"
 	od -c "$3"
 	echo "--"
 	echo "Diff:"
 	echo "--"
 	od -w8 -c "$3" > "${3}__"
-	od -w8 -c "$2" | sdiff -w78 - "${3}__"
+	od -w8 -c "$2" | sdiff -w${SDIFF_WIDTH} - "${3}__"
 	rm "${3}__"
 	echo "--"
     fi

@@ -36,6 +36,7 @@ using std::string;
 #include "base/Exceptions.h"
 #include "base/TempDirectory.h"
 #include "base/ProgressPrinter.h"
+#include "base/Debug.h"
 
 #include "data/fileio/AudioFileReaderFactory.h"
 #include "data/fileio/PlaylistFileReader.h"
@@ -344,6 +345,9 @@ void printHelp(QString myname, QString w)
         cerr << "  -f, --force         "
              << wrapCol("Continue with subsequent files following an error.")
              << endl << endl;
+        cerr << "  -q, --quiet         "
+             << wrapCol("Suppress informational output that would otherwise be printed to stderr and to a log file. Sonic Annotator may run faster with this option, especially if the application data directory is on a shared storage resource, but no diagnostic information will be available except for the application's return code.")
+             << endl << endl;
         cerr << "Housekeeping options:"
              << endl << endl;
         cerr << "  -l, --list          List available transform ids to standard output." << endl;
@@ -474,7 +478,7 @@ findSourcesRecursive(QString dirname, QStringList &addTo, int &found)
     QDir dir(dirname);
 
     QString printable = dir.dirName().left(20);
-    cerr << "\rScanning \"" << printable << "\"..."
+    SVCERR << "\rScanning \"" << printable << "\"..."
          << QString("                    ").left(20 - printable.length())
          << " [" << found << " audio file(s)]";
 
@@ -501,6 +505,7 @@ expandPlaylists(QStringList sources)
     QStringList expanded;
     foreach (QString path, sources) {
         if (QFileInfo(path).suffix().toLower() == "m3u") {
+            SVDEBUG << "Expanding m3u playlist file \"" << path << "\"" << endl;
             ProgressPrinter retrievalProgress("Opening playlist file...");
             FileSource source(path, &retrievalProgress);
             if (!source.isAvailable()) {
@@ -519,6 +524,8 @@ expandPlaylists(QStringList sources)
                 for (int i = 0; i < (int)files.size(); ++i) {
                     expanded.push_back(files[i]);
                 }
+                SVDEBUG << "Done, m3u playlist references "
+                        << files.size() << " file(s)" << endl;
             }
         } else {
             // not a playlist
@@ -534,7 +541,7 @@ readSegmentBoundaries(QString url,
 {
     FileSource source(url);
     if (!source.isAvailable()) {
-        cerr << "File or URL \"" << url << "\" could not be retrieved" << endl;
+        SVCERR << "File or URL \"" << url << "\" could not be retrieved" << endl;
         return false;
     }
     source.waitForData();
@@ -542,7 +549,7 @@ readSegmentBoundaries(QString url,
     QString filename = source.getLocalFilename();
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        cerr << "File \"" << filename << "\" could not be read" << endl;
+        SVCERR << "File \"" << filename << "\" could not be read" << endl;
         return false;
     }
 
@@ -565,7 +572,7 @@ readSegmentBoundaries(QString url,
             importantBit = bits[0];
         }
         if (importantBit == QString()) {
-            cerr << "WARNING: Skipping line " << lineNo << " (no content found)"
+            SVCERR << "WARNING: Skipping line " << lineNo << " (no content found)"
                  << endl;
             continue;
         }
@@ -573,7 +580,7 @@ readSegmentBoundaries(QString url,
         boundaries.insert(Vamp::RealTime::fromSeconds
                           (importantBit.toDouble(&good)));
         if (!good) {
-            cerr << "Unparseable or non-numeric segment boundary at line "
+            SVCERR << "Unparseable or non-numeric segment boundary at line "
                  << lineNo << endl;
             return false;
         }
@@ -600,6 +607,7 @@ int main(int argc, char **argv)
     bool multiplex = false;
     bool recursive = false;
     bool normalise = false;
+    bool quiet = false;
     bool list = false;
     bool listWriters = false;
     bool listFormats = false;
@@ -756,6 +764,9 @@ int main(int argc, char **argv)
         } else if (arg == "-f" || arg == "--force") {
             force = true;
             continue;
+        } else if (arg == "-q" || arg == "--quiet") {
+            quiet = true;
+            continue;
         } else if (arg == "--list-writers") {
             listWriters = true;
             continue;
@@ -802,6 +813,11 @@ int main(int argc, char **argv)
         }
     }
 
+    if (quiet) {
+        SVDebug::silence();
+        SVCerr::silence();
+    }
+    
     if (list) {
         if (!requestedWriterTags.empty() || skeletonFor != "") {
             cerr << helpStr << endl;
@@ -910,15 +926,6 @@ int main(int argc, char **argv)
 
     QSettings settings;
 
-#ifdef HAVE_FFTW3
-    settings.beginGroup("FFTWisdom");
-    QString wisdom = settings.value("wisdom").toString();
-    if (wisdom != "") {
-        fftw_import_wisdom_from_string(wisdom.toLocal8Bit().data());
-    }
-    settings.endGroup();
-#endif
-
     settings.beginGroup("RDF");
     if (!settings.contains("rdf-indices")) {
         QStringList list;
@@ -927,7 +934,7 @@ int main(int argc, char **argv)
     }
     settings.endGroup();
 
-    FeatureExtractionManager manager;
+    FeatureExtractionManager manager(!quiet);
 
     manager.setNormalise(normalise);
 
@@ -1040,6 +1047,7 @@ int main(int argc, char **argv)
 
     for (set<string>::const_iterator i = requestedTransformListFiles.begin();
          i != requestedTransformListFiles.end(); ++i) {
+        SVDEBUG << "Reading transform list file \"" << *i << "\"" << endl;
         PlaylistFileReader reader(i->c_str());
         if (reader.isOK()) {
             vector<QString> files = reader.load();
@@ -1047,7 +1055,7 @@ int main(int argc, char **argv)
                 requestedTransformFiles.insert(files[j].toStdString());
             }
         } else {
-            cerr << myname << ": failed to read template list file \"" << *i << "\"" << endl;
+            SVCERR << myname << ": failed to read transform list file \"" << *i << "\"" << endl;
             exit(2);
         }
     }
@@ -1059,10 +1067,10 @@ int main(int argc, char **argv)
         for (QStringList::const_iterator i = otherArgs.begin();
              i != otherArgs.end(); ++i) {
             if (QDir(*i).exists()) {
-                cerr << "Directory found and recursive flag set, scanning for audio files..." << endl;
+                SVCERR << "Directory found and recursive flag set, scanning for audio files..." << endl;
                 int found = 0;
                 findSourcesRecursive(*i, sources, found);
-                cerr << "\rDone, found " << found << " supported audio file(s)                    " << endl;
+                SVCERR << "\rDone, found " << found << " supported audio file(s)                    " << endl;
             } else {
                 sources.push_back(*i);
             }
@@ -1080,16 +1088,16 @@ int main(int argc, char **argv)
             manager.addSource(*i, multiplex);
         } catch (const std::exception &e) {
             badSources.insert(*i);
-            cerr << "ERROR: Failed to process file \"" << i->toStdString()
+            SVCERR << "ERROR: Failed to process file \"" << i->toStdString()
                  << "\": " << e.what() << endl;
             if (force) {
                 // print a note only if we have more files to process
                 QStringList::const_iterator j = i;
                 if (++j != sources.end()) {
-                    cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
+                    SVCERR << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
                 }
             } else {
-                cerr << "NOTE: If you want to continue with processing any further files after an" << endl
+                SVCERR << "NOTE: If you want to continue with processing any further files after an" << endl
                      << "error like this, use the --force option" << endl;
                 good = false;
                 break;
@@ -1106,7 +1114,7 @@ int main(int argc, char **argv)
             if (manager.addFeatureExtractorFromFile(i->c_str(), writers)) {
                 haveFeatureExtractor = true;
             } else {
-                cerr << "ERROR: Failed to add feature extractor from transform file \"" << *i << "\"" << endl;
+                SVCERR << "ERROR: Failed to add feature extractor from transform file \"" << *i << "\"" << endl;
                 good = false;
             }
         }
@@ -1116,13 +1124,13 @@ int main(int argc, char **argv)
             if (manager.addDefaultFeatureExtractor(i->c_str(), writers)) {
                 haveFeatureExtractor = true;
             } else {
-                cerr << "ERROR: Failed to add default feature extractor for transform \"" << *i << "\"" << endl;
+                SVCERR << "ERROR: Failed to add default feature extractor for transform \"" << *i << "\"" << endl;
                 good = false;
             }
         }
 
         if (!haveFeatureExtractor) {
-            cerr << myname << ": no feature extractors added" << endl;
+            SVCERR << myname << ": no feature extractors added" << endl;
             good = false;
         }
     }
@@ -1141,15 +1149,14 @@ int main(int argc, char **argv)
                 }
                 manager.extractFeaturesMultiplexed(goodSources);
             } catch (const std::exception &e) {
-                cerr << "ERROR: Feature extraction failed: "
+                SVCERR << "ERROR: Feature extraction failed: "
                      << e.what() << endl;
             }
         } else {
             int n = 0;
             for (QStringList::const_iterator i = goodSources.begin();
                  i != goodSources.end(); ++i) {
-                std::cerr << "Extracting features for: \"" << i->toStdString()
-                          << "\"" << std::endl;
+                SVCERR << "Extracting features for: \"" << *i << "\"" << endl;
                 ++n;
                 try {
                     for (int j = 0; j < (int)writers.size(); ++j) {
@@ -1157,17 +1164,17 @@ int main(int argc, char **argv)
                     }
                     manager.extractFeatures(*i);
                 } catch (const std::exception &e) {
-                    cerr << "ERROR: Feature extraction failed for \""
-                         << i->toStdString() << "\": " << e.what() << endl;
+                    SVCERR << "ERROR: Feature extraction failed for \""
+                           << i->toStdString() << "\": " << e.what() << endl;
                     if (force) {
                         // print a note only if we have more files to process
                         QStringList::const_iterator j = i;
                         if (++j != sources.end()) {
-                            cerr << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
+                            SVCERR << "NOTE: \"--force\" option was provided, continuing (more errors may occur)" << endl;
                         }
                     } else {
-                        cerr << "NOTE: If you want to continue with processing any further files after an" << endl
-                             << "error like this, use the --force option" << endl;
+                        SVCERR << "NOTE: If you want to continue with processing any further files after an" << endl
+                               << "error like this, use the --force option" << endl;
                         good = false;
                         break;
                     }
@@ -1177,16 +1184,6 @@ int main(int argc, char **argv)
     }
     
     for (int i = 0; i < (int)writers.size(); ++i) delete writers[i];
-
-#ifdef HAVE_FFTW3
-    settings.beginGroup("FFTWisdom");
-    char *cwisdom = fftw_export_wisdom_to_string();
-    if (cwisdom) {
-        settings.setValue("wisdom", cwisdom);
-        fftw_free(cwisdom);
-    }
-    settings.endGroup();
-#endif
 
     TempDirectory::getInstance()->cleanup();
     

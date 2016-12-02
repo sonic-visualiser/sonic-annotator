@@ -38,7 +38,7 @@ class AudioFileReader;
 class FeatureExtractionManager
 {
 public:
-    FeatureExtractionManager();
+    FeatureExtractionManager(bool verbose);
     virtual ~FeatureExtractionManager();
 
     void setChannels(int channels);
@@ -75,6 +75,8 @@ public:
     void extractFeaturesMultiplexed(QStringList sources);
 
 private:
+    bool m_verbose;
+    
     // A plugin may have many outputs, so we can have more than one
     // transform requested for a single plugin.  The things we want to
     // run in our process loop are plugins rather than their outputs,
