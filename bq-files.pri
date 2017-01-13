@@ -9,11 +9,14 @@ BQ_HEADERS += \
 	bqvec/bqvec/VectorOps.h \
 	bqvec/pommier/neon_mathfun.h \
 	bqvec/pommier/sse_mathfun.h \
-        bqfft/bqfft/FFT.h
+        bqfft/bqfft/FFT.h \
+	bqresample/bqresample/Resampler.h \
+	bqresample/speex/speex_resampler.h
 
 BQ_SOURCES += \
 	bqvec/src/Allocators.cpp \
 	bqvec/src/Barrier.cpp \
 	bqvec/src/VectorOpsComplex.cpp \
-        bqfft/src/FFT.cpp
+        bqfft/src/FFT.cpp \
+	bqresample/src/Resampler.cpp
 

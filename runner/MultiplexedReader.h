@@ -33,7 +33,7 @@ public:
     virtual QString getError() const override { return m_error; }
     virtual bool isQuicklySeekable() const override { return m_quicklySeekable; }
 
-    virtual std::vector<float> getInterleavedFrames
+    virtual floatvec_t getInterleavedFrames
     (sv_frame_t start, sv_frame_t count) const override;
 
     virtual int getDecodeCompletion() const override;

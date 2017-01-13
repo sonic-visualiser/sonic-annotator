@@ -4,6 +4,7 @@ SV_INCLUDEPATH = \
 	bqvec \
 	bqvec/bqvec \
 	bqfft \
+	bqresample \
 	piper-cpp \
 	dataquay \
 	dataquay/dataquay \

@@ -54,13 +54,13 @@ MultiplexedReader::~MultiplexedReader()
     }
 }
 
-std::vector<float>
+floatvec_t
 MultiplexedReader::getInterleavedFrames(sv_frame_t start, sv_frame_t frameCount) const
 {
     int out_chans = m_readers.size();
 
     // Allocate and zero
-    std::vector<float> block(frameCount * out_chans, 0.f);
+    floatvec_t block(frameCount * out_chans, 0.f);
 
     for (int out_chan = 0; out_chan < out_chans; ++out_chan) {
 
