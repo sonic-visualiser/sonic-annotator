@@ -60,10 +60,10 @@ done
 
 for digits in 0 6 2; do
 
-    $r -t "$transformdir/af.n3" $mandatory --jams-digits "$digits" --jams-one-file "$tmpjson" --jams-force "$infile" 2>/dev/null || \
+    $r -d "$testplug:grid-oss" $mandatory --jams-digits "$digits" --jams-one-file "$tmpjson" --jams-force "$silentfile" 2>/dev/null || \
 	fail "Failed to run for af with digits = $digits"
 
-    expected="$mypath/expected/af-$digits.json"
+    expected="$mypath/expected/grid-oss-$digits.json"
     jsoncompare "$tmpjson" "$expected" || \
 	faildiff "Output differs from expected for af with digits = $digits" "$tmpjson" "$expected"
 

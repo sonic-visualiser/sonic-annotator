@@ -1,0 +1,50 @@
+{
+"file_metadata": {
+  "jams_version": "0.2.0",
+  "identifiers": { "filename": "20sec-silence.wav" },
+  "duration": 20.003265306
+},
+"annotations": [
+{
+  "namespace": "unknown",
+  "annotation_metadata": {
+    "annotation_tools": "Sonic Annotator v1.5",
+    "data_source": "Automatic feature extraction",
+    "annotator": {
+      "plugin_id": "vamp:vamp-test-plugin:vamp-test-plugin",
+      "output_id": "grid-oss",
+      "plugin_version": "4",
+      "step_size": 1024,
+      "block_size": 1024,
+      "sample_rate": 44100,
+      "parameters": {
+        "produce_output": 1
+      },
+      "transform_id": "vamp:vamp-test-plugin:vamp-test-plugin:grid-oss"
+    }
+  },
+  "data": [
+    { "time": 0.000000000, "duration": 0.0, "confidence": 1.0, "label": "1 of 20 at 0", "value": [ 0.067, 0.1, 0.13, 0.17, 0.2, 0.23, 0.27, 0.3, 0.33, 0.37 ] },
+    { "time": 0.023219955, "duration": 0.0, "confidence": 1.0, "label": "2 of 20 at 0.023", "value": [ 0.1, 0.13, 0.17, 0.2, 0.23, 0.27, 0.3, 0.33, 0.37, 0.4 ] },
+    { "time": 0.046439909, "duration": 0.0, "confidence": 1.0, "label": "3 of 20 at 0.046", "value": [ 0.13, 0.17, 0.2, 0.23, 0.27, 0.3, 0.33, 0.37, 0.4, 0.43 ] },
+    { "time": 0.069659864, "duration": 0.0, "confidence": 1.0, "label": "4 of 20 at 0.069", "value": [ 0.17, 0.2, 0.23, 0.27, 0.3, 0.33, 0.37, 0.4, 0.43, 0.47 ] },
+    { "time": 0.092879819, "duration": 0.0, "confidence": 1.0, "label": "5 of 20 at 0.092", "value": [ 0.2, 0.23, 0.27, 0.3, 0.33, 0.37, 0.4, 0.43, 0.47, 0.5 ] },
+    { "time": 0.116099773, "duration": 0.0, "confidence": 1.0, "label": "6 of 20 at 0.116", "value": [ 0.23, 0.27, 0.3, 0.33, 0.37, 0.4, 0.43, 0.47, 0.5, 0.53 ] },
+    { "time": 0.139319728, "duration": 0.0, "confidence": 1.0, "label": "7 of 20 at 0.139", "value": [ 0.27, 0.3, 0.33, 0.37, 0.4, 0.43, 0.47, 0.5, 0.53, 0.57 ] },
+    { "time": 0.162539683, "duration": 0.0, "confidence": 1.0, "label": "8 of 20 at 0.162", "value": [ 0.3, 0.33, 0.37, 0.4, 0.43, 0.47, 0.5, 0.53, 0.57, 0.6 ] },
+    { "time": 0.185759637, "duration": 0.0, "confidence": 1.0, "label": "9 of 20 at 0.185", "value": [ 0.33, 0.37, 0.4, 0.43, 0.47, 0.5, 0.53, 0.57, 0.6, 0.63 ] },
+    { "time": 0.208979592, "duration": 0.0, "confidence": 1.0, "label": "10 of 20 at 0.208", "value": [ 0.37, 0.4, 0.43, 0.47, 0.5, 0.53, 0.57, 0.6, 0.63, 0.67 ] },
+    { "time": 0.232199546, "duration": 0.0, "confidence": 1.0, "label": "11 of 20 at 0.232", "value": [ 0.4, 0.43, 0.47, 0.5, 0.53, 0.57, 0.6, 0.63, 0.67, 0.7 ] },
+    { "time": 0.255419501, "duration": 0.0, "confidence": 1.0, "label": "12 of 20 at 0.255", "value": [ 0.43, 0.47, 0.5, 0.53, 0.57, 0.6, 0.63, 0.67, 0.7, 0.73 ] },
+    { "time": 0.278639456, "duration": 0.0, "confidence": 1.0, "label": "13 of 20 at 0.278", "value": [ 0.47, 0.5, 0.53, 0.57, 0.6, 0.63, 0.67, 0.7, 0.73, 0.77 ] },
+    { "time": 0.301859410, "duration": 0.0, "confidence": 1.0, "label": "14 of 20 at 0.301", "value": [ 0.5, 0.53, 0.57, 0.6, 0.63, 0.67, 0.7, 0.73, 0.77, 0.8 ] },
+    { "time": 0.325079365, "duration": 0.0, "confidence": 1.0, "label": "15 of 20 at 0.325", "value": [ 0.53, 0.57, 0.6, 0.63, 0.67, 0.7, 0.73, 0.77, 0.8, 0.83 ] },
+    { "time": 0.348299320, "duration": 0.0, "confidence": 1.0, "label": "16 of 20 at 0.348", "value": [ 0.57, 0.6, 0.63, 0.67, 0.7, 0.73, 0.77, 0.8, 0.83, 0.87 ] },
+    { "time": 0.371519274, "duration": 0.0, "confidence": 1.0, "label": "17 of 20 at 0.371", "value": [ 0.6, 0.63, 0.67, 0.7, 0.73, 0.77, 0.8, 0.83, 0.87, 0.9 ] },
+    { "time": 0.394739229, "duration": 0.0, "confidence": 1.0, "label": "18 of 20 at 0.394", "value": [ 0.63, 0.67, 0.7, 0.73, 0.77, 0.8, 0.83, 0.87, 0.9, 0.93 ] },
+    { "time": 0.417959184, "duration": 0.0, "confidence": 1.0, "label": "19 of 20 at 0.417", "value": [ 0.67, 0.7, 0.73, 0.77, 0.8, 0.83, 0.87, 0.9, 0.93, 0.97 ] },
+    { "time": 0.441179138, "duration": 0.0, "confidence": 1.0, "label": "20 of 20 at 0.441", "value": [ 0.7, 0.73, 0.77, 0.8, 0.83, 0.87, 0.9, 0.93, 0.97, 1 ] }
+  ]
+}
+]
+}
