@@ -1,6 +1,6 @@
 #!/bin/bash
 # 
-# Run this from the build root
+# Run this from the build root (with sudo, I think)
 
 usage() {
     echo
@@ -19,6 +19,8 @@ arch="$2"
 if [ -z "$version" ] || [ -z "$arch" ]; then
     usage
 fi
+
+set -eu
 
 program=sonic-annotator
 depdir=deploy/linux
@@ -54,5 +56,5 @@ perl -i -p -e "s/Version: .*/Version: $control_ver/" "$targetdir"/DEBIAN/control
 
 bash "$depdir"/fix-lintian-bits.sh "$targetdir"
 
-sudo dpkg-deb --build "$targetdir" && lintian "$targetdir".deb
+dpkg-deb --build "$targetdir" && lintian "$targetdir".deb
 
