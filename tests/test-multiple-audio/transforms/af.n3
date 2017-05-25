@@ -18,10 +18,12 @@
 	vamp:plugin examples:percussiononsets ;
 	vamp:output examples:percussiononsets_output_onsets .
 
-:transform3 a vamp:Transform;
-	vamp:plugin examples:amplitudefollower ;
-	vamp:output examples:amplitudefollower_output_amplitude ;
-	vamp:summary_type "mode" .
+# Skipping this one. Mode is currently problematic as it uses bitwise
+# float comparison
+#:transform3 a vamp:Transform;
+#	vamp:plugin examples:amplitudefollower ;
+#	vamp:output examples:amplitudefollower_output_amplitude ;
+#	vamp:summary_type "mode" .
 
 # This has different step and block sizes from the default
 # (:transform0), and so should be listed separately with different
