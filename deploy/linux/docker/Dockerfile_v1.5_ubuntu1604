@@ -30,7 +30,6 @@ RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8  
 ENV LANGUAGE en_US:en  
 ENV LC_ALL en_US.UTF-8
-RUN hg clone -rsonic-annotator-1.5 https://code.soundsoftware.ac.uk/hg/sonic-annotator
 RUN hg clone https://code.soundsoftware.ac.uk/hg/vamp-plugin-sdk
 RUN hg clone https://code.soundsoftware.ac.uk/hg/vamp-test-plugin
 WORKDIR vamp-plugin-sdk
@@ -41,7 +40,9 @@ RUN cp examples/vamp-example-plugins.so ~/vamp/
 WORKDIR ../vamp-test-plugin
 RUN make -f Makefile.linux
 RUN cp vamp-test-plugin.so ~/vamp/
-WORKDIR ../sonic-annotator
+WORKDIR ..
+RUN hg clone -rsonic-annotator-1.5 https://code.soundsoftware.ac.uk/hg/sonic-annotator
+WORKDIR sonic-annotator
 RUN ./configure
 RUN make -j3
 RUN deploy/linux/deploy-deb.sh 1.5 amd64
