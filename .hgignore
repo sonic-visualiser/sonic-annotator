@@ -13,4 +13,13 @@ doc/html/
 *~
 *.orig
 *.rej
+.git
 cov-int
+vamp-plugin-sdk
+svcore
+piper-cpp
+dataquay
+bqvec
+bqfft
+bqresample
+sv-dependency-builds
