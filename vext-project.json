@@ -24,6 +24,11 @@
 	    "owner": "piper-audio",
             "repository": "piper-vamp-cpp"
         },
+        "dataquay": {
+            "vcs": "hg",
+            "service": "bitbucket",
+            "owner": "breakfastquay"
+        },
         "bqvec": {
             "vcs": "hg",
             "service": "bitbucket",
