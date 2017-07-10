@@ -4381,9 +4381,10 @@ CXXFLAGS_RELEASE="$AUTOCONF_CXXFLAGS"
 CXXFLAGS_MINIMAL="$AUTOCONF_CXXFLAGS"
 
 if test "x$GCC" = "xyes"; then
-        CXXFLAGS_DEBUG="-Wall -Werror -Wno-error=cpp -Woverloaded-virtual -Wextra -Wformat-nonliteral -Wformat-security -Winit-self -Wswitch-enum -g -pipe"
-   	CXXFLAGS_RELEASE="-g0 -O2 -Wall -pipe"
-   	CXXFLAGS_MINIMAL="-g0 -O0"
+   	CXXFLAGS_ANY="-std=c++11 -fpic -Wall -Wextra -Woverloaded-virtual -Wformat-nonliteral -Wformat-security -Winit-self -Wswitch-enum -Wconversion -pipe"
+        CXXFLAGS_DEBUG="$CXXFLAGS_ANY -g -Werror"
+   	CXXFLAGS_RELEASE="$CXXFLAGS_ANY -g0 -O3 -ffast-math"
+   	CXXFLAGS_MINIMAL="$CXXFLAGS_ANY -g0 -O0"
 fi
 
 CXXFLAGS_BUILD="$CXXFLAGS_RELEASE"
@@ -7608,6 +7609,28 @@ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
 
+if test -x vext ; then
+   if test -d .hg -o -d .git ; then
+      if ! ./vext install; then
+         as_fn_error $? "Vext failed; please fix any reported errors and try again" "$LINENO" 5
+      fi
+   else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Vext executable found but not in an Hg or Git working-copy: not running it" >&5
+$as_echo "$as_me: Vext executable found but not in an Hg or Git working-copy: not running it" >&6;}
+      if ! test -d vamp-plugin-sdk ; then
+          { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: No vamp-plugin-sdk directory present, so external libraries might not have been updated" >&5
+$as_echo "$as_me: WARNING: No vamp-plugin-sdk directory present, so external libraries might not have been updated" >&2;}
+      fi
+   fi
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: No Vext executable found: assuming external libraries are already here" >&5
+$as_echo "$as_me: No Vext executable found: assuming external libraries are already here" >&6;}
+   if ! test -d vamp-plugin-sdk ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: No vamp-plugin-sdk directory present, so external libraries might not have been updated" >&5
+$as_echo "$as_me: WARNING: No vamp-plugin-sdk directory present, so external libraries might not have been updated" >&2;}
+   fi
+fi
+
 if ! $QMAKE -r sonic-annotator.pro; then
    as_fn_error $? "qmake failed: Command was \"$QMAKE -r\"" "$LINENO" 5
 fi
@@ -7620,7 +7643,7 @@ might care about, and then run \"make\".
 
 The file config.pri contains the configuration settings for
 qmake.  If you want to adjust these by hand, edit config.pri
-and run \"qmake -r\" again to regenerate the Makefile.
+and run \"$QMAKE -r\" again to regenerate the Makefile.
 " >&5
 $as_echo "$as_me:
 
@@ -7630,5 +7653,5 @@ might care about, and then run \"make\".
 
 The file config.pri contains the configuration settings for
 qmake.  If you want to adjust these by hand, edit config.pri
-and run \"qmake -r\" again to regenerate the Makefile.
+and run \"$QMAKE -r\" again to regenerate the Makefile.
 " >&6;}

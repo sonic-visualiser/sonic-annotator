@@ -1,0 +1,25 @@
+{
+  "libraries": {
+    "vamp-plugin-sdk": {
+      "pin": "5d9af3140f05"
+    },
+    "svcore": {
+      "pin": "a533662c17f4"
+    },
+    "piper-cpp": {
+      "pin": "b146634c3686168a9d4bb739986d065b5d2d40a2"
+    },
+    "bqvec": {
+      "pin": "e345a5e32c53"
+    },
+    "bqfft": {
+      "pin": "81b50ec12d9a"
+    },
+    "bqresample": {
+      "pin": "39a30cdbb421"
+    },
+    "sv-dependency-builds": {
+      "pin": "a69c1527268d"
+    }
+  }
+}

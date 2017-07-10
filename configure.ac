@@ -53,9 +53,10 @@ CXXFLAGS_RELEASE="$AUTOCONF_CXXFLAGS"
 CXXFLAGS_MINIMAL="$AUTOCONF_CXXFLAGS"
 
 if test "x$GCC" = "xyes"; then
-        CXXFLAGS_DEBUG="-Wall -Werror -Wno-error=cpp -Woverloaded-virtual -Wextra -Wformat-nonliteral -Wformat-security -Winit-self -Wswitch-enum -g -pipe"
-   	CXXFLAGS_RELEASE="-g0 -O2 -Wall -pipe"
-   	CXXFLAGS_MINIMAL="-g0 -O0"
+   	CXXFLAGS_ANY="-std=c++11 -fpic -Wall -Wextra -Woverloaded-virtual -Wformat-nonliteral -Wformat-security -Winit-self -Wswitch-enum -Wconversion -pipe"
+        CXXFLAGS_DEBUG="$CXXFLAGS_ANY -g -Werror"
+   	CXXFLAGS_RELEASE="$CXXFLAGS_ANY -g0 -O3 -ffast-math"
+   	CXXFLAGS_MINIMAL="$CXXFLAGS_ANY -g0 -O0"
 fi
 
 CXXFLAGS_BUILD="$CXXFLAGS_RELEASE"
@@ -114,6 +115,24 @@ AC_CONFIG_FILES([config.pri])
 
 AC_OUTPUT
 
+if test -x vext ; then
+   if test -d .hg -o -d .git ; then 
+      if ! ./vext install; then
+         AC_MSG_ERROR([Vext failed; please fix any reported errors and try again])
+      fi
+   else
+      AC_MSG_NOTICE([Vext executable found but not in an Hg or Git working-copy: not running it])
+      if ! test -d vamp-plugin-sdk ; then
+          AC_MSG_WARN([No vamp-plugin-sdk directory present, so external libraries might not have been updated])
+      fi
+   fi
+else
+   AC_MSG_NOTICE([No Vext executable found: assuming external libraries are already here])
+   if ! test -d vamp-plugin-sdk ; then
+      AC_MSG_WARN([No vamp-plugin-sdk directory present, so external libraries might not have been updated])
+   fi
+fi
+
 if ! $QMAKE -r sonic-annotator.pro; then
    AC_MSG_ERROR([qmake failed: Command was "$QMAKE -r"])
 fi
@@ -126,5 +145,5 @@ might care about, and then run "make".
 
 The file config.pri contains the configuration settings for
 qmake.  If you want to adjust these by hand, edit config.pri
-and run "qmake -r" again to regenerate the Makefile.
+and run "$QMAKE -r" again to regenerate the Makefile.
 ])
