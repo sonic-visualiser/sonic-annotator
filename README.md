@@ -14,8 +14,7 @@ More documentation follows further down this README file, after the
 credits.
 
 
-Credits
--------
+### Credits
 
 Sonic Annotator was developed at the Centre for Digital Music,
 Queen Mary, University of London.
@@ -54,7 +53,7 @@ libraries statically linked.)  Many thanks to their authors.
 
 
 A Quick Tutorial
-================
+----------------
 
 To use Sonic Annotator, you need to tell it three things: what audio
 files to extract features from; what features to extract; and how and
@@ -62,7 +61,7 @@ where to write the results.  You can also optionally tell it to
 summarise the features.
 
 
-1. What audio files to extract features from
+### 1. What audio files to extract features from
 
 Sonic Annotator accepts a list of audio files on the command line.
 Any argument that is not understood as a supported command-line option
@@ -85,7 +84,7 @@ process every audio file found in that directory or any of its
 subdirectories.
 
 
-2. What features to extract
+### 2. What features to extract
 
 Sonic Annotator applies "transforms" to its input audio files, where a
 transform (in this terminology) consists of a Vamp plugin together
@@ -196,7 +195,7 @@ in the same file, they will need to have distinct URIs (that is, the
 name, must be distinct for each described transform).
 
 
-3. How and where to write the results
+### 3. How and where to write the results
 
 Sonic Annotator supports various different output modules (and it is
 fairly easy for the developer to add new ones).  You have to choose at
@@ -326,7 +325,7 @@ not properly implemented or not supported.)
    file, where they will be given separate MIDI channel numbers.
 
 
-4. Optionally, how to summarise the features
+### 4. Optionally, how to summarise the features
 
 Sonic Annotator can also calculate and write summaries of features,
 such as mean and median values.
@@ -373,3 +372,9 @@ to 1 second, the second from 1 to 2 seconds, the third from 2 to 3
 seconds and the fourth from 3 seconds to the end of the (short) audio
 file.
 
+
+Automated build reports
+-----------------------
+
+ * Linux and macOS CI build: [![Build Status](https://travis-ci.org/sonic-visualiser/sonic-annotator.svg?branch=master)](https://travis-ci.org/sonic-visualiser/sonic-annotator)
+ * Windows CI build: [![Build status](https://ci.appveyor.com/api/projects/status/26pygienkigw39p7?svg=true)](https://ci.appveyor.com/project/cannam/sonic-annotator)
