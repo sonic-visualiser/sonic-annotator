@@ -19,6 +19,11 @@ addons:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then brew install polyml qt5 raptor yajl libxml2; fi
   - if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then export PATH=$PATH:/usr/local/opt/qt5/bin ; fi
+  - ( cd ../ ; hg clone https://code.soundsoftware.ac.uk/hg/vamp-plugin-sdk )
+  - ( cd ../ ; hg clone https://code.soundsoftware.ac.uk/hg/vamp-test-plugin )
+  - ( mkdir ~/vamp )
+  - ( cd ../vamp-plugin-sdk ; if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then make -f build/Makefile.osx plugins ; else ./configure --disable-programs && make plugins; fi ; cp examples/vamp-example-plugins.so ~/vamp/ )
+  - ( cd ../vamp-test-plugin ; if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then make -f Makefile.osx ; else make -f Makefile.linux ; fi ; cp vamp-test-plugin.so ~/vamp/ )
 
 before_script:
   - if [[ "$TRAVIS_OS_NAME" = "linux" ]] ; then ./configure ; else ./vext install && qmake -r sonic-annotator.pro ; fi
