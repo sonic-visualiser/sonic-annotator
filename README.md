@@ -109,6 +109,7 @@ For example, if the example plugins from the Vamp plugin SDK are
 available and no other plugins are installed, you might have an
 exchange like this:
 
+```
   $ sonic-annotator -l
   vamp:vamp-example-plugins:amplitudefollower:amplitude
   vamp:vamp-example-plugins:fixedtempo:acf
@@ -146,6 +147,7 @@ exchange like this:
       ] ;
       vamp:output <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#fixedtempo_output_tempo> .
   $
+```
 
 The output of -s is an RDF/Turtle document describing the default
 settings for the Tempo output of the Fixed Tempo Estimator plugin in
@@ -158,11 +160,13 @@ known -- but the result should be functionally equivalent to this.)
 You could run this transform by saving the RDF to a file and
 specifying that file with -t:
 
+```
   $ sonic-annotator -s vamp:vamp-example-plugins:fixedtempo:tempo > test.n3
   $ sonic-annotator -t test.n3 audio.wav -w csv --csv-stdout
   (... logging output on stderr, then ...)
   "audio.wav",0.002902494,5.196916099,68.7916,"68.8 bpm"
   $
+```
 
 The single line of output above consists of the audio file name, the
 timestamp and duration for a single feature, the value of that feature
@@ -174,10 +178,12 @@ A quicker way to achieve the above is to use the -d (default) option
 to tell Sonic Annotator to use directly the default configuration for
 a named transform:
 
+```
   $ sonic-annotator -d vamp:vamp-example-plugins:fixedtempo:tempo audio.wav -w csv --csv-stdout
   (... some log output on stderr, then ...)
   "audio.wav",0.002902494,5.196916099,68.7916,"68.8 bpm"
   $
+```
 
 Although handy for experimentation, the -d option is inadvisable in
 any "production" situation because the plugin configuration is not
@@ -341,6 +347,7 @@ note onsets estimated by the simple percussion onset detector example
 plugin, and the variance of the plugin's onset detection function.
 (It will only process the audio file and run the plugin once.)
 
+```
   @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
   @prefix vamp: <http://purl.org/ontology/vamp/>.
   @prefix examples: <http://vamp-plugins.org/rdf/plugins/vamp-example-plugins#>.
@@ -354,18 +361,21 @@ plugin, and the variance of the plugin's onset detection function.
      vamp:plugin examples:percussiononsets ;
      vamp:output examples:percussiononsets_output_detectionfunction ;
      vamp:summary_type "variance" .
+```
 
 Sonic Annotator can also summarise in segments -- if you provide a
 comma-separated list of times as an argument to the --segments option,
 it will calculate one summary for each segment bounded by the times
 you provided.  For example,
 
+```
   $ sonic-annotator -d vamp:vamp-example-plugins:percussiononsets:detectionfunction -S variance --sumary-only --segments 1,2,3 -w csv --csv-stdout audio.wav
   (... some log output on stderr, then ...)
   ,0.000000000,1.000000000,variance,1723.99,"(variance, continuous-time average)"
   ,1.000000000,1.000000000,variance,1981.75,"(variance, continuous-time average)"
   ,2.000000000,1.000000000,variance,1248.79,"(variance, continuous-time average)"
   ,3.000000000,7.031020407,variance,1030.06,"(variance, continuous-time average)"
+```
 
 Here the first row contains a summary covering the time period from 0
 to 1 second, the second from 1 to 2 seconds, the third from 2 to 3
