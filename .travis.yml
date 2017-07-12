@@ -17,7 +17,7 @@ addons:
      - libbz2-dev libfftw3-dev libfishsound1-dev libid3tag0-dev liblo-dev liblrdf0-dev libmad0-dev liboggz2-dev libpulse-dev libsamplerate-dev libsndfile-dev libsord-dev libxml2-utils portaudio19-dev qt5-default libqt5svg5-dev raptor-utils yajl-tools mlton
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then brew install polyml qt5 raptor yajl libxml2; fi
+  - if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then brew install polyml qt5 raptor yajl; fi
   - if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then export PATH=$PATH:/usr/local/opt/qt5/bin ; fi
   - ( cd ../ ; hg clone https://code.soundsoftware.ac.uk/hg/vamp-plugin-sdk )
   - ( cd ../ ; hg clone https://code.soundsoftware.ac.uk/hg/vamp-test-plugin )
