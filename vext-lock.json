@@ -7,7 +7,10 @@
       "pin": "a533662c17f4"
     },
     "piper-cpp": {
-      "pin": "b146634c3686168a9d4bb739986d065b5d2d40a2"
+      "pin": "85394095a5b04f99a0785ccd32a5a98c90d984b2"
+    },
+    "dataquay": {
+      "pin": "807b55408d9e"
     },
     "bqvec": {
       "pin": "e345a5e32c53"
