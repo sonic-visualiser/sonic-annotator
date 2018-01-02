@@ -23,3 +23,4 @@ bqvec
 bqfft
 bqresample
 sv-dependency-builds
+glob:.vext-*.bin

@@ -38,12 +38,13 @@
     authorization.
 *)
 
-val vext_version = "0.9.8"
+val vext_version = "0.9.92"
 
 
 datatype vcs =
          HG |
-         GIT
+         GIT |
+         SVN
 
 datatype source =
          URL_SOURCE of string |
@@ -158,7 +159,7 @@ signature VCS_CONTROL = sig
         given branch. False may indicate that the branch has advanced
         or that the library is not on the branch at all. This function
         may use the network to check for new revisions *)
-    val is_newest : context -> libname * branch -> bool result
+    val is_newest : context -> libname * source * branch -> bool result
 
     (** Test whether the library is at the newest revision available
         locally for the given branch. False may indicate that the
@@ -174,17 +175,24 @@ signature VCS_CONTROL = sig
         library on the given branch *)
     val checkout : context -> libname * source * branch -> unit result
 
-    (** Update the library to the given branch tip *)
-    val update : context -> libname * branch -> id_or_tag result
+    (** Update the library to the given branch tip. Assumes that a
+        local copy of the library already exists *)
+    val update : context -> libname * source * branch -> unit result
 
     (** Update the library to the given specific id or tag *)
-    val update_to : context -> libname * id_or_tag -> id_or_tag result
+    val update_to : context -> libname * source * id_or_tag -> unit result
+
+    (** Return a URL from which the library can be cloned, given that
+        the local copy already exists. For a DVCS this can be the
+        local copy, but for a centralised VCS it will have to be the
+        remote repository URL. Used for archiving *)
+    val copy_url_for : context -> libname -> string result
 end
 
 signature LIB_CONTROL = sig
     val review : context -> libspec -> (libstate * localstate) result
     val status : context -> libspec -> (libstate * localstate) result
-    val update : context -> libspec -> id_or_tag result
+    val update : context -> libspec -> unit result
     val id_of : context -> libspec -> id_or_tag result
 end
 
@@ -194,11 +202,13 @@ structure FileBits :> sig
     val subpath : context -> libname -> string -> string
     val command_output : context -> libname -> string list -> string result
     val command : context -> libname -> string list -> unit result
+    val file_url : string -> string
     val file_contents : string -> string
     val mydir : unit -> string
     val homedir : unit -> string
     val mkpath : string -> unit result
     val rmpath : string -> unit result
+    val nonempty_dir_exists : string -> bool
     val project_spec_path : string -> string
     val project_lock_path : string -> string
     val verbose : unit -> bool
@@ -210,23 +220,31 @@ end = struct
           | SOME _ => true
           | NONE => false
 
+    fun split_relative path desc =
+        case OS.Path.fromString path of
+            { isAbs = true, ... } => raise Fail (desc ^ " may not be absolute")
+          | { arcs, ... } => arcs
+                        
     fun extpath ({ rootpath, extdir, ... } : context) =
         let val { isAbs, vol, arcs } = OS.Path.fromString rootpath
         in OS.Path.toString {
                 isAbs = isAbs,
                 vol = vol,
-                arcs = arcs @ [ extdir ]
+                arcs = arcs @
+                       split_relative extdir "extdir"
             }
         end
     
     fun subpath ({ rootpath, extdir, ... } : context) libname remainder =
         (* NB libname is allowed to be a path fragment, e.g. foo/bar *)
         let val { isAbs, vol, arcs } = OS.Path.fromString rootpath
-            val split = String.fields (fn c => c = #"/")
         in OS.Path.toString {
                 isAbs = isAbs,
                 vol = vol,
-                arcs = arcs @ [ extdir ] @ split libname @ split remainder
+                arcs = arcs @
+                       split_relative extdir "extdir" @
+                       split_relative libname "library path" @
+                       split_relative remainder "subpath"
             }
         end
 
@@ -252,6 +270,19 @@ end = struct
 
     fun trim str =
         hd (String.fields (fn x => x = #"\n" orelse x = #"\r") str)
+            
+    fun file_url path =
+        let val forward_path = 
+                String.translate (fn #"\\" => "/" |
+                                  c => Char.toString c)
+                                 (OS.Path.mkCanonical path)
+        in
+            (* Path is expected to be absolute already, but if it
+               starts with a drive letter, we'll need an extra slash *)
+            case explode forward_path of
+                #"/"::rest => "file:///" ^ implode rest
+              | _ => "file:///" ^ forward_path
+        end
         
     fun file_contents filename =
         let val stream = TextIO.openIn filename
@@ -342,6 +373,9 @@ end = struct
             val tmpFile = FileSys.tmpName ()
             val result = run_command context libname cmdlist (SOME tmpFile)
             val contents = file_contents tmpFile
+            val _ = if verbose ()
+                    then print ("Output was:\n\"" ^ contents ^ "\"\n")
+                    else ()
         in
             FileSys.remove tmpFile handle _ => ();
             case result of
@@ -368,23 +402,26 @@ end = struct
           | (NONE, NONE) =>
             raise Fail "Failed to look up home directory from environment"
 
-    fun mkpath path =
+    fun mkpath' path =
         if OS.FileSys.isDir path handle _ => false
         then OK ()
         else case OS.Path.fromString path of
                  { arcs = nil, ... } => OK ()
                | { isAbs = false, ... } => ERROR "mkpath requires absolute path"
                | { isAbs, vol, arcs } => 
-                 case mkpath (OS.Path.toString {      (* parent *)
-                                   isAbs = isAbs,
-                                   vol = vol,
-                                   arcs = rev (tl (rev arcs)) }) of
+                 case mkpath' (OS.Path.toString {      (* parent *)
+                                    isAbs = isAbs,
+                                    vol = vol,
+                                    arcs = rev (tl (rev arcs)) }) of
                      ERROR e => ERROR e
                    | OK () => ((OS.FileSys.mkDir path; OK ())
                                handle OS.SysErr (e, _) =>
                                       ERROR ("Directory creation failed: " ^ e))
 
-    fun rmpath path =
+    fun mkpath path =
+        mkpath' (OS.Path.mkCanonical path)
+
+    fun dir_contents dir =
         let open OS
             fun files_from dirstream =
                 case FileSys.readDir dirstream of
@@ -395,24 +432,40 @@ end = struct
                     if file = Path.parentArc orelse file = Path.currentArc
                     then files_from dirstream
                     else file :: files_from dirstream
-            fun contents dir =
-                let val stream = FileSys.openDir dir
-                    val files = map (fn f => Path.joinDirFile
-                                                 { dir = dir, file = f })
-                                    (files_from stream)
-                    val _ = FileSys.closeDir stream
-                in files
-                end
+            val stream = FileSys.openDir dir
+            val files = map (fn f => Path.joinDirFile
+                                         { dir = dir, file = f })
+                            (files_from stream)
+            val _ = FileSys.closeDir stream
+        in
+            files
+        end
+
+    fun rmpath' path =
+        let open OS
             fun remove path =
                 if FileSys.isLink path (* dangling links bother isDir *)
                 then FileSys.remove path
                 else if FileSys.isDir path
-                then (app remove (contents path); FileSys.rmDir path)
+                then (app remove (dir_contents path); FileSys.rmDir path)
                 else FileSys.remove path
         in
             (remove path; OK ())
             handle SysErr (e, _) => ERROR ("Path removal failed: " ^ e)
         end
+
+    fun rmpath path =
+        rmpath' (OS.Path.mkCanonical path)
+
+    fun nonempty_dir_exists path =
+        let open OS.FileSys
+        in
+            (not (isLink path) andalso
+             isDir path andalso
+             dir_contents path <> [])
+            handle _ => false
+        end                                        
+                
 end
                                          
 functor LibControlFn (V: VCS_CONTROL) :> LIB_CONTROL = struct
@@ -443,13 +496,15 @@ functor LibControlFn (V: VCS_CONTROL) :> LIB_CONTROL = struct
     *)
 
     fun check with_network context
-              ({ libname, branch, project_pin, lock_pin, ... } : libspec) =
+              ({ libname, source, branch,
+                 project_pin, lock_pin, ... } : libspec) =
         let fun check_unpinned () =
-                let val is_newest = if with_network
-                                    then V.is_newest
-                                    else V.is_newest_locally
+                let val newest =
+                        if with_network
+                        then V.is_newest context (libname, source, branch)
+                        else V.is_newest_locally context (libname, branch)
                 in
-                    case is_newest context (libname, branch) of
+                    case newest of
                          ERROR e => ERROR e
                        | OK true => OK CORRECT
                        | OK false =>
@@ -497,15 +552,15 @@ functor LibControlFn (V: VCS_CONTROL) :> LIB_CONTROL = struct
                ({ libname, source, branch,
                   project_pin, lock_pin, ... } : libspec) =
         let fun update_unpinned () =
-                case V.is_newest context (libname, branch) of
+                case V.is_newest context (libname, source, branch) of
                     ERROR e => ERROR e
-                  | OK true => V.id_of context libname
-                  | OK false => V.update context (libname, branch)
+                  | OK true => OK ()
+                  | OK false => V.update context (libname, source, branch)
             fun update_pinned target =
                 case V.is_at context (libname, target) of
                     ERROR e => ERROR e
-                  | OK true => OK target
-                  | OK false => V.update_to context (libname, target)
+                  | OK true => OK ()
+                  | OK false => V.update_to context (libname, source, target)
             fun update' () =
                 case lock_pin of
                     PINNED target => update_pinned target
@@ -1022,12 +1077,14 @@ end = struct
         ]
 
     fun vcs_name vcs =
-        case vcs of GIT => "git" |
-                    HG => "hg"
+        case vcs of HG => "hg"
+                  | GIT => "git"
+                  | SVN => "svn"
                                              
     fun vcs_from_name name =
-        case name of "git" => GIT 
-                   | "hg" => HG
+        case name of "hg" => HG
+                   | "git" => GIT 
+                   | "svn" => SVN
                    | other => raise Fail ("Unknown vcs name \"" ^ name ^ "\"")
 
     fun load_more_providers previously_loaded json =
@@ -1129,7 +1186,12 @@ end = struct
         case List.find (fn a => service = #service a) accounts of
             SOME { login, ... } => SOME login
           | NONE => NONE
-                                          
+
+    fun reponame_for path =
+        case String.tokens (fn c => c = #"/") path of
+            [] => raise Fail "Non-empty library path required"
+          | toks => hd (rev toks)
+                        
     fun remote_url (context : context) vcs source libname =
         case source of
             URL_SOURCE u => u
@@ -1139,17 +1201,22 @@ end = struct
                            owner = owner,
                            repo = case repo of
                                       SOME r => r
-                                    | NONE => libname }
+                                    | NONE => reponame_for libname }
                          (login_for context service)
                          (#providers context)
 end
 
 structure HgControl :> VCS_CONTROL = struct
-                            
+
+    (* Pulls always use an explicit URL, never just the default
+       remote, in order to ensure we update properly if the location
+       given in the project file changes. *)
+
     type vcsstate = { id: string, modified: bool,
                       branch: string, tags: string list }
 
-    val hg_args = [ "--config", "ui.interactive=true" ]
+    val hg_args = [ "--config", "ui.interactive=true",
+                    "--config", "ui.merge=:merge" ]
                         
     fun hg_command context libname args =
         FileBits.command context libname ("hg" :: hg_args @ args)
@@ -1222,21 +1289,24 @@ structure HgControl :> VCS_CONTROL = struct
                                ["log", "-l1",
                                 "-b", branch_name branch,
                                 "--template", "{node}"] of
-            ERROR e => ERROR e
+            ERROR e => OK false (* desired branch does not exist *)
           | OK newest_in_repo => is_at context (libname, newest_in_repo)
 
-    fun pull context libname =
-        hg_command context libname
-                   (if FileBits.verbose ()
-                    then ["pull"]
-                    else ["pull", "-q"])
+    fun pull context (libname, source) =
+        let val url = remote_for context (libname, source)
+        in
+            hg_command context libname
+                       (if FileBits.verbose ()
+                        then ["pull", url]
+                        else ["pull", "-q", url])
+        end
 
-    fun is_newest context (libname, branch) =
+    fun is_newest context (libname, source, branch) =
         case is_newest_locally context (libname, branch) of
             ERROR e => ERROR e
           | OK false => OK false
           | OK true =>
-            case pull context libname of
+            case pull context (libname, source) of
                 ERROR e => ERROR e
               | _ => is_newest_locally context (libname, branch)
 
@@ -1248,44 +1318,53 @@ structure HgControl :> VCS_CONTROL = struct
     fun checkout context (libname, source, branch) =
         let val url = remote_for context (libname, source)
         in
-            case FileBits.mkpath (FileBits.extpath context) of
+            (* make the lib dir rather than just the ext dir, since
+               the lib dir might be nested and hg will happily check
+               out into an existing empty dir anyway *)
+            case FileBits.mkpath (FileBits.libpath context libname) of
                 ERROR e => ERROR e
               | _ => hg_command context ""
                                 ["clone", "-u", branch_name branch,
                                  url, libname]
         end
                                                     
-    fun update context (libname, branch) =
-        let val pull_result = pull context libname
+    fun update context (libname, source, branch) =
+        let val pull_result = pull context (libname, source)
         in
             case hg_command context libname ["update", branch_name branch] of
                 ERROR e => ERROR e
               | _ =>
                 case pull_result of
                     ERROR e => ERROR e
-                  | _ => id_of context libname
+                  | _ => OK ()
         end
 
-    fun update_to context (libname, "") =
+    fun update_to context (libname, _, "") =
         ERROR "Non-empty id (tag or revision id) required for update_to"
-      | update_to context (libname, id) = 
-        let val pull_result = pull context libname
+      | update_to context (libname, source, id) = 
+        let val pull_result = pull context (libname, source)
         in
             case hg_command context libname ["update", "-r", id] of
-                OK _ => id_of context libname
+                OK _ => OK ()
               | ERROR e =>
                 case pull_result of
                     ERROR e' => ERROR e' (* this was the ur-error *)
                   | _ => ERROR e
         end
-                  
+
+    fun copy_url_for context libname =
+        OK (FileBits.file_url (FileBits.libpath context libname))
+            
 end
 
 structure GitControl :> VCS_CONTROL = struct
 
     (* With Git repos we always operate in detached HEAD state. Even
-       the master branch is checked out using the remote reference,
-       origin/master. *)
+       the master branch is checked out using a remote reference
+       (vext/master). The remote we use is always named vext, and we
+       update it to the expected URL each time we fetch, in order to
+       ensure we update properly if the location given in the project
+       file changes. The origin remote is unused. *)
 
     fun git_command context libname args =
         FileBits.command context libname ("git" :: args)
@@ -1305,17 +1384,37 @@ structure GitControl :> VCS_CONTROL = struct
                                | BRANCH "" => "master"
                                | BRANCH b => b
 
-    fun remote_branch_name branch = "origin/" ^ branch_name branch
+    val our_remote = "vext"
+                                                 
+    fun remote_branch_name branch = our_remote ^ "/" ^ branch_name branch
 
     fun checkout context (libname, source, branch) =
         let val url = remote_for context (libname, source)
         in
-            case FileBits.mkpath (FileBits.extpath context) of
+            (* make the lib dir rather than just the ext dir, since
+               the lib dir might be nested and git will happily check
+               out into an existing empty dir anyway *)
+            case FileBits.mkpath (FileBits.libpath context libname) of
                 OK () => git_command context ""
-                                     ["clone", "-b",
-                                      branch_name branch,
+                                     ["clone", "--origin", our_remote,
+                                      "--branch", branch_name branch,
                                       url, libname]
               | ERROR e => ERROR e
+        end
+
+    fun add_our_remote context (libname, source) =
+        (* When we do the checkout ourselves (above), we add the
+           remote at the same time. But if the repo was cloned by
+           someone else, we'll need to do it after the fact. Git
+           doesn't seem to have a means to add a remote or change its
+           url if it already exists; seems we have to do this: *)
+        let val url = remote_for context (libname, source)
+        in
+            case git_command context libname
+                             ["remote", "set-url", our_remote, url] of
+                OK () => OK ()
+              | ERROR e => git_command context libname
+                                       ["remote", "add", "-f", our_remote, url]
         end
 
     (* NB git rev-parse HEAD shows revision id of current checkout;
@@ -1326,7 +1425,7 @@ structure GitControl :> VCS_CONTROL = struct
             
     fun is_at context (libname, id_or_tag) =
         case id_of context libname of
-            ERROR e => ERROR e
+            ERROR e => OK false (* HEAD nonexistent, expected in empty repo *)
           | OK id =>
             if String.isPrefix id_or_tag id orelse
                String.isPrefix id id_or_tag
@@ -1334,24 +1433,32 @@ structure GitControl :> VCS_CONTROL = struct
             else 
                 case git_command_output context libname
                                         ["show-ref",
-                                         "refs/tags/" ^ id_or_tag] of
+                                         "refs/tags/" ^ id_or_tag,
+                                         "--"] of
                     OK "" => OK false
                   | ERROR _ => OK false
                   | OK s => OK (id = hd (String.tokens (fn c => c = #" ") s))
 
     fun branch_tip context (libname, branch) =
+        (* We don't have access to the source info or the network
+           here, as this is used by status (e.g. via is_on_branch) as
+           well as review. It's possible the remote branch won't exist,
+           e.g. if the repo was checked out by something other than
+           Vext, and if that's the case, we can't add it here; we'll
+           just have to fail, since checking against local branches
+           instead could produce the wrong result. *)
         git_command_output context libname
                            ["rev-list", "-1",
-                            remote_branch_name branch]
+                            remote_branch_name branch, "--"]
                        
     fun is_newest_locally context (libname, branch) =
         case branch_tip context (libname, branch) of
-            ERROR e => ERROR e
+            ERROR e => OK false
           | OK rev => is_at context (libname, rev)
 
     fun is_on_branch context (libname, branch) =
         case branch_tip context (libname, branch) of
-            ERROR e => ERROR e
+            ERROR e => OK false
           | OK rev =>
             case is_at context (libname, rev) of
                 ERROR e => ERROR e
@@ -1363,14 +1470,22 @@ structure GitControl :> VCS_CONTROL = struct
                     ERROR e => OK false  (* cmd returns non-zero for no *)
                   | _ => OK true
 
-    fun is_newest context (libname, branch) =
-        case is_newest_locally context (libname, branch) of
+    fun fetch context (libname, source) =
+        case add_our_remote context (libname, source) of
             ERROR e => ERROR e
-          | OK false => OK false
-          | OK true =>
-            case git_command context libname ["fetch"] of
+          | _ => git_command context libname ["fetch", our_remote]
+                            
+    fun is_newest context (libname, source, branch) =
+        case add_our_remote context (libname, source) of
+            ERROR e => ERROR e
+          | OK () => 
+            case is_newest_locally context (libname, branch) of
                 ERROR e => ERROR e
-              | _ => is_newest_locally context (libname, branch)
+              | OK false => OK false
+              | OK true =>
+                case fetch context (libname, source) of
+                    ERROR e => ERROR e
+                  | _ => is_newest_locally context (libname, branch)
 
     fun is_modified_locally context libname =
         case git_command_output context libname ["status", "--porcelain"] of
@@ -1385,14 +1500,14 @@ structure GitControl :> VCS_CONTROL = struct
        but it's perhaps cleaner not to maintain a local branch at all,
        but instead checkout the remote branch as a detached head. *)
 
-    fun update context (libname, branch) =
-        case git_command context libname ["fetch"] of
+    fun update context (libname, source, branch) =
+        case fetch context (libname, source) of
             ERROR e => ERROR e
           | _ =>
             case git_command context libname ["checkout", "--detach",
                                               remote_branch_name branch] of
                 ERROR e => ERROR e
-              | _ => id_of context libname
+              | _ => OK ()
 
     (* This function is dealing with a specific id or tag, so if we
        can successfully check it out (detached) then that's all we
@@ -1402,37 +1517,152 @@ structure GitControl :> VCS_CONTROL = struct
        update to a new pin (from the lock file) that hasn't been
        fetched yet. *)
 
-    fun update_to context (libname, "") = 
+    fun update_to context (libname, _, "") = 
         ERROR "Non-empty id (tag or revision id) required for update_to"
-      | update_to context (libname, id) =
-        let val fetch_result = git_command context libname ["fetch"]
+      | update_to context (libname, source, id) =
+        let val fetch_result = fetch context (libname, source)
         in
             case git_command context libname ["checkout", "--detach", id] of
-                OK _ => id_of context libname
+                OK _ => OK ()
               | ERROR e =>
                 case fetch_result of
                     ERROR e' => ERROR e' (* this was the ur-error *)
                   | _ => ERROR e
         end
+
+    fun copy_url_for context libname =
+        OK (FileBits.file_url (FileBits.libpath context libname))
             
+end
+
+structure SvnControl :> VCS_CONTROL = struct
+
+    fun svn_command context libname args =
+        FileBits.command context libname ("svn" :: args)
+
+    fun svn_command_output context libname args =
+        FileBits.command_output context libname ("svn" :: args)
+
+    fun svn_command_lines context libname args =
+        case svn_command_output context libname args of
+            ERROR e => ERROR e
+          | OK s => OK (String.tokens (fn c => c = #"\n" orelse c = #"\r") s)
+
+    fun split_line_pair line =
+        let fun strip_leading_ws str = case explode str of
+                                           #" "::rest => implode rest
+                                         | _ => str
+        in
+            case String.tokens (fn c => c = #":") line of
+                [] => ("", "")
+              | first::rest =>
+                (first, strip_leading_ws (String.concatWith ":" rest))
+        end
+            
+    fun svn_info_item context libname key =
+        (* SVN 1.9 has info --show-item which is what we need, but at
+           this point we still have 1.8 on the CI boxes so we might as 
+           well aim to support it *)
+        case svn_command_lines context libname ["info"] of
+            ERROR e => ERROR e
+          | OK lines =>
+            case List.find (fn (k, v) => k = key) (map split_line_pair lines) of
+                NONE => ERROR ("Key \"" ^ key ^ "\" not found in output")
+              | SOME (_, v) => OK v
+            
+    fun exists context libname =
+        OK (OS.FileSys.isDir (FileBits.subpath context libname ".svn"))
+        handle _ => OK false
+
+    fun remote_for context (libname, source) =
+        Provider.remote_url context SVN source libname
+
+    fun id_of context libname =
+        svn_info_item context libname "Revision" (*!!! check: does svn localise this? should we ensure C locale? *)
+
+    fun is_at context (libname, id_or_tag) =
+        case id_of context libname of
+            ERROR e => ERROR e
+          | OK id => OK (id = id_or_tag)
+
+    fun is_on_branch context (libname, b) =
+        OK (b = DEFAULT_BRANCH)
+               
+    fun is_newest context (libname, source, branch) =
+        case svn_command_lines context libname ["status", "--show-updates"] of 
+            ERROR e => ERROR e
+          | OK lines =>
+            case rev lines of
+                [] => ERROR "No result returned for server status"
+              | last_line::_ =>
+                case rev (String.tokens (fn c => c = #" ") last_line) of
+                    [] => ERROR "No revision field found in server status"
+                  | server_id::_ => is_at context (libname, server_id)
+
+    fun is_newest_locally context (libname, branch) =
+        OK true (* no local history *)
+
+    fun is_modified_locally context libname =
+        case svn_command_output context libname ["status"] of
+            ERROR e => ERROR e
+          | OK "" => OK false
+          | OK _ => OK true
+
+    fun checkout context (libname, source, branch) =
+        let val url = remote_for context (libname, source)
+            val path = FileBits.libpath context libname
+        in
+            if FileBits.nonempty_dir_exists path
+            then (* Surprisingly, SVN itself has no problem with
+                    this. But for consistency with other VCSes we 
+                    don't allow it *)
+                ERROR ("Refusing checkout to nonempty dir \"" ^ path ^ "\"")
+            else 
+                (* make the lib dir rather than just the ext dir, since
+                   the lib dir might be nested and svn will happily check
+                   out into an existing empty dir anyway *)
+                case FileBits.mkpath (FileBits.libpath context libname) of
+                    ERROR e => ERROR e
+                  | _ => svn_command context "" ["checkout", url, libname]
+        end
+                                                    
+    fun update context (libname, source, branch) =
+        case svn_command context libname
+                         ["update", "--accept", "postpone"] of
+            ERROR e => ERROR e
+          | _ => OK ()
+
+    fun update_to context (libname, _, "") =
+        ERROR "Non-empty id (tag or revision id) required for update_to"
+      | update_to context (libname, source, id) = 
+        case svn_command context libname
+                         ["update", "-r", id, "--accept", "postpone"] of
+            ERROR e => ERROR e
+          | OK _ => OK ()
+
+    fun copy_url_for context libname =
+        svn_info_item context libname "URL"
+
 end
 
 structure AnyLibControl :> LIB_CONTROL = struct
 
     structure H = LibControlFn(HgControl)
     structure G = LibControlFn(GitControl)
+    structure S = LibControlFn(SvnControl)
 
     fun review context (spec as { vcs, ... } : libspec) =
-        (fn HG => H.review | GIT => G.review) vcs context spec
+        (fn HG => H.review | GIT => G.review | SVN => S.review) vcs context spec
 
     fun status context (spec as { vcs, ... } : libspec) =
-        (fn HG => H.status | GIT => G.status) vcs context spec
+        (fn HG => H.status | GIT => G.status | SVN => S.status) vcs context spec
 
     fun update context (spec as { vcs, ... } : libspec) =
-        (fn HG => H.update | GIT => G.update) vcs context spec
+        (fn HG => H.update | GIT => G.update | SVN => S.update) vcs context spec
 
     fun id_of context (spec as { vcs, ... } : libspec) =
-        (fn HG => H.id_of | GIT => G.id_of) vcs context spec
+        (fn HG => H.id_of | GIT => G.id_of | SVN => S.id_of) vcs context spec
+
 end
 
 
@@ -1487,7 +1717,7 @@ end = struct
        - Clean up by deleting the new copy
     *)
 
-    fun project_vcs_and_id dir =
+    fun project_vcs_id_and_url dir =
         let val context = {
                 rootpath = dir,
                 extdir = ".",
@@ -1496,19 +1726,29 @@ end = struct
             }
             val vcs_maybe = 
                 case [HgControl.exists context ".",
-                      GitControl.exists context "."] of
-                    [OK true, OK false] => OK HG
-                  | [OK false, OK true] => OK GIT
+                      GitControl.exists context ".",
+                      SvnControl.exists context "."] of
+                    [OK true, OK false, OK false] => OK HG
+                  | [OK false, OK true, OK false] => OK GIT
+                  | [OK false, OK false, OK true] => OK SVN
                   | _ => ERROR ("Unable to identify VCS for directory " ^ dir)
         in
             case vcs_maybe of
                 ERROR e => ERROR e
               | OK vcs =>
-                case (fn HG => HgControl.id_of | GIT => GitControl.id_of)
+                case (fn HG => HgControl.id_of
+                       | GIT => GitControl.id_of 
+                       | SVN => SvnControl.id_of)
                          vcs context "." of
-                    ERROR e => ERROR ("Unable to obtain id of project repo: "
-                                      ^ e)
-                  | OK id => OK (vcs, id)
+                    ERROR e => ERROR ("Unable to find id of project repo: " ^ e)
+                  | OK id =>
+                    case (fn HG => HgControl.copy_url_for
+                           | GIT => GitControl.copy_url_for
+                           | SVN => SvnControl.copy_url_for)
+                             vcs context "." of
+                        ERROR e => ERROR ("Unable to find URL of project repo: "
+                                          ^ e)
+                      | OK url => OK (vcs, id, url)
         end
             
     fun make_archive_root (context : context) =
@@ -1534,19 +1774,7 @@ end = struct
             NONE => ()
           | _ => raise Fail ("Path " ^ path ^ " exists, not overwriting")
             
-    fun file_url path =
-        let val forward_path = 
-                String.translate (fn #"\\" => "/" |
-                                     c => Char.toString c) path
-        in
-            (* Path is expected to be absolute already, but if it
-                starts with a drive letter, we'll need an extra slash *)
-            case explode forward_path of
-                #"/"::rest => "file:///" ^ implode rest
-              | _ => "file:///" ^ forward_path
-        end
-            
-    fun make_archive_copy target_name (vcs, project_id)
+    fun make_archive_copy target_name (vcs, project_id, source_url)
                           ({ context, ... } : project) =
         let val archive_root = make_archive_root context
             val synthetic_context = {
@@ -1558,7 +1786,7 @@ end = struct
             val synthetic_library = {
                 libname = target_name,
                 vcs = vcs,
-                source = URL_SOURCE (file_url (#rootpath context)),
+                source = URL_SOURCE source_url,
                 branch = DEFAULT_BRANCH, (* overridden by pinned id below *)
                 project_pin = PINNED project_id,
                 lock_pin = PINNED project_id
@@ -1586,8 +1814,8 @@ end = struct
             foldl (fn (lib, acc) =>
                       case acc of
                           ERROR e => ERROR e
-                        | OK _ => AnyLibControl.update synthetic_context lib)
-                  (OK "")
+                        | OK () => AnyLibControl.update synthetic_context lib)
+                  (OK ())
                   (#libs project)
         end
 
@@ -1632,6 +1860,7 @@ end = struct
                      target_path,
                      "--exclude=.hg",
                      "--exclude=.git",
+                     "--exclude=.svn",
                      "--exclude=vext",
                      "--exclude=vext.sml",
                      "--exclude=vext.ps1",
@@ -1652,7 +1881,7 @@ end = struct
                                         ^ target_path)
                   | SOME pn => pn
             val details =
-                case project_vcs_and_id (#rootpath (#context project)) of
+                case project_vcs_id_and_url (#rootpath (#context project)) of
                     ERROR e => raise Fail e
                   | OK details => details
             val archive_root =
@@ -1701,6 +1930,7 @@ fun load_libspec spec_json lock_json libname : libspec =
           vcs = case vcs of
                     "hg" => HG
                   | "git" => GIT
+                  | "svn" => SVN
                   | other => raise Fail ("Unknown version-control system \"" ^
                                          other ^ "\""),
           source = case (url, service, owner, repo) of
@@ -1712,8 +1942,13 @@ fun load_libspec spec_json lock_json libname : libspec =
           project_pin = project_pin,
           lock_pin = lock_pin,
           branch = case branch of
-                       SOME b => BRANCH b
-                     | NONE => DEFAULT_BRANCH
+                       NONE => DEFAULT_BRANCH
+                     | SOME b => 
+                       case vcs of
+                           "svn" => raise Fail ("Branches not supported for " ^
+                                                "svn repositories; change " ^
+                                                "URL instead")
+                         | _ => BRANCH b
         }
     end  
 
@@ -1899,27 +2134,11 @@ fun review_project ({ context, libs } : project) =
                                    print_status_header (print_status true)
                                    libs)
 
-fun update_project ({ context, libs } : project) =
-    let val outcomes = act_and_print
-                           (AnyLibControl.update context)
-                           print_outcome_header print_update_outcome libs
-        val locks =
-            List.concat
-                (map (fn (libname, result) =>
-                         case result of
-                             ERROR _ => []
-                           | OK id => [{ libname = libname, id_or_tag = id }])
-                     outcomes)
-        val return_code = return_code_for outcomes
-    in
-        if OS.Process.isSuccess return_code
-        then save_lock_file (#rootpath context) locks
-        else ();
-        return_code
-    end
-
 fun lock_project ({ context, libs } : project) =
-    let val outcomes = map (fn lib =>
+    let val _ = if FileBits.verbose ()
+                then print ("Scanning IDs for lock file...\n")
+                else ()
+        val outcomes = map (fn lib =>
                                (#libname lib, AnyLibControl.id_of context lib))
                            libs
         val locks =
@@ -1936,6 +2155,17 @@ fun lock_project ({ context, libs } : project) =
         then save_lock_file (#rootpath context) locks
         else ();
         return_code
+    end
+
+fun update_project (project as { context, libs }) =
+    let val outcomes = act_and_print
+                           (AnyLibControl.update context)
+                           print_outcome_header print_update_outcome libs
+        val _ = if List.exists (fn (_, OK _) => true | _ => false) outcomes
+                then lock_project project
+                else OS.Process.success
+    in
+        return_code_for outcomes
     end
     
 fun load_local_project pintype =
