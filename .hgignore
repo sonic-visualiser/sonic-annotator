@@ -23,4 +23,5 @@ bqvec
 bqfft
 bqresample
 sv-dependency-builds
-glob:.vext-*.bin
+glob:.repoint-*.bin
+glob:.repoint-*.bin
