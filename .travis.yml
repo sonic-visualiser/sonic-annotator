@@ -26,7 +26,7 @@ before_install:
   - ( cd ../vamp-test-plugin ; if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then make -f Makefile.osx && cp vamp-test-plugin.dylib ~/Library/Audio/Plug-Ins/Vamp/ ; else make -f Makefile.linux && cp vamp-test-plugin.so ~/vamp/ ; fi )
 
 before_script:
-  - if [[ "$TRAVIS_OS_NAME" = "linux" ]] ; then ./configure ; else ./vext install && qmake -r sonic-annotator.pro ; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" ]] ; then ./configure ; else ./repoint install && qmake -r sonic-annotator.pro ; fi
 
 script:
   - make -j3
