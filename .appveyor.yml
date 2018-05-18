@@ -16,6 +16,7 @@ before_build:
   - set QTDIR=C:\Qt\5.10\msvc2017_64
   - set PATH=%PATH%;%QTDIR%\bin;C:\Program Files (x86)\SMLNJ\bin
   - repoint install
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
   - qmake -r -tp vc sonic-annotator.pro
 
 build:
