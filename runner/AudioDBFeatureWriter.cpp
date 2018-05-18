@@ -113,7 +113,7 @@ void AudioDBFeatureWriter::write(QString trackid,
     //!!! use summaryType
     if (summaryType != "") {
         //!!! IMPLEMENT
-        cerr << "ERROR: AudioDBFeatureWriter::write: Writing summaries is not yet implemented!" << endl;
+        SVCERR << "ERROR: AudioDBFeatureWriter::write: Writing summaries is not yet implemented!" << endl;
         exit(1);
     }
 
@@ -151,7 +151,7 @@ void AudioDBFeatureWriter::write(QString trackid,
             // - it can be zero, i.e. if the output is really a set of labels + timestamps
             *dbfiles[output.identifier].ofs /*<< ios::binary*/ << output.binCount;
             
-            cerr << "writing bin count " << output.binCount << " for " << output.identifier << endl;
+            SVCERR << "writing bin count " << output.binCount << " for " << output.identifier << endl;
         }
         
         if (replaceDBFile(trackid, output.identifier + ".timestamp"))
@@ -177,11 +177,11 @@ bool AudioDBFeatureWriter::openDBFile(QString trackid, const string& identifier)
     QString trackBase = QFileInfo(trackid).fileName();
     string filepath = baseDir + "/" + catalogueId  + "/"
         + trackBase.toStdString() + "." + identifier;
-    cerr << "AudioDBFeatureWriter::openDBFile: filepath is \"" << filepath << "\"" << endl;
+    SVCERR << "AudioDBFeatureWriter::openDBFile: filepath is \"" << filepath << "\"" << endl;
     ofstream* ofs = new ofstream(filepath.c_str());
     if (!*ofs)
     {    
-        cerr << "ERROR AudioDBFeatureWriter::openDBFile(): can't open file " << filepath << endl;
+        SVCERR << "ERROR AudioDBFeatureWriter::openDBFile(): can't open file " << filepath << endl;
         return false;
     }
     TrackStream ts;

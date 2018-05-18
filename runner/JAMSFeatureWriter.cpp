@@ -20,6 +20,7 @@ using Vamp::Plugin;
 using Vamp::PluginBase;
 
 #include "base/Exceptions.h"
+#include "base/Debug.h"
 #include "rdf/PluginRDFIndexer.h"
 
 #include <QFileInfo>
@@ -82,8 +83,8 @@ JAMSFeatureWriter::setParameters(map<string, string> &params)
         } else if (i->first == "digits") {
             int digits = atoi(i->second.c_str());
             if (digits <= 0 || digits > 100) {
-                cerr << "JAMSFeatureWriter: ERROR: Invalid or out-of-range value for number of significant digits: " << i->second << endl;
-                cerr << "JAMSFeatureWriter: NOTE: Continuing with default settings" << endl;
+                SVCERR << "JAMSFeatureWriter: ERROR: Invalid or out-of-range value for number of significant digits: " << i->second << endl;
+                SVCERR << "JAMSFeatureWriter: NOTE: Continuing with default settings" << endl;
             } else {
                 m_digits = digits;
             }
@@ -338,14 +339,14 @@ JAMSFeatureWriter::loadRDFDescription(const Transform &transform)
     m_rdfDescriptions[pluginId] = PluginRDFDescription(pluginId);
     
     if (m_rdfDescriptions[pluginId].haveDescription()) {
-	cerr << "NOTE: Have RDF description for plugin ID \""
+	SVCERR << "NOTE: Have RDF description for plugin ID \""
 	     << pluginId << "\"" << endl;
     } else {
-	cerr << "NOTE: No RDF description for plugin ID \""
+	SVCERR << "NOTE: No RDF description for plugin ID \""
 	     << pluginId << "\"" << endl;
 	if (!m_network) {
-	    cerr << "      Consider using the --jams-network option to retrieve plugin descriptions"  << endl;
-	    cerr << "      from the network where possible." << endl;
+	    SVCERR << "      Consider using the --jams-network option to retrieve plugin descriptions"  << endl;
+	    SVCERR << "      from the network where possible." << endl;
 	}
     }
 }
@@ -399,14 +400,14 @@ JAMSFeatureWriter::identifyTask(const Transform &transform)
 	    } else if (eventUri == af + "StructuralSegment") {
 		task = SegmentTask;
 	    } else {
-		cerr << "WARNING: Unsupported event type URI <" 
+		SVCERR << "WARNING: Unsupported event type URI <" 
 		     << eventUri << ">, proceeding with UnknownTask type"
 		     << endl;
 	    }
 
 	} else {
 
-	    cerr << "WARNING: Cannot currently write dense or track-level outputs to JAMS format (only sparse ones). Will proceed using UnknownTask type, but this probably isn't going to work" << endl;
+	    SVCERR << "WARNING: Cannot currently write dense or track-level outputs to JAMS format (only sparse ones). Will proceed using UnknownTask type, but this probably isn't going to work" << endl;
 	}
     }	    
 

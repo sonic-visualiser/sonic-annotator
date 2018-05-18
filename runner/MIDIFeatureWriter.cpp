@@ -20,6 +20,7 @@ using Vamp::Plugin;
 using Vamp::PluginBase;
 
 #include "base/Exceptions.h"
+#include "base/Debug.h"
 #include "data/fileio/MIDIFileWriter.h"
 
 //#define DEBUG_MIDI_FEATURE_WRITER 1
@@ -58,7 +59,7 @@ MIDIFeatureWriter::setParameters(map<string, string> &params)
 void
 MIDIFeatureWriter::setTrackMetadata(QString, TrackMetadata)
 {
-    cerr << "MIDIFeatureWriter::setTrackMetadata: not supported (yet?)" << endl;
+    SVCERR << "MIDIFeatureWriter::setTrackMetadata: not supported (yet?)" << endl;
 }
 
 void
@@ -112,8 +113,8 @@ MIDIFeatureWriter::write(QString trackId,
         }
 
 #ifdef DEBUG_MIDI_FEATURE_WRITER
-        cerr << "feature timestamp = " << feature.timestamp << ", sampleRate = " << sampleRate << ", frame = " << frame << endl;
-        cerr << "feature duration = " << feature.duration << ", sampleRate = " << sampleRate << ", duration = " << duration << endl;
+        SVCERR << "feature timestamp = " << feature.timestamp << ", sampleRate = " << sampleRate << ", frame = " << frame << endl;
+        SVCERR << "feature duration = " << feature.duration << ", sampleRate = " << sampleRate << ", duration = " << duration << endl;
 #endif
         
         int pitch = 60;
@@ -158,16 +159,16 @@ MIDIFeatureWriter::finish()
 	{
 	    MIDIFileWriter writer(filename, &exportable, rate);
 	    if (!writer.isOK()) {
-		cerr << "ERROR: Failed to create MIDI writer: " 
-		     << writer.getError() << endl;
+		SVCERR << "ERROR: Failed to create MIDI writer: " 
+                       << writer.getError() << endl;
 		throw FileOperationFailed(filename, "create MIDI writer");
 	    }
 
 	    writer.write();
 
             if (!writer.isOK()) {
-		cerr << "ERROR: Failed to write to MIDI file: " 
-		     << writer.getError() << endl;
+		SVCERR << "ERROR: Failed to write to MIDI file: " 
+                       << writer.getError() << endl;
 		throw FileOperationFailed(filename, "MIDI write");
             }
 	}
