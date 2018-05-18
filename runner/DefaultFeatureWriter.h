@@ -13,23 +13,27 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _DEFAULT_FEATURE_WRITER_H_
-#define _DEFAULT_FEATURE_WRITER_H_
+#ifndef DEFAULT_FEATURE_WRITER_H
+#define DEFAULT_FEATURE_WRITER_H
 
+#include "transform/FileFeatureWriter.h"
 
-#include "transform/FeatureWriter.h"
-
-class DefaultFeatureWriter : public FeatureWriter
+class DefaultFeatureWriter : public FileFeatureWriter
 {
 public:
-    virtual ~DefaultFeatureWriter() { }
+    DefaultFeatureWriter();
+    virtual ~DefaultFeatureWriter();
+    
     virtual string getDescription() const;
+
     virtual void write(QString trackid,
                        const Transform &transform,
                        const Vamp::Plugin::OutputDescriptor &output,
                        const Vamp::Plugin::FeatureList &features,
                        std::string summaryType = "");
+    
     virtual void finish() { }
+    
     virtual QString getWriterTag() const { return "default"; }
 };
 

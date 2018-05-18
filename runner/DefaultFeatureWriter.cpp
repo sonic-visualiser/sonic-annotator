@@ -20,63 +20,110 @@ using namespace std;
 
 #include "DefaultFeatureWriter.h"
 
+#include <QTextStream>
+#include <QTextCodec>
+
+DefaultFeatureWriter::DefaultFeatureWriter() :
+    FileFeatureWriter(SupportStdOut,
+                      "xml")
+{
+}
+
+DefaultFeatureWriter::~DefaultFeatureWriter()
+{
+}
+
 string
 DefaultFeatureWriter::getDescription() const
 {
     return "Write features in a generic XML format, with <feature> or <summary> elements containing output name and some or all of timestamp, duration, values, and label.";
 }
 
-void DefaultFeatureWriter::write(QString,
-                                 const Transform &,
+static QString
+toQStringAsStream(const RealTime &rt)
+{
+    // just for historical compatibility, get the same formatting as
+    // when streaming to an iostream
+    std::stringstream out;
+    out << rt;
+    std::string s = out.str();
+    return QString::fromStdString(s);
+}
+
+void DefaultFeatureWriter::write(QString trackId,
+                                 const Transform &transform,
                                  const Vamp::Plugin::OutputDescriptor& output,
-                                 const Vamp::Plugin::FeatureList& featureList,
+                                 const Vamp::Plugin::FeatureList& features,
                                  std::string summaryType)
 {
-    // generic XML output
+    // Select appropriate output file for our track/transform
+    // combination
+
+    TransformId transformId = transform.getIdentifier();
+
+    QTextStream *sptr = getOutputStream
+        (trackId, transformId, QTextCodec::codecForName("UTF-8"));
+    if (!sptr) {
+        throw FailedToOpenOutputStream(trackId, transformId);
+    }
+
+    QTextStream &stream = *sptr;
+
+    int n = int(features.size());
+
+    if (n == 0) return;
     
-    /*
+    /* we write a generic XML output of the form
      
-     <feature>
-        <name>output.name</name>
-        <timestamp>feature.timestamp</timestamp>    
-        <values>output.binName[0]:feature.value[0]...</values>
-        <label>feature.label</label>
-     </feature>
-     
+       <feature>
+          <name>output.name</name>
+          <timestamp>feature.timestamp</timestamp>    
+          <values>output.binName[0]:feature.value[0]...</values>
+          <label>feature.label</label>
+       </feature>
      */
     
-    for (int i = 0; i < (int)featureList.size(); ++i) {
-
+    for (int i = 0; i < n; ++i) {
         if (summaryType == "") {
-            cout << "<feature>" << endl;
+            stream << "<feature>" << endl;
         } else {
-            cout << "<summary type=\"" << summaryType << "\">" << endl;
+            stream << "<summary type=\"" << QString::fromStdString(summaryType)
+                   << "\">" << endl;
         }
-        cout << "\t<name>" << output.name << "</name>" << endl;
-        if (featureList[i].hasTimestamp) {
-            cout << "\t<timestamp>" << featureList[i].timestamp << "</timestamp>" << endl;    
+        stream << "\t<name>" << QString::fromStdString(output.name)
+               << "</name>" << endl;
+        if (features[i].hasTimestamp) {
+            stream << "\t<timestamp>"
+                   << toQStringAsStream(features[i].timestamp)
+                   << "</timestamp>" << endl;    
         }
-        if (featureList[i].hasDuration) {
-            cout << "\t<duration>" << featureList[i].duration << "</duration>" << endl;    
+        if (features[i].hasDuration) {
+            stream << "\t<duration>"
+                   << toQStringAsStream(features[i].duration)
+                   << "</duration>" << endl;    
         }
-        if (featureList[i].values.size() > 0)
+        if (features[i].values.size() > 0)
         {
-            cout << "\t<values>";
-            for (int j = 0; j < (int)featureList[i].values.size(); ++j) {
-                if (j > 0)
-                    cout << " ";
-                if (output.binNames.size() > 0)
-                    cout << output.binNames[j] << ":";
-                cout << featureList[i].values[j];
+            stream << "\t<values>";
+            for (int j = 0; j < (int)features[i].values.size(); ++j) {
+                if (j > 0) {
+                    stream << " ";
+                }
+                if (output.binNames.size() > 0) {
+                    stream << QString::fromStdString(output.binNames[j]) << ":";
+                }
+                stream << features[i].values[j];
             }
-            cout << "</values>" << endl;
+            stream << "</values>" << endl;
         }
-        if (featureList[i].label.length() > 0)
-            cout << "\t<label>" << featureList[i].label << "</label>" << endl;            
+        if (features[i].label.length() > 0)
+            stream << "\t<label>"
+                   << QString::fromStdString(features[i].label)
+                   << "</label>" << endl;
         if (summaryType == "") {
-            cout << "</feature>" << endl;
+            stream << "</feature>" << endl;
         } else {
-            cout << "</summary>" << endl;
+            stream << "</summary>" << endl;
         }
     }
 }
