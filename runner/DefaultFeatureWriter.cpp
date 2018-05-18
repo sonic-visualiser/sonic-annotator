@@ -16,8 +16,6 @@
 #include <iostream>
 #include <map>
 
-using namespace std;
-
 #include "DefaultFeatureWriter.h"
 
 string
@@ -48,35 +46,35 @@ void DefaultFeatureWriter::write(QString,
     for (int i = 0; i < (int)featureList.size(); ++i) {
 
         if (summaryType == "") {
-            cout << "<feature>" << endl;
+            std::cout << "<feature>" << std::endl;
         } else {
-            cout << "<summary type=\"" << summaryType << "\">" << endl;
+            std::cout << "<summary type=\"" << summaryType << "\">" << std::endl;
         }
-        cout << "\t<name>" << output.name << "</name>" << endl;
+        std::cout << "\t<name>" << output.name << "</name>" << std::endl;
         if (featureList[i].hasTimestamp) {
-            cout << "\t<timestamp>" << featureList[i].timestamp << "</timestamp>" << endl;    
+            std::cout << "\t<timestamp>" << featureList[i].timestamp << "</timestamp>" << std::endl;    
         }
         if (featureList[i].hasDuration) {
-            cout << "\t<duration>" << featureList[i].duration << "</duration>" << endl;    
+            std::cout << "\t<duration>" << featureList[i].duration << "</duration>" << std::endl;    
         }
         if (featureList[i].values.size() > 0)
         {
-            cout << "\t<values>";
+            std::cout << "\t<values>";
             for (int j = 0; j < (int)featureList[i].values.size(); ++j) {
                 if (j > 0)
-                    cout << " ";
+                    std::cout << " ";
                 if (output.binNames.size() > 0)
-                    cout << output.binNames[j] << ":";
-                cout << featureList[i].values[j];
+                    std::cout << output.binNames[j] << ":";
+                std::cout << featureList[i].values[j];
             }
-            cout << "</values>" << endl;
+            std::cout << "</values>" << std::endl;
         }
         if (featureList[i].label.length() > 0)
-            cout << "\t<label>" << featureList[i].label << "</label>" << endl;            
+            std::cout << "\t<label>" << featureList[i].label << "</label>" << std::endl;            
         if (summaryType == "") {
-            cout << "</feature>" << endl;
+            std::cout << "</feature>" << std::endl;
         } else {
-            cout << "</summary>" << endl;
+            std::cout << "</summary>" << std::endl;
         }
     }
 }
