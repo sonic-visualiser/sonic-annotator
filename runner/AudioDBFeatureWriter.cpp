@@ -158,7 +158,7 @@ void AudioDBFeatureWriter::write(QString trackid,
         {
             // write the start time to the timestamp file
             // as we want it for the first feature in the file
-            *dbfiles[output.identifier + ".timestamp"].ofs << featureList[i].timestamp.toString() << endl;
+            *dbfiles[output.identifier + ".timestamp"].ofs << featureList[i].timestamp.toString() << "\n";
         }
 
         if (dbfiles[output.identifier].ofs) {

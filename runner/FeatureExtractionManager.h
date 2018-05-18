@@ -142,8 +142,6 @@ private:
     bool m_normalise;
 
     QMap<QString, AudioFileReader *> m_readyReaders;
-    
-    void print(Transform transform) const;
 };
 
 #endif

@@ -1109,11 +1109,3 @@ void FeatureExtractionManager::finish()
         }
     }
 }
-
-void FeatureExtractionManager::print(Transform transform) const
-{
-    QString qs;
-    QTextStream qts(&qs);
-    transform.toXml(qts);
-    cerr << qs.toStdString() << endl;
-}
