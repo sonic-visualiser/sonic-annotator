@@ -25,3 +25,5 @@ bqresample
 sv-dependency-builds
 glob:.repoint-*.bin
 glob:.repoint-*.bin
+build_win32
+build_win64
