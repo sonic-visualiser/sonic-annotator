@@ -94,7 +94,7 @@ void FeatureExtractionManager::setChannels(int channels)
     m_channels = channels;
 }
 
-void FeatureExtractionManager::setDefaultSampleRate(int sampleRate)
+void FeatureExtractionManager::setDefaultSampleRate(sv_samplerate_t sampleRate)
 {
     m_defaultSampleRate = sampleRate;
 }
@@ -281,13 +281,13 @@ bool FeatureExtractionManager::addFeatureExtractor
             if (transform.getStepSize() != 0) {
                 pba->setPluginStepSize(transform.getStepSize());
             } else {
-                transform.setStepSize(pluginStepSize);
+                transform.setStepSize(int(pluginStepSize));
             }
 
             if (transform.getBlockSize() != 0) {
                 pba->setPluginBlockSize(transform.getBlockSize());
             } else {
-                transform.setBlockSize(pluginBlockSize);
+                transform.setBlockSize(int(pluginBlockSize));
             }
 
             plugin = new PluginChannelAdapter(plugin);
@@ -311,8 +311,8 @@ bool FeatureExtractionManager::addFeatureExtractor
             size_t actualStepSize = 0;
             size_t actualBlockSize = 0;
             pba->getActualStepAndBlockSizes(actualStepSize, actualBlockSize);
-            transform.setStepSize(actualStepSize);
-            transform.setBlockSize(actualBlockSize);
+            transform.setStepSize(int(actualStepSize));
+            transform.setBlockSize(int(actualBlockSize));
 
             Plugin::OutputList outputs = plugin->getOutputDescriptors();
             for (int i = 0; i < (int)outputs.size(); ++i) {
@@ -351,10 +351,10 @@ bool FeatureExtractionManager::addFeatureExtractor
                         pba->getActualStepAndBlockSizes(actualStepSize,
                                                         actualBlockSize);
                         if (transform.getStepSize() == 0) {
-                            transform.setStepSize(actualStepSize);
+                            transform.setStepSize(int(actualStepSize));
                         }
                         if (transform.getBlockSize() == 0) {
-                            transform.setBlockSize(actualBlockSize);
+                            transform.setBlockSize(int(actualBlockSize));
                         }
                     }
                 }
@@ -754,12 +754,12 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
     };
     LifespanMgr lifemgr(reader, m_channels, data);
 
-    size_t frameCount = reader->getFrameCount();
+    sv_frame_t frameCount = reader->getFrameCount();
     
     SVDEBUG << "FeatureExtractionManager: file has " << frameCount << " frames" << endl;
 
-    int earliestStartFrame = 0;
-    int latestEndFrame = frameCount;
+    sv_frame_t earliestStartFrame = 0;
+    sv_frame_t latestEndFrame = frameCount;
     bool haveExtents = false;
 
     foreach (Plugin *plugin, m_orderedPlugins) {
@@ -774,9 +774,9 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 
             const Transform &transform = ti->first;
 
-            int startFrame = RealTime::realTime2Frame
+            sv_frame_t startFrame = RealTime::realTime2Frame
                 (transform.getStartTime(), m_sampleRate);
-            int duration = RealTime::realTime2Frame
+            sv_frame_t duration = RealTime::realTime2Frame
                 (transform.getDuration(), m_sampleRate);
             if (duration == 0) {
                 duration = frameCount - startFrame;
@@ -823,8 +823,8 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
         }
     }
     
-    int startFrame = earliestStartFrame;
-    int endFrame = latestEndFrame;
+    sv_frame_t startFrame = earliestStartFrame;
+    sv_frame_t endFrame = latestEndFrame;
     
     foreach (Plugin *plugin, m_orderedPlugins) {
 
@@ -849,7 +849,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
     ProgressPrinter extractionProgress("Extracting and writing features...");
     int progress = 0;
 
-    for (int i = startFrame; i < endFrame; i += m_blockSize) {
+    for (sv_frame_t i = startFrame; i < endFrame; i += m_blockSize) {
         
         //!!! inefficient, although much of the inefficiency may be
         // susceptible to compiler optimisation
@@ -880,7 +880,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
                 }
             }
             for (int j = 0; j < m_blockSize; ++j) {
-                data[0][j] /= rc;
+                data[0][j] /= float(rc);
             }
         } else {                
             for (int c = 0; c < m_channels; ++c) {
@@ -896,8 +896,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
             }
         }                
 
-        Vamp::RealTime timestamp = Vamp::RealTime::frame2RealTime
-            (i, m_sampleRate);
+        RealTime timestamp = RealTime::frame2RealTime(i, m_sampleRate);
         
         foreach (Plugin *plugin, m_orderedPlugins) {
 
@@ -910,7 +909,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
             bool inRange = false;
             for (TransformWriterMap::const_iterator ti = pi->second.begin();
                  ti != pi->second.end(); ++ti) {
-                int startFrame = RealTime::realTime2Frame
+                sv_frame_t startFrame = RealTime::realTime2Frame
                     (ti->first.getStartTime(), m_sampleRate);
                 if (i >= startFrame || i + m_blockSize > startFrame) {
                     inRange = true;
@@ -921,7 +920,8 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
                 continue;
             }
 
-            Plugin::FeatureSet featureSet = plugin->process(data, timestamp);
+            Plugin::FeatureSet featureSet =
+                plugin->process(data, timestamp.toVampRealTime());
 
             if (!m_summariesOnly) {
                 writeFeatures(audioSource, plugin, featureSet);
@@ -929,7 +929,8 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
         }
 
         int pp = progress;
-        progress = int(((i - startFrame) * 100.0) / (endFrame - startFrame) + 0.1);
+        progress = int((double(i - startFrame) * 100.0) /
+                       double(endFrame - startFrame) + 0.1);
         if (progress > pp && m_verbose) extractionProgress.setProgress(progress);
     }
 
@@ -939,7 +940,6 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
         
     foreach (Plugin *plugin, m_orderedPlugins) {
 
-        PluginMap::iterator pi = m_plugins.find(plugin);
         Plugin::FeatureSet featureSet = plugin->getRemainingFeatures();
 
         if (!m_summariesOnly) {

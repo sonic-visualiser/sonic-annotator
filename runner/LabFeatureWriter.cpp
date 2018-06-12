@@ -108,7 +108,7 @@ LabFeatureWriter::write(QString trackId,
 
     QTextStream &stream = *sptr;
 
-    int n = features.size();
+    int n = int(features.size());
 
     if (n == 0) return;
 

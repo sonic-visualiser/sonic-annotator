@@ -66,7 +66,7 @@ private:
     typedef map<QString, set<Transform> > FileTransformMap;
     FileTransformMap m_fileTransforms;
 
-    typedef map<QString, float> SampleRateMap; // NoteData uses sample timing
+    typedef map<QString, sv_samplerate_t> SampleRateMap; // NoteData uses sample timing
     SampleRateMap m_rates;
 
     typedef map<Transform, int> ChannelMap;

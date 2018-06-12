@@ -42,7 +42,7 @@ public:
     virtual ~FeatureExtractionManager();
 
     void setChannels(int channels);
-    void setDefaultSampleRate(int sampleRate);
+    void setDefaultSampleRate(sv_samplerate_t sampleRate);
     void setNormalise(bool normalise);
 
     bool setSummaryTypes(const set<string> &summaryTypes,
@@ -136,8 +136,8 @@ private:
     void finish();
 
     int m_blockSize;
-    int m_defaultSampleRate;
-    int m_sampleRate;
+    sv_samplerate_t m_defaultSampleRate;
+    sv_samplerate_t m_sampleRate;
     int m_channels;
     bool m_normalise;
 

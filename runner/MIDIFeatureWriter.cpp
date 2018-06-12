@@ -76,7 +76,7 @@ MIDIFeatureWriter::write(QString trackId,
 	throw FailedToOpenOutputStream(trackId, transformId);
     }
 
-    int sampleRate = transform.getSampleRate();
+    sv_samplerate_t sampleRate = transform.getSampleRate();
 
     if (m_rates.find(filename) == m_rates.end()) {
         m_rates[filename] = sampleRate;
@@ -104,12 +104,13 @@ MIDIFeatureWriter::write(QString trackId,
 
         const Plugin::Feature &feature(features[i]);
 
-        Vamp::RealTime timestamp = feature.timestamp;
-        int frame = Vamp::RealTime::realTime2Frame(timestamp, sampleRate);
+        RealTime timestamp(feature.timestamp);
+        sv_frame_t frame = RealTime::realTime2Frame(timestamp, sampleRate);
 
-        int duration = 1;
+        sv_frame_t duration = 1;
         if (feature.hasDuration) {
-            duration = Vamp::RealTime::realTime2Frame(feature.duration, sampleRate);
+            RealTime rduration(feature.duration);
+            duration = RealTime::realTime2Frame(rduration, sampleRate);
         }
 
 #ifdef DEBUG_MIDI_FEATURE_WRITER
@@ -152,7 +153,7 @@ MIDIFeatureWriter::finish()
 
 	QString filename = i->first;
 	NoteList notes = i->second;
-	float rate = m_rates[filename];
+	sv_samplerate_t rate = m_rates[filename];
 
 	TrivialNoteExportable exportable(notes);
 
