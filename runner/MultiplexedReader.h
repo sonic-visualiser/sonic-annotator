@@ -33,6 +33,9 @@ public:
     virtual QString getError() const override { return m_error; }
     virtual bool isQuicklySeekable() const override { return m_quicklySeekable; }
 
+    virtual QString getTitle() const override { return ""; }
+    virtual QString getMaker() const override { return ""; }
+
     virtual floatvec_t getInterleavedFrames
     (sv_frame_t start, sv_frame_t count) const override;
 

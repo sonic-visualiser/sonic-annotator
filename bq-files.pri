@@ -11,12 +11,18 @@ BQ_HEADERS += \
 	bqvec/pommier/sse_mathfun.h \
         bqfft/bqfft/FFT.h \
 	bqresample/bqresample/Resampler.h \
-	bqresample/speex/speex_resampler.h
+	bqresample/speex/speex_resampler.h \
+        bqaudiostream/bqaudiostream/AudioReadStream.h \
+        bqaudiostream/bqaudiostream/AudioReadStreamFactory.h \
+        bqaudiostream/bqaudiostream/Exceptions.h \
+        bqthingfactory/bqthingfactory/ThingFactory.h
 
 BQ_SOURCES += \
 	bqvec/src/Allocators.cpp \
 	bqvec/src/Barrier.cpp \
 	bqvec/src/VectorOpsComplex.cpp \
         bqfft/src/FFT.cpp \
-	bqresample/src/Resampler.cpp
-
+	bqresample/src/Resampler.cpp \
+        bqaudiostream/src/AudioReadStream.cpp \
+        bqaudiostream/src/AudioReadStreamFactory.cpp \
+        bqaudiostream/src/AudioStreamExceptions.cpp

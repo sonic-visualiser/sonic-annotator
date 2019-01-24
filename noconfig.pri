@@ -1,8 +1,10 @@
 
-CONFIG += release
+CONFIG += c++14
 
-#CONFIG -= release
+CONFIG += release
 #CONFIG += debug
+
+PREFIX_PATH = /usr/local
 
 DEFINES += NDEBUG BUILD_RELEASE
 DEFINES += NO_TIMING
@@ -17,8 +19,9 @@ DEFINES += \
 	HAVE_SNDFILE \
 	HAVE_SAMPLERATE \
 	HAVE_MAD \
-	HAVE_ID3TAG
-        
+	HAVE_ID3TAG \
+	HAVE_OPUS
+
 # Default set of libs for the above. Config sections below may update
 # these.
 
@@ -34,6 +37,8 @@ LIBS += \
 	-lvorbis \
 	-lvorbisenc \
 	-lvorbisfile \
+	-lopusfile \
+	-lopus \
 	-logg \
 	-lmad \
 	-lid3tag \
@@ -54,7 +59,7 @@ win32-g++ {
 
     QMAKE_CXXFLAGS_RELEASE += -ffast-math
     
-    LIBS += -lwinmm -lws2_32
+    LIBS += -lmfplat -lmfreadwrite -lmfuuid -lpropsys -lwinmm -lws2_32
 }
 
 win32-msvc* {
@@ -83,19 +88,19 @@ win32-msvc* {
     LIBS -= -lsord-0 -lserd-0
     LIBS += -lsord -lserd
     
-    LIBS += -ladvapi32 -lwinmm -lws2_32
+    LIBS += -lmfplat -lmfreadwrite -lmfuuid -lpropsys -ladvapi32 -lwinmm -lws2_32
 }
 
 macx* {
 
     # All Mac builds are 64-bit these days.
 
-    INCLUDEPATH += $$PWD/sv-dependency-builds/osx/include
+    INCLUDEPATH += $$PWD/sv-dependency-builds/osx/include $$PWD/sv-dependency-builds/osx/include/opus
     LIBS += -L$$PWD/sv-dependency-builds/osx/lib -L$$PWD
 
-    QMAKE_CXXFLAGS_RELEASE += -O3 -ffast-math
+    QMAKE_CXXFLAGS_RELEASE += -O3 -ffast-math -flto
 
-    DEFINES += HAVE_VDSP
+    DEFINES += HAVE_COREAUDIO HAVE_VDSP
     LIBS += \
         -framework CoreAudio \
 	-framework CoreMidi \

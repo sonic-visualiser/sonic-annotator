@@ -4,28 +4,34 @@
       "pin": "da86fb0bccb3"
     },
     "svcore": {
-      "pin": "a92e94215863"
+      "pin": "40d8b01efbc6"
     },
     "checker": {
-      "pin": "2e8a5f665a07"
+      "pin": "5c60e26e16ca"
     },
-    "piper-cpp": {
-      "pin": "44cb74e186a703e7e6ce403aa295913a87b88d62"
+    "piper-vamp-cpp": {
+      "pin": "0e3328c6091f59c912e25bc392a7dc75182be1c7"
     },
     "dataquay": {
       "pin": "807b55408d9e"
     },
     "bqvec": {
-      "pin": "3c9de9e7f6e8"
+      "pin": "be1ce11183f4"
     },
     "bqfft": {
       "pin": "a766fe47501b"
     },
     "bqresample": {
-      "pin": "a9a5555d9b6d"
+      "pin": "f5dee7d40378"
+    },
+    "bqthingfactory": {
+      "pin": "7686116dcdd5"
+    },
+    "bqaudiostream": {
+      "pin": "65e940fb6436"
     },
     "sv-dependency-builds": {
-      "pin": "f1a9b270e043"
+      "pin": "7aeed7906520"
     }
   }
 }
