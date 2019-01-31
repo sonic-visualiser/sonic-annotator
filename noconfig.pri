@@ -59,7 +59,9 @@ win32-g++ {
 
     QMAKE_CXXFLAGS_RELEASE += -ffast-math
     
-    LIBS += -lmfplat -lmfreadwrite -lmfuuid -lpropsys -lwinmm -lws2_32
+    # (We don't have MediaFoundation support, with this build sadly)
+    
+    LIBS += -lwinmm -lws2_32
 }
 
 win32-msvc* {
@@ -72,17 +74,17 @@ win32-msvc* {
     INCLUDEPATH += $$PWD/sv-dependency-builds/win64-msvc/include $$PWD/sv-dependency-builds/win64-msvc/include/opus
 
     CONFIG(release) {
-        LIBS += -Lrelease \
+        LIBS += -NODEFAULTLIB:LIBCMT -Lrelease \
             -L$$PWD/sv-dependency-builds/win64-msvc/lib
     }
 
-    DEFINES += NOMINMAX _USE_MATH_DEFINES
+    DEFINES += NOMINMAX _USE_MATH_DEFINES HAVE_MEDIAFOUNDATION
 
     QMAKE_CXXFLAGS_RELEASE += -fp:fast -gl
     QMAKE_LFLAGS_RELEASE += -ltcg
 
     # No Ogg/FLAC support in the sndfile build on this platform yet
-    LIBS -= -lFLAC -logg -lvorbis -lvorbisenc -lvorbisfile
+    LIBS -= -lFLAC -lvorbis -lvorbisenc -lvorbisfile
 
     # These have different names
     LIBS -= -lsord-0 -lserd-0
@@ -99,6 +101,7 @@ macx* {
     LIBS += -L$$PWD/sv-dependency-builds/osx/lib -L$$PWD
 
     QMAKE_CXXFLAGS_RELEASE += -O3 -ffast-math -flto
+    QMAKE_LFLAGS_RELEASE += -O3 -flto
 
     DEFINES += HAVE_COREAUDIO HAVE_VDSP
     LIBS += \
