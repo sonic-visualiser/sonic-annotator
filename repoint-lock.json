@@ -4,7 +4,7 @@
       "pin": "da86fb0bccb3"
     },
     "svcore": {
-      "pin": "40d8b01efbc6"
+      "pin": "8aa1447fe27e"
     },
     "checker": {
       "pin": "5c60e26e16ca"
@@ -31,7 +31,7 @@
       "pin": "65e940fb6436"
     },
     "sv-dependency-builds": {
-      "pin": "7aeed7906520"
+      "pin": "2f2b27544483"
     }
   }
 }
