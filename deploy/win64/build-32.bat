@@ -3,7 +3,7 @@ rem  To build from clean, delete the folder build_win32
 
 set STARTPWD=%CD%
 
-set QTDIR=C:\Qt\5.11.0\mingw53_32
+set QTDIR=C:\Qt\5.11.3\mingw53_32
 if not exist %QTDIR% (
 @   echo Could not find 32-bit Qt
 @   exit /b 2
@@ -38,6 +38,5 @@ copy %QTDIR%\plugins\platforms\qwindows.dll .\release
 
 .\release\test-svcore-base
 .\release\test-svcore-system
-.\release\test-svcore-data-fileio
 
 set PATH=%ORIGINALPATH%

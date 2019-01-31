@@ -5,7 +5,7 @@ echo on
 
 set STARTPWD=%CD%
 
-set QTDIR=C:\Qt\5.11.0\msvc2017_64
+set QTDIR=C:\Qt\5.12.0\msvc2017_64
 if not exist %QTDIR% (
 @   echo Could not find 64-bit Qt
 @   exit /b 2
@@ -45,6 +45,5 @@ copy ..\sv-dependency-builds\win64-msvc\lib\libsndfile-1.dll .\release
 
 .\release\test-svcore-base
 .\release\test-svcore-system
-.\release\test-svcore-data-fileio
 
 set PATH=%ORIGINALPATH%
