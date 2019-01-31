@@ -51,7 +51,7 @@ win32-g++ {
 
     # This config is currently used for 32-bit Windows builds.
 
-    INCLUDEPATH += $$PWD/sv-dependency-builds/win32-mingw/include
+    INCLUDEPATH += $$PWD/sv-dependency-builds/win32-mingw/include $$PWD/sv-dependency-builds/win32-mingw/include/opus
 
     LIBS += -Lrelease -L$$PWD/sv-dependency-builds/win32-mingw/lib
 
@@ -69,7 +69,7 @@ win32-msvc* {
     # we want to do 32-bit builds with MSVC as well, then we'll
     # need to add a way to distinguish the two.
     
-    INCLUDEPATH += $$PWD/sv-dependency-builds/win64-msvc/include
+    INCLUDEPATH += $$PWD/sv-dependency-builds/win64-msvc/include $$PWD/sv-dependency-builds/win64-msvc/include/opus
 
     CONFIG(release) {
         LIBS += -Lrelease \
