@@ -17,7 +17,7 @@
         "svcore": {
             "vcs": "hg",
 	    "service": "soundsoftware",
-	    "branch": "bqaudiostream"
+	    "branch": "by-id"
         },
         "checker": {
             "vcs": "hg",
