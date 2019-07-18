@@ -40,8 +40,7 @@ PKG_PROG_PKG_CONFIG
 SV_CHECK_QT
 
 SV_DEFINES_DEBUG="-DDEBUG -DBUILD_DEBUG -DWANT_TIMING"
-SV_DEFINES_RELEASE="-DNDEBUG -DBUILD_RELEASE -DNO_TIMING"
-SV_DEFINES_MINIMAL="$SV_DEFINES_RELEASE"
+SV_DEFINES_RELEASE="-DNDEBUG -DBUILD_RELEASE -DNO_TIMING -DNO_HIT_COUNTS"
 
 # Now we have: USER_CXXFLAGS contains any flags the user set
 # explicitly; AUTOCONF_CXXFLAGS contains flags that Autoconf thought
@@ -49,34 +48,46 @@ SV_DEFINES_MINIMAL="$SV_DEFINES_RELEASE"
 # allow ourselves to be overridden (later) by the former
 
 CXXFLAGS_DEBUG="$AUTOCONF_CXXFLAGS"
+OPTFLAGS_DEBUG="-O2"
+LDFLAGS_DEBUG=""
 CXXFLAGS_RELEASE="$AUTOCONF_CXXFLAGS"
-CXXFLAGS_MINIMAL="$AUTOCONF_CXXFLAGS"
+OPTFLAGS_RELEASE="-O2"
+LDFLAGS_RELEASE=""
+CXXSTANDARD=c++14
 
 if test "x$GCC" = "xyes"; then
-   	CXXFLAGS_ANY="-std=c++11 -fpic -Wall -Wextra -Woverloaded-virtual -Wformat-nonliteral -Wformat-security -Winit-self -Wswitch-enum -Wconversion -pipe"
+   	CXXFLAGS_ANY="-fpic -Wall -Wextra -Woverloaded-virtual -Wformat-nonliteral -Wformat-security -Winit-self -Wswitch-enum -Wconversion -pipe"
         CXXFLAGS_DEBUG="$CXXFLAGS_ANY -g -Werror"
-   	CXXFLAGS_RELEASE="$CXXFLAGS_ANY -g0 -O3 -ffast-math"
-   	CXXFLAGS_MINIMAL="$CXXFLAGS_ANY -g0 -O0"
+        OPTFLAGS_DEBUG="-O2"
+   	CXXFLAGS_RELEASE="$CXXFLAGS_ANY -g0"
+        OPTFLAGS_RELEASE="-O3 -ffast-math"
+        LIBS_DEBUG="$LIBS"
+        AX_CHECK_COMPILE_FLAG(--std=$CXXSTANDARD, [], [AC_MSG_NOTICE([Compiler does not appear to support $CXXSTANDARD, falling back to c++11])
+        CXXSTANDARD=c++11])
 fi
 
-CXXFLAGS_BUILD="$CXXFLAGS_RELEASE"
+CXXFLAGS_BUILD="$CXXFLAGS_RELEASE $OPTFLAGS_RELEASE"
+LDFLAGS_BUILD="$LDFLAGS_RELEASE $OPTFLAGS_RELEASE"
 SV_DEFINES_BUILD="$SV_DEFINES_RELEASE"
 
 QMAKE_CONFIG="release"
 
 AC_ARG_ENABLE(debug, [AS_HELP_STRING([--enable-debug],[enable debug support [default=no]])],[AC_MSG_NOTICE([enabling debug build])
 QMAKE_CONFIG="debug"
-CXXFLAGS_BUILD="$CXXFLAGS_DEBUG"
-SV_DEFINES_BUILD="$SV_DEFINES_DEBUG"])
+CXXFLAGS_BUILD="$CXXFLAGS_DEBUG $OPTFLAGS_DEBUG"
+LDFLAGS_BUILD="$LDFLAGS_DEBUG"
+SV_DEFINES_BUILD="$SV_DEFINES_DEBUG"
+LIBS="$LIBS_DEBUG"])
 
 if test x"$USER_CXXFLAGS" != x; then
    	AC_MSG_NOTICE([The CXXFLAGS environment variable is set to "$USER_CXXFLAGS".])
 	AC_MSG_NOTICE(Overriding default compiler flags with the above user setting.)
 	CXXFLAGS_BUILD="$USER_CXXFLAGS"
-	CXXFLAGS_MINIMAL="$USER_CXXFLAGS"
+        LDFLAGS_BUILD=""
 fi
 
 CXXFLAGS="$CXXFLAGS_BUILD $SV_DEFINES_BUILD"
+LDFLAGS="$LDFLAGS_BUILD"
 
 SV_MODULE_REQUIRED([bz2],[],[bzlib.h],[bz2],[BZ2_bzReadOpen])
 SV_MODULE_REQUIRED([fftw3],[fftw3 >= 3.0.0],[fftw3.h],[fftw3],[fftw_execute])
@@ -92,6 +103,7 @@ SV_MODULE_OPTIONAL([oggz],[oggz >= 1.0.0],[oggz/oggz.h],[oggz],[oggz_run])
 SV_MODULE_OPTIONAL([fishsound],[fishsound >= 1.0.0],[fishsound/fishsound.h],[fishsound],[fish_sound_new])
 SV_MODULE_OPTIONAL([mad],[mad >= 0.15.0],[mad.h],[mad],[mad_decoder_init])
 SV_MODULE_OPTIONAL([id3tag],[id3tag >= 0.15.0],[id3tag.h],[id3tag],[id3_tag_new])
+SV_MODULE_OPTIONAL([opus],[opusfile],[opus/opusfile.h],[opusfile],[op_read_float])
 
 AC_SUBST(PERL)
 AC_SUBST(XARGS)
@@ -101,13 +113,15 @@ AC_SUBST(CUT)
 
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
-AC_SUBST(CXXFLAGS_MINIMAL)
+AC_SUBST(CXXSTANDARD)
 AC_SUBST(LDFLAGS)
 AC_SUBST(HAVES)
 AC_SUBST(LIBS)
 
 AC_SUBST(CC)
 AC_SUBST(CXX)
+
+AC_SUBST(prefix)
 
 AC_SUBST(QMAKE_CONFIG)
 

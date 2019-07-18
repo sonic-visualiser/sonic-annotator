@@ -17,7 +17,7 @@ doc/html/
 cov-int
 vamp-plugin-sdk
 svcore
-piper-cpp
+piper-vamp-cpp
 dataquay
 bqvec
 bqfft
@@ -27,3 +27,4 @@ glob:.repoint-*.bin
 glob:.repoint-*.bin
 build_win32
 build_win64
+glob:.repoint*

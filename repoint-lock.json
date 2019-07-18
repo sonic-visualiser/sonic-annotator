@@ -1,31 +1,37 @@
 {
   "libraries": {
     "vamp-plugin-sdk": {
-      "pin": "da86fb0bccb3"
+      "pin": "62987b6d6a3b"
     },
     "svcore": {
-      "pin": "a92e94215863"
+      "pin": "9a8327e7b2dc"
     },
     "checker": {
-      "pin": "2e8a5f665a07"
+      "pin": "c8c17e51aab0"
     },
-    "piper-cpp": {
-      "pin": "44cb74e186a703e7e6ce403aa295913a87b88d62"
+    "piper-vamp-cpp": {
+      "pin": "0e3328c6091f59c912e25bc392a7dc75182be1c7"
     },
     "dataquay": {
-      "pin": "807b55408d9e"
+      "pin": "b82360a98f49"
     },
     "bqvec": {
-      "pin": "3c9de9e7f6e8"
+      "pin": "c2d355c29372"
     },
     "bqfft": {
-      "pin": "a766fe47501b"
+      "pin": "ff1d1bd48876"
     },
     "bqresample": {
-      "pin": "a9a5555d9b6d"
+      "pin": "f5dee7d40378"
+    },
+    "bqthingfactory": {
+      "pin": "7686116dcdd5"
+    },
+    "bqaudiostream": {
+      "pin": "e3a6c41e042f"
     },
     "sv-dependency-builds": {
-      "pin": "f1a9b270e043"
+      "pin": "f3731af47c4b"
     }
   }
 }

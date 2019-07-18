@@ -14,11 +14,12 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _MIDI_FEATURE_WRITER_H_
-#define _MIDI_FEATURE_WRITER_H_
+#ifndef MIDI_FEATURE_WRITER_H
+#define MIDI_FEATURE_WRITER_H
 
 #include "transform/FileFeatureWriter.h"
-#include "data/model/NoteData.h"
+#include "base/NoteData.h"
+#include "base/NoteExportable.h"
 
 class MIDIFileWriter;
 
@@ -52,7 +53,11 @@ private:
 	virtual NoteList getNotes() const {
 	    return m_notes;
 	}
-	virtual NoteList getNotesWithin(sv_frame_t, sv_frame_t) const {
+	virtual NoteList getNotesActiveAt(sv_frame_t) const {
+	    // Not required by MIDIFileWriter, not supported
+	    return NoteList();
+	}
+	virtual NoteList getNotesStartingWithin(sv_frame_t, sv_frame_t) const {
 	    // Not required by MIDIFileWriter, not supported
 	    return NoteList();
 	}

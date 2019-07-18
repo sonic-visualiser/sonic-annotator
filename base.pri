@@ -3,9 +3,12 @@ SV_INCLUDEPATH = \
         . \
 	bqvec \
 	bqvec/bqvec \
+	bqthingfactory \
+	bqaudiostream \
+	bqaudiostream/bqaudiostream \
 	bqfft \
 	bqresample \
-	piper-cpp \
+	piper-vamp-cpp \
         checker \
 	dataquay \
 	dataquay/dataquay \
@@ -28,5 +31,5 @@ DEFINES += USE_SORD
 
 DEFINES += NO_HIT_COUNTS
 
-CONFIG += qt thread warn_on stl rtti exceptions c++11
+CONFIG += qt thread warn_on stl rtti exceptions
     
