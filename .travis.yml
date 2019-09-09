@@ -17,7 +17,7 @@ osx_image:
 addons:
   apt:
     packages:
-     - libbz2-dev libfftw3-dev libfishsound1-dev libid3tag0-dev liblo-dev liblrdf0-dev libmad0-dev liboggz2-dev libpulse-dev libsamplerate-dev libsndfile-dev libsord-dev libxml2-utils portaudio19-dev qt5-default libqt5svg5-dev raptor-utils yajl-tools mlton
+     - libbz2-dev libfftw3-dev libfishsound1-dev libid3tag0-dev liblo-dev liblrdf0-dev libmad0-dev liboggz2-dev libopus-dev libopusfile-dev libpulse-dev libsamplerate-dev libsndfile-dev libsord-dev libxml2-utils portaudio19-dev qt5-default libqt5svg5-dev raptor-utils yajl-tools mlton
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then brew update ; brew install polyml qt5 raptor yajl; fi
