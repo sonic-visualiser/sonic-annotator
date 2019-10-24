@@ -22,7 +22,6 @@ addons:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then brew update ; brew install polyml qt5 raptor yajl; fi
   - if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then brew unlink python ; fi
-  - if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then brew upgrade mercurial ; fi
   - if [[ "$TRAVIS_OS_NAME" = "osx" ]] ; then export PATH=$PATH:/usr/local/opt/qt5/bin ; fi
   - ( cd ../ ; hg clone https://code.soundsoftware.ac.uk/hg/vamp-plugin-sdk )
   - ( cd ../ ; hg clone https://code.soundsoftware.ac.uk/hg/vamp-test-plugin )
