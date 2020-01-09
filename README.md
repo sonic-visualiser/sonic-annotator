@@ -262,9 +262,9 @@ not properly implemented or not supported.)
    This is equivalent to using the CSV writer with a tab separator and
    the options --csv-end-times --csv-omit-filenames.
 
-   It supports the --lab-basedir, --lab-one-file, --lab-stdout,
-   --lab-force, --lab-append, and --lab-fill-ends options, which all
-   behave similarly to their CSV writer equivalents.
+   It supports the --lab-basedir, --lab-stdout, --lab-force,
+   --lab-append, and --lab-fill-ends options, which all behave
+   similarly to their CSV writer equivalents.
 
  * rdf
 
