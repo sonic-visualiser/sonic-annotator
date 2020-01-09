@@ -1,10 +1,10 @@
 {
   "libraries": {
     "vamp-plugin-sdk": {
-      "pin": "0b6802e3b755"
+      "pin": "569fc23fa37a"
     },
     "svcore": {
-      "pin": "e3db163e3f50"
+      "pin": "73447d746db3"
     },
     "checker": {
       "pin": "c8c17e51aab0"
@@ -28,10 +28,10 @@
       "pin": "7686116dcdd5"
     },
     "bqaudiostream": {
-      "pin": "e3a6c41e042f"
+      "pin": "a0926b93e771"
     },
     "sv-dependency-builds": {
-      "pin": "f3731af47c4b"
+      "pin": "7029a4916348"
     }
   }
 }
