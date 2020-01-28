@@ -7,8 +7,9 @@ tmpcsv=$mypath/tmp_1_$$.csv
 
 trap "rm -f $tmpcsv" 0
 
-$r --transform-minversion $testplug 4 || \
-    fail "Vamp Test Plugin version is too old (at least v4 required)"
+minversion=5
+$r --transform-minversion $testplug $minversion || \
+    fail "Vamp Test Plugin version is too old (at least v$minversion required)"
 
 for output in instants curve-oss curve-fsr curve-fsr-timed curve-fsr-mixed curve-vsr grid-oss grid-fsr notes-regions; do
     
