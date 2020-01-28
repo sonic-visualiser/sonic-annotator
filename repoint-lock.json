@@ -1,19 +1,19 @@
 {
   "libraries": {
     "vamp-plugin-sdk": {
-      "pin": "569fc23fa37a"
+      "pin": "c42e50a5c297"
     },
     "svcore": {
-      "pin": "73447d746db3"
+      "pin": "1cd161242250"
     },
     "checker": {
-      "pin": "c8c17e51aab0"
+      "pin": "ef64b3f171d9"
     },
     "piper-vamp-cpp": {
-      "pin": "0e3328c6091f59c912e25bc392a7dc75182be1c7"
+      "pin": "f381235a4ba88eac2fa31fc1f7f613cca9707f63"
     },
     "dataquay": {
-      "pin": "b82360a98f49"
+      "pin": "35098262cadd"
     },
     "bqvec": {
       "pin": "cd235ecbeb31"
@@ -31,7 +31,7 @@
       "pin": "a0926b93e771"
     },
     "sv-dependency-builds": {
-      "pin": "7029a4916348"
+      "pin": "d0c2a83c1364"
     }
   }
 }
