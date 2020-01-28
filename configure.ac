@@ -53,17 +53,17 @@ LDFLAGS_DEBUG=""
 CXXFLAGS_RELEASE="$AUTOCONF_CXXFLAGS"
 OPTFLAGS_RELEASE="-O2"
 LDFLAGS_RELEASE=""
-CXXSTANDARD=c++14
+CXXSTANDARD="c++14"
 
 if test "x$GCC" = "xyes"; then
    	CXXFLAGS_ANY="-fpic -Wall -Wextra -Woverloaded-virtual -Wformat-nonliteral -Wformat-security -Winit-self -Wswitch-enum -Wconversion -pipe"
         CXXFLAGS_DEBUG="$CXXFLAGS_ANY -g -Werror"
         OPTFLAGS_DEBUG="-O2"
    	CXXFLAGS_RELEASE="$CXXFLAGS_ANY -g0"
-        OPTFLAGS_RELEASE="-O3 -ffast-math"
+        OPTFLAGS_RELEASE="-O3"
         LIBS_DEBUG="$LIBS"
         AX_CHECK_COMPILE_FLAG(--std=$CXXSTANDARD, [], [AC_MSG_NOTICE([Compiler does not appear to support $CXXSTANDARD, falling back to c++11])
-        CXXSTANDARD=c++11])
+        CXXSTANDARD="c++11"])
 fi
 
 CXXFLAGS_BUILD="$CXXFLAGS_RELEASE $OPTFLAGS_RELEASE"
