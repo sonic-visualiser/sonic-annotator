@@ -19,6 +19,7 @@
 #include <vector>
 #include <set>
 #include <string>
+#include <memory>
 
 #include <QMap>
 
@@ -31,6 +32,7 @@ using std::set;
 using std::string;
 using std::pair;
 using std::map;
+using std::shared_ptr;
 
 class FeatureWriter;
 class AudioFileReader;
@@ -76,15 +78,23 @@ public:
 
 private:
     bool m_verbose;
+
+    // The plugins that we actually "run" may be wrapped versions of
+    // the originally loaded ones, depending on the adapter
+    // characteristics we need. Because the wrappers use raw pointers,
+    // we need to separately retain the originally loaded shared_ptrs
+    // so that they don't get auto-deleted. Same goes for any wrappers
+    // that may then be re-wrapped. That's what these are for.
+    set<shared_ptr<Vamp::PluginBase>> m_allLoadedPlugins;
+    set<shared_ptr<Vamp::PluginBase>> m_allAdapters;
     
     // A plugin may have many outputs, so we can have more than one
     // transform requested for a single plugin.  The things we want to
     // run in our process loop are plugins rather than their outputs,
     // so we maintain a map from the plugins to the transforms desired
     // of them and then iterate through this map
-
     typedef map<Transform, vector<FeatureWriter *> > TransformWriterMap;
-    typedef map<Vamp::Plugin *, TransformWriterMap> PluginMap;
+    typedef map<shared_ptr<Vamp::Plugin>, TransformWriterMap> PluginMap;
     PluginMap m_plugins;
 
     // When we run plugins, we want to run them in a known order so as
@@ -95,20 +105,19 @@ private:
     // that the TransformWriterMap is consistently ordered (because
     // the key is a Transform which has a proper ordering) so using
     // this gives us a consistent order across the whole PluginMap
-    vector<Vamp::Plugin *> m_orderedPlugins;
+    vector<shared_ptr<Vamp::Plugin>> m_orderedPlugins;
 
     // And a map back from transforms to their plugins.  Note that
-    // this is keyed by transform, not transform ID -- two differently
-    // configured transforms with the same ID must use different
-    // plugin instances.
-
-    typedef map<Transform, Vamp::Plugin *> TransformPluginMap;
+    // this is keyed by whole transform structure, not transform ID --
+    // two differently configured transforms with the same ID must use
+    // different plugin instances.
+    typedef map<Transform, shared_ptr<Vamp::Plugin>> TransformPluginMap;
     TransformPluginMap m_transformPluginMap;
 
     // Cache the plugin output descriptors, mapping from plugin to a
     // map from output ID to output descriptor.
     typedef map<string, Vamp::Plugin::OutputDescriptor> OutputMap;
-    typedef map<Vamp::Plugin *, OutputMap> PluginOutputMap;
+    typedef map<shared_ptr<Vamp::Plugin>, OutputMap> PluginOutputMap;
     PluginOutputMap m_pluginOutputs;
 
     // Map from plugin output identifier to plugin output index
@@ -124,10 +133,11 @@ private:
 
     void extractFeaturesFor(AudioFileReader *reader, QString audioSource);
 
-    void writeSummaries(QString audioSource, Vamp::Plugin *);
+    void writeSummaries(QString audioSource,
+                        std::shared_ptr<Vamp::Plugin>);
 
     void writeFeatures(QString audioSource,
-                       Vamp::Plugin *,
+                       std::shared_ptr<Vamp::Plugin>,
                        const Vamp::Plugin::FeatureSet &,
                        Transform::SummaryType summaryType =
                        Transform::NoSummary);

@@ -78,14 +78,25 @@ FeatureExtractionManager::~FeatureExtractionManager()
     SVDEBUG << "FeatureExtractionManager::~FeatureExtractionManager: cleaning up"
             << endl;
     
-    for (PluginMap::iterator pi = m_plugins.begin();
-         pi != m_plugins.end(); ++pi) {
-        delete pi->first;
-    }
     foreach (AudioFileReader *r, m_readyReaders) {
         delete r;
     }
 
+    // We need to ensure m_allLoadedPlugins outlives anything that
+    // holds a shared_ptr to a plugin adapter built from one of the
+    // raw plugin pointers. So clear these explicitly, in this order,
+    // instead of allowing it to happen automatically
+
+    m_pluginOutputs.clear();
+    m_transformPluginMap.clear();
+    m_orderedPlugins.clear();
+    m_plugins.clear();
+
+    // and last
+    
+    m_allAdapters.clear();
+    m_allLoadedPlugins.clear();
+    
     SVDEBUG << "FeatureExtractionManager::~FeatureExtractionManager: done" << endl;
 }
 
@@ -194,13 +205,24 @@ bool FeatureExtractionManager::addFeatureExtractor
         transform.setSampleRate(m_sampleRate);
     }
 
-    Plugin *plugin = 0;
+    shared_ptr<Plugin> plugin = nullptr;
 
     // Remember what the original transform looked like, and index
     // based on this -- because we may be about to fill in the zeros
     // for step and block size, but we want any further copies with
     // the same zeros to match this one
     Transform originalTransform = transform;
+
+    // In a few cases here, after loading the plugin, we create an
+    // adapter to wrap it. We always give a raw pointer to the adapter
+    // (that's what the API requires). It is safe to use the raw
+    // pointer obtained from .get() on the originally loaded
+    // shared_ptr, so long as we also stash the shared_ptr somewhere
+    // so that it doesn't go out of scope before the adapter is
+    // deleted, and we call disownPlugin() on the adapter to prevent
+    // the adapter from trying to delete it. We have
+    // m_allLoadedPlugins and m_allAdapters as our stashes of
+    // shared_ptrs, which share the lifetime of this manager object.
     
     if (m_transformPluginMap.find(transform) == m_transformPluginMap.end()) {
 
@@ -221,8 +243,14 @@ bool FeatureExtractionManager::addFeatureExtractor
                      << "summary type; sharing its plugin instance" << endl;
                 plugin = i->second;
                 if (transform.getSummaryType() != Transform::NoSummary &&
-                    !dynamic_cast<PluginSummarisingAdapter *>(plugin)) {
-                    plugin = new PluginSummarisingAdapter(plugin);
+                    !std::dynamic_pointer_cast<PluginSummarisingAdapter>(plugin)) {
+                    // See comment above about safety of raw pointer here
+                    auto psa =
+                        make_shared<PluginSummarisingAdapter>(plugin.get());
+                    psa->disownPlugin();
+                    psa->setSummarySegmentBoundaries(m_boundaries);
+                    m_allAdapters.insert(psa);
+                    plugin = psa;
                     i->second = plugin;
                 }
                 break;
@@ -233,8 +261,9 @@ bool FeatureExtractionManager::addFeatureExtractor
 
             TransformFactory *tf = TransformFactory::getInstance();
 
-            PluginBase *pb = tf->instantiatePluginFor(transform);
-            plugin = tf->downcastVampPlugin(pb);
+            shared_ptr<PluginBase> pb = tf->instantiatePluginFor(transform);
+            plugin = dynamic_pointer_cast<Vamp::Plugin>(pb);
+                
             if (!plugin) {
                 //!!! todo: handle non-Vamp plugins too, or make the main --list
                 // option print out only Vamp transforms
@@ -243,9 +272,10 @@ bool FeatureExtractionManager::addFeatureExtractor
                 if (pb) {
                     SVCERR << "NOTE: (A plugin was loaded, but apparently not a Vamp plugin)" << endl;
                 }
-                delete pb;
                 return false;
             }
+
+            m_allLoadedPlugins.insert(pb);
             
             // We will provide the plugin with arbitrary step and
             // block sizes (so that we can use the same read/write
@@ -261,21 +291,29 @@ bool FeatureExtractionManager::addFeatureExtractor
             size_t pluginStepSize = plugin->getPreferredStepSize();
             size_t pluginBlockSize = plugin->getPreferredBlockSize();
 
-            PluginInputDomainAdapter *pida = 0;
+            shared_ptr<PluginInputDomainAdapter> pida = nullptr;
 
             // adapt the plugin for buffering, channels, etc.
             if (plugin->getInputDomain() == Plugin::FrequencyDomain) {
 
-                pida = new PluginInputDomainAdapter(plugin);
-                pida->setProcessTimestampMethod(PluginInputDomainAdapter::ShiftData);
+                // See comment up top about safety of raw pointer here
+                pida = make_shared<PluginInputDomainAdapter>(plugin.get());
+                pida->disownPlugin();
+                pida->setProcessTimestampMethod
+                    (PluginInputDomainAdapter::ShiftData);
 
                 PluginInputDomainAdapter::WindowType wtype =
                     convertWindowType(transform.getWindowType());
                 pida->setWindowType(wtype);
+
+                m_allAdapters.insert(pida);
                 plugin = pida;
             }
 
-            PluginBufferingAdapter *pba = new PluginBufferingAdapter(plugin);
+            auto pba = make_shared<PluginBufferingAdapter>(plugin.get());
+            pba->disownPlugin();
+
+            m_allAdapters.insert(pba);
             plugin = pba;
 
             if (transform.getStepSize() != 0) {
@@ -290,19 +328,23 @@ bool FeatureExtractionManager::addFeatureExtractor
                 transform.setBlockSize(int(pluginBlockSize));
             }
 
-            plugin = new PluginChannelAdapter(plugin);
+            auto pca = make_shared<PluginChannelAdapter>(plugin.get());
+            pca->disownPlugin();
+
+            m_allAdapters.insert(pca);
+            plugin = pca;
 
             if (!m_summaries.empty() ||
                 transform.getSummaryType() != Transform::NoSummary) {
-                PluginSummarisingAdapter *adapter =
-                    new PluginSummarisingAdapter(plugin);
-                adapter->setSummarySegmentBoundaries(m_boundaries);
-                plugin = adapter;
+                auto psa = make_shared<PluginSummarisingAdapter>(plugin.get());
+                psa->disownPlugin();
+                psa->setSummarySegmentBoundaries(m_boundaries);
+                m_allAdapters.insert(psa);
+                plugin = psa;
             }
 
             if (!plugin->initialise(m_channels, m_blockSize, m_blockSize)) {
                 SVCERR << "ERROR: Plugin initialise (channels = " << m_channels << ", stepSize = " << m_blockSize << ", blockSize = " << m_blockSize << ") failed." << endl;    
-                delete plugin;
                 return false;
             }
 
@@ -341,7 +383,7 @@ bool FeatureExtractionManager::addFeatureExtractor
 
             if (transform.getStepSize() == 0 || transform.getBlockSize() == 0) {
 
-                PluginWrapper *pw = dynamic_cast<PluginWrapper *>(plugin);
+                auto pw = dynamic_pointer_cast<PluginWrapper>(plugin);
                 if (pw) {
                     PluginBufferingAdapter *pba =
                         pw->getWrapper<PluginBufferingAdapter>();
@@ -762,7 +804,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
     sv_frame_t latestEndFrame = frameCount;
     bool haveExtents = false;
 
-    foreach (Plugin *plugin, m_orderedPlugins) {
+    for (auto plugin: m_orderedPlugins) {
 
         PluginMap::iterator pi = m_plugins.find(plugin);
 
@@ -826,7 +868,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
     sv_frame_t startFrame = earliestStartFrame;
     sv_frame_t endFrame = latestEndFrame;
     
-    foreach (Plugin *plugin, m_orderedPlugins) {
+    for (auto plugin: m_orderedPlugins) {
 
         PluginMap::iterator pi = m_plugins.find(plugin);
 
@@ -898,7 +940,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 
         RealTime timestamp = RealTime::frame2RealTime(i, m_sampleRate);
         
-        foreach (Plugin *plugin, m_orderedPlugins) {
+        for (auto plugin: m_orderedPlugins) {
 
             PluginMap::iterator pi = m_plugins.find(plugin);
 
@@ -938,7 +980,7 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 
     lifemgr.destroy(); // deletes reader, data
         
-    foreach (Plugin *plugin, m_orderedPlugins) {
+    for (auto plugin: m_orderedPlugins) {
 
         Plugin::FeatureSet featureSet = plugin->getRemainingFeatures();
 
@@ -948,8 +990,8 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 
         if (!m_summaries.empty()) {
             // Summaries requested on the command line, for all transforms
-            PluginSummarisingAdapter *adapter =
-                dynamic_cast<PluginSummarisingAdapter *>(plugin);
+            auto adapter =
+                dynamic_pointer_cast<PluginSummarisingAdapter>(plugin);
             if (!adapter) {
                 SVCERR << "WARNING: Summaries requested, but plugin is not a summarising adapter" << endl;
             } else {
@@ -982,7 +1024,8 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
 }
 
 void
-FeatureExtractionManager::writeSummaries(QString audioSource, Plugin *plugin)
+FeatureExtractionManager::writeSummaries(QString audioSource,
+                                         shared_ptr<Plugin> plugin)
 {
     // caller should have ensured plugin is in m_plugins
     PluginMap::iterator pi = m_plugins.find(plugin);
@@ -1004,8 +1047,7 @@ FeatureExtractionManager::writeSummaries(QString audioSource, Plugin *plugin)
             continue;
         }
 
-        PluginSummarisingAdapter *adapter =
-            dynamic_cast<PluginSummarisingAdapter *>(plugin);
+        auto adapter = dynamic_pointer_cast<PluginSummarisingAdapter>(plugin);
         if (!adapter) {
             SVCERR << "FeatureExtractionManager::writeSummaries: INTERNAL ERROR: Summary requested for transform, but plugin is not a summarising adapter" << endl;
             continue;
@@ -1021,7 +1063,7 @@ FeatureExtractionManager::writeSummaries(QString audioSource, Plugin *plugin)
 }
 
 void FeatureExtractionManager::writeFeatures(QString audioSource,
-                                             Plugin *plugin,
+                                             shared_ptr<Plugin> plugin,
                                              const Plugin::FeatureSet &features,
                                              Transform::SummaryType summaryType)
 {
@@ -1093,7 +1135,7 @@ void FeatureExtractionManager::testOutputFiles(QString audioSource)
 
 void FeatureExtractionManager::finish()
 {
-    foreach (Plugin *plugin, m_orderedPlugins) {
+    for (auto plugin: m_orderedPlugins) {
 
         PluginMap::iterator pi = m_plugins.find(plugin);
 
