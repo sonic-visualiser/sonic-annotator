@@ -13,11 +13,11 @@ case "$(pwd)/$mypath" in
     ;;
 esac
 
-version=1.5pre
-nextversion=1.6
-
 testdir=$mypath/..
 r=$testdir/../sonic-annotator
+
+version=$(perl -p -e 's/^[^"]*"([^"]*)".*$/$1/' $testdir/../version.h | sed 's/-//g')
+nextversion=$version.1
 
 audiopath=$testdir/audio
 

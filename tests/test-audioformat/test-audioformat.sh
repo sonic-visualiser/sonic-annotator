@@ -8,7 +8,7 @@ tmpfile2=$mypath/tmp_2_$$
 
 trap "rm -f $tmpfile1 $tmpfile2" 0
 
-for extension in wav ogg mp3 ; do
+for extension in wav ogg mp3 opus ; do
 
     transform=$mypath/transforms/percussiononsets.n3 
     expected=$mypath/expected/percussiononsets-$extension.csv

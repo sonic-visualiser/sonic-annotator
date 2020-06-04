@@ -1,1 +1,1 @@
-#define RUNNER_VERSION "1.5"
+#define RUNNER_VERSION "1.6"
