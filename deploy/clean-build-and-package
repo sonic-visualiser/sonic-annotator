@@ -16,7 +16,20 @@ echo
 
 if [ -d /Applications ]; then
 
-    :
+    qmake="$HOME/code/qt-builds/qt-5.14.2-static-nogui/bin/qmake"
+
+    echo "Proceed to rebuild, package, and sign version $version using"
+    echo -n "qmake path \"$qmake\" [Yn] ? "
+    read yn
+    case "$yn" in "") ;; [Yy]) ;; *) exit 3;; esac
+    echo "Proceeding"
+
+    ./repoint install
+
+    rm -rf .qmake.stash
+    "$qmake" -r
+    make clean
+    make -j3
 
 else
 
