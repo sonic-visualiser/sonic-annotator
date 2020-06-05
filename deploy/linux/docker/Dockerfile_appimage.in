@@ -44,6 +44,17 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 RUN hg clone -r[[REVISION]] https://code.soundsoftware.ac.uk/hg/sonic-annotator
+RUN hg clone https://code.soundsoftware.ac.uk/hg/vamp-plugin-sdk
+RUN hg clone https://code.soundsoftware.ac.uk/hg/vamp-test-plugin
+
+WORKDIR /vamp-plugin-sdk
+RUN ./configure --disable-programs
+RUN make plugins
+
+WORKDIR /vamp-test-plugin
+RUN make -f Makefile.linux
+
+ENV VAMP_PATH /vamp-plugin-sdk/examples:/vamp-test-plugin
 
 RUN git config --global http.postBuffer 4M
 
