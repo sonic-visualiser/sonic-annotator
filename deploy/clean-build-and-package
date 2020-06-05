@@ -16,6 +16,7 @@ echo
 
 if [ -d /Applications ]; then
 
+    :
 
 else
 
