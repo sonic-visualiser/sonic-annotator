@@ -2,6 +2,7 @@
 Name=Sonic Annotator
 Comment=Batch feature extraction from audio files
 Exec=sonic-annotator
+Icon=sonic-visualiser
 Terminal=true
 NoDisplay=true
 Type=Application

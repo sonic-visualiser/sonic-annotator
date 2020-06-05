@@ -69,6 +69,9 @@ add_dependencies "$program"
 
 cp "$program.desktop" "$targetdir/"
 
+# We don't want an icon, but AppImage seems to insist
+cp "deploy/linux/sonic-visualiser.svg" "$targetdir/"
+
 cp "deploy/linux/AppRun" "$targetdir/"
 
 chmod +x "$targetdir/AppRun"
