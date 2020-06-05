@@ -34,6 +34,15 @@ if [ -d /Applications ]; then
     deploy/osx/sign.sh sonic-annotator
     deploy/osx/notarize.sh sonic-annotator
 
+    dir="sonic-annotator-$version-macos"
+    mkdir -p "$dir"
+    cp sonic-annotator "$dir/"
+    cp README.md CHANGELOG COPYING CITATION "$dir/"
+    tar cvzf "$dir.tar.gz" "$dir"
+    rm -rf "$dir"
+
+    mv "$dir.tar.gz" packages/
+
 else
 
     echo -n "Proceed to rebuild and package version $version [Yn] ? "
