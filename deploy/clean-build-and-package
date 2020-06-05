@@ -31,6 +31,8 @@ if [ -d /Applications ]; then
     make clean
     make -j3
 
+    deploy/osx/notarize.sh sonic-annotator
+
 else
 
     echo -n "Proceed to rebuild and package version $version [Yn] ? "
