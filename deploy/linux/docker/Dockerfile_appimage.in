@@ -24,6 +24,7 @@ RUN apt-get update && \
     libgl1-mesa-dev \
     raptor-utils \
     librubberband-dev \
+    yajl-tools \
     git \
     mercurial \
     curl wget \
