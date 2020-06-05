@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Sonic Annotator
+Comment=Batch feature extraction from audio files
+Exec=sonic-annotator
+Terminal=true
+NoDisplay=true
+Type=Application
+Categories=Audio;AudioVideo;

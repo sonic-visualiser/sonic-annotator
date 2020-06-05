@@ -67,6 +67,8 @@ add_dependencies() {
 
 add_dependencies "$program"
 
+cp "$program.desktop" "$targetdir/"
+
 cp "deploy/linux/AppRun" "$targetdir/"
 
 chmod +x "$targetdir/AppRun"
