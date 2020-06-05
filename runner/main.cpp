@@ -257,6 +257,16 @@ void printHelp(QString myname, QString w)
     cerr << "Playlist files in M3U format are also supported." << endl;
     cerr << endl;
 
+    if (extlist.contains("*.mp3")) {
+        QString warning = "(Note: It's wise to avoid using %1 as a source format, even in cases where lossy compression is not considered problematic: the handling of initial encoder delay can vary between decoders, and possibly even between builds of %2, so feature timings may not be consistent.)";
+        if (extlist.contains("*.m4a")) {
+            warning = warning.arg("mp3 or mp4 (aac, m4a)").arg(myname);
+        } else {
+            warning = warning.arg("mp3").arg(myname);
+        }
+        cerr << wrap(warning, 78, 0) << endl << endl;
+    }
+
     set<string> writers = FeatureWriterFactory::getWriterTags();
 
     QString writerText = "Supported writer types are: ";

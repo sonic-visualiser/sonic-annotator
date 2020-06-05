@@ -1,4 +1,27 @@
 
+Changes in Sonic Annotator 1.6 (5 June 2020) since the previous release 1.5:
+
+Front-end changes:
+
+ - Add support for reading the Opus audio codec on all platforms
+
+ - Add support for reading WMA and AAC formats on 64-bit Windows. (AAC
+   was already supported on macOS.)  Note that AAC support on Windows
+   is not "gapless", i.e. the decoder provides no way to identify and
+   remove the encoder gap at the start of the stream, so timings will
+   vary between Windows and Mac. For this reason, like mp3, AAC should
+   not be used as a file format of record
+
+ - Add warning to the help text about avoiding mp3 and AAC as file
+   format of record
+
+Build changes:
+
+ - General updates to dependency libraries and build system following
+   changes to the rest of the Sonic Visualiser family code since v1.5
+   appeared
+   
+
 Changes in Sonic Annotator 1.5 (25 May 2017) since the previous release 1.4:
 
 Front-end changes:
