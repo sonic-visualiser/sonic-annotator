@@ -1,0 +1,51 @@
+#!/bin/bash
+
+set -eu
+
+current=$(hg id | awk '{ print $1; }')
+
+case "$current" in
+    *+) echo "ERROR: Current working copy has been modified - not proceeding";exit 2;;
+    *);;
+esac
+
+version=`perl -p -e 's/^[^"]*"([^"]*)".*$/$1/' version.h`
+
+mkdir -p packages
+echo
+
+if [ -d /Applications ]; then
+
+
+else
+
+    echo -n "Proceed to rebuild and package version $version [Yn] ? "
+    read yn
+    case "$yn" in "") ;; [Yy]) ;; *) exit 3;; esac
+    echo "Proceeding"
+
+    ./deploy/linux/build-and-test-appimage.sh
+
+    squashedversion=$(echo "$version" | sed 's/_-//g')
+
+    dir="sonic-annotator-$version-linux64"
+
+    (
+        cd deploy/linux/docker/output
+        mkdir -p "$dir"
+        cp SonicAnnotator-"$current"-x86_64.AppImage "$dir/sonic-annotator"
+        chmod +x "$dir/sonic-annotator"
+        cp ../../../../README.md "$dir"
+        cp ../../../../CHANGELOG "$dir"
+        cp ../../../../COPYING "$dir"
+        cp ../../../../CITATION "$dir"
+        tar cvzf "$dir.tar.gz" "$dir"
+        rm -rf "$dir"
+    )
+
+    mv deploy/linux/docker/output/"$dir".tar.gz packages/
+
+fi
+
+echo "Done"
+
