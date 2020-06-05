@@ -32,7 +32,7 @@ rm -f bundle.zip
 ditto -c -k "$exe" bundle.zip
 
 xcrun altool --notarize-app \
-    -f "$bundle.zip" \
+    -f "bundle.zip" \
     --primary-bundle-id "$bundleid" \
     -u "$user" \
     -p @keychain:altool 2>&1 | tee "$uuidfile"
