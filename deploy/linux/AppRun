@@ -6,8 +6,6 @@ case "$mydir" in
     *) mydir="$PWD/$mydir";;
 esac
 
-echo "AppImage root is $mydir"
-
 PATH="$mydir/usr/bin:$mydir/bin:$PATH"
 export PATH
 
@@ -23,4 +21,4 @@ export XDG_DATA_DIRS
 GSETTINGS_SCHEMA_DIR="$mydir/usr/share/glib-2.0/schemas:$GSETTINGS_SCHEMA_DIR"
 export GSETTINGS_SCHEMA_DIR
 
-exec "$mydir/usr/bin/sonic-visualiser" "$@"
+exec "$mydir/usr/bin/sonic-annotator" "$@"
