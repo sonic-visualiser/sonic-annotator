@@ -73,4 +73,4 @@ RUN ./configure
 RUN make -j3
 
 RUN deploy/linux/deploy-appimage.sh
-RUN tar cvf output-appimage.tar *.AppImage && cp output-appimage.tar ..
+RUN tar cvf output-appimage.tar sonic-annotator *.AppImage && cp output-appimage.tar ..

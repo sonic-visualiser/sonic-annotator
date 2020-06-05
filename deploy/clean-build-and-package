@@ -33,9 +33,11 @@ else
 
     (
         cd deploy/linux/docker/output
-        mkdir -p "$dir"
-        cp SonicAnnotator-"$current"-x86_64.AppImage "$dir/sonic-annotator"
+        mkdir -p "$dir/static"
+        cp sonic-annotator "$dir/sonic-annotator"
+        cp SonicAnnotator-"$current"-x86_64.AppImage "$dir/static/sonic-annotator"
         chmod +x "$dir/sonic-annotator"
+        chmod +x "$dir/static/sonic-annotator"
         cp ../../../../README.md "$dir"
         cp ../../../../CHANGELOG "$dir"
         cp ../../../../COPYING "$dir"
