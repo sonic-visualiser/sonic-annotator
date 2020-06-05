@@ -29,7 +29,10 @@ statfile=.notarization-status
 rm -f "$uuidfile" "$statfile"
 
 rm -f bundle.zip
-ditto -c -k "$exe" bundle.zip
+rm -rf bundle
+mkdir bundle
+cp "$exe" bundle/
+ditto -c -k bundle bundle.zip
 
 xcrun altool --notarize-app \
     -f "bundle.zip" \

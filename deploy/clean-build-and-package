@@ -31,6 +31,7 @@ if [ -d /Applications ]; then
     make clean
     make -j3
 
+    deploy/osx/sign.sh sonic-annotator
     deploy/osx/notarize.sh sonic-annotator
 
 else

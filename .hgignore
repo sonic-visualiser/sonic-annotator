@@ -48,3 +48,5 @@ squashfs-root
 build_win64_debug
 *.AppImage
 *.AppDir
+bundle
+bundle.zip
