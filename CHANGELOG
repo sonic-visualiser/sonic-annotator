@@ -1,5 +1,5 @@
 
-Changes in Sonic Annotator 1.6 (5 June 2020) since the previous release 1.5:
+Changes in Sonic Annotator 1.6 (8 June 2020) since the previous release 1.5:
 
 Front-end changes:
 
@@ -20,7 +20,7 @@ Build changes:
  - General updates to dependency libraries and build system following
    changes to the rest of the Sonic Visualiser family code since v1.5
    appeared
-   
+
 
 Changes in Sonic Annotator 1.5 (25 May 2017) since the previous release 1.4:
 
