@@ -14,7 +14,7 @@ set VERSION=%VERSION:"=%
 
 @echo Proceeding
 
-call .\deploy\win64\build-both.bat
+call .\deploy\win\build-both.bat
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 set NAME=Open Source Developer, Christopher Cannam
