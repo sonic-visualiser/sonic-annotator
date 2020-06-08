@@ -50,3 +50,9 @@ build_win64_debug
 *.AppDir
 bundle
 bundle.zip
+*.vcxproj
+*.filters
+*.zip
+*.lib
+*.pdb
+*.sln

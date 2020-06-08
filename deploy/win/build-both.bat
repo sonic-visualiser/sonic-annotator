@@ -26,6 +26,7 @@ call .\deploy\win\build-64.bat
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 set PATH=%ORIGINALPATH%
+cd %STARTPWD%
 
 @echo Done
 
