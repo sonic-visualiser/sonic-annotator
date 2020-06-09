@@ -39,4 +39,7 @@ copy %QTDIR%\plugins\platforms\qwindows.dll .\release
 .\release\test-svcore-base
 .\release\test-svcore-system
 
+.\release\sonic-annotator -v
+
 set PATH=%ORIGINALPATH%
+cd %STARTPWD%

@@ -42,3 +42,4 @@ for (file, DATAQUAY_HEADERS) { HEADERS += $$sprintf("dataquay/%1", $$file) }
 
 for (file, SVCORE_SOURCES)   { SOURCES += $$sprintf("svcore/%1", $$file) }
 for (file, SVCORE_HEADERS)   { HEADERS += $$sprintf("svcore/%1", $$file) }
+

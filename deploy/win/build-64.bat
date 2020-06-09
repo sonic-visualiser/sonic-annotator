@@ -48,4 +48,7 @@ copy ..\sv-dependency-builds\win64-msvc\lib\libsndfile-1.dll .\release
 .\release\test-svcore-base
 .\release\test-svcore-system
 
+.\release\sonic-annotator -v
+
 set PATH=%ORIGINALPATH%
+cd %STARTPWD%

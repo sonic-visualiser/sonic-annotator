@@ -6,7 +6,8 @@ CONFIG += release
 
 PREFIX_PATH = /usr/local
 
-DEFINES += NDEBUG BUILD_RELEASE
+#DEFINES += NDEBUG BUILD_RELEASE
+DEFINES += BUILD_RELEASE
 DEFINES += NO_TIMING
 
 # Full set of defines expected for all platforms when we have the
@@ -74,8 +75,8 @@ win32-msvc* {
     INCLUDEPATH += $$PWD/sv-dependency-builds/win64-msvc/include $$PWD/sv-dependency-builds/win64-msvc/include/opus
 
     CONFIG(release) {
-        LIBS += -NODEFAULTLIB:LIBCMT -Lrelease \
-            -L$$PWD/sv-dependency-builds/win64-msvc/lib
+        SOURCES += deploy/win/static-redirects.cpp
+        LIBS += -Lrelease -L$$PWD/sv-dependency-builds/win64-msvc/lib
     }
 
     DEFINES += NOMINMAX _USE_MATH_DEFINES HAVE_MEDIAFOUNDATION AVOID_WINRT_DEPENDENCY

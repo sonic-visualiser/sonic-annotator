@@ -46,6 +46,7 @@ squashfs-root
 .notarization-uuid
 .notarization-status
 build_win64_debug
+build_win64_static
 *.AppImage
 *.AppDir
 bundle
