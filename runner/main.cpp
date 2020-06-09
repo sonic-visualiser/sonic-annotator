@@ -440,12 +440,15 @@ listTransforms()
     TransformList transforms =
         TransformFactory::getInstance()->getAllTransformDescriptions();
 
-    for (TransformList::const_iterator iter = transforms.begin();
-         iter != transforms.end(); ++iter) {
-        const TransformDescription &transform = *iter;
-        if (transform.type == TransformDescription::Analysis) {
-            cout << transform.identifier << endl;
+    set<QString> ids;
+    for (auto t: transforms) {
+        if (t.type == TransformDescription::Analysis) {
+            ids.insert(t.identifier);
         }
+    }
+    
+    for (auto id: ids) {
+        cout << id << endl;
     }
 }    
 
