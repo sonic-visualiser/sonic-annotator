@@ -57,3 +57,6 @@ bundle.zip
 *.lib
 *.pdb
 *.sln
+*.tar.gz
+*.app
+*_plugin_import.cpp
