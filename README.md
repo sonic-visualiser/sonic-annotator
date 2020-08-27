@@ -386,5 +386,5 @@ file.
 Automated build reports
 -----------------------
 
- * Linux and macOS CI build: [![Build Status](https://travis-ci.org/sonic-visualiser/sonic-annotator.svg?branch=master)](https://travis-ci.org/sonic-visualiser/sonic-annotator)
+ * Linux and macOS CI build: [![Build Status](https://travis-ci.org/sonic-visualiser/sonic-annotator.svg?branch=default)](https://travis-ci.org/sonic-visualiser/sonic-annotator)
  * Windows CI build: [![Build status](https://ci.appveyor.com/api/projects/status/26pygienkigw39p7?svg=true)](https://ci.appveyor.com/project/cannam/sonic-annotator)
