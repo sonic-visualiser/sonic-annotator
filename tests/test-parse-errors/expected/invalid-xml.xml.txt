@@ -1,1 +1,1 @@
-XML parser reported: tag mismatch
+XML parser reported: Opening and ending tag mismatch
