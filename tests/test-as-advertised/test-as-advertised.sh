@@ -47,7 +47,7 @@ for type in $types; do
 		fail "Fails to run with reader type \"$type\" and default options"
 	    ;;
     esac
-    newfiles=`ls $tmpdir | fgrep -v .wav`
+    newfiles=`ls $tmpdir | grep -F -v .wav`
     if [ "$type" = audiodb ]; then newfiles=`ls $adbdir`; fi
 
     [ -n "$newfiles" ] || \

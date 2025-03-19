@@ -20,7 +20,9 @@ for transform in "$mypath"/inputs/* ; do
     fi
 
     cat "$expected" | while read line; do
-	if ! fgrep -q "$line" "$tmpfile" ; then
+	if ! grep -F -q "$line" "$tmpfile" ; then
+            echo "Unexpected output: "
+            cat "$tmpfile"
 	    fail "Expected output text \"$line\" not found in diagnostic output for transform $base"
 	fi
     done
