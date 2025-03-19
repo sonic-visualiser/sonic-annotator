@@ -2,31 +2,35 @@
     "config": {
         "extdir": "."
     },
-    "services": {
-	"soundsoftware": {
-	    "vcs": ["hg", "git"],
-	    "anonymous": "https://code.soundsoftware.ac.uk/{vcs}/{repository}",
-	    "authenticated": "https://{account}@code.soundsoftware.ac.uk/{vcs}/{repository}"
-	}
-    },
     "libraries": {
         "vamp-plugin-sdk": {
-            "vcs": "hg",
-            "service": "soundsoftware"
+            "vcs": "git",
+            "service": "github",
+            "owner": "vamp-plugins"
         },
         "svcore": {
-            "vcs": "hg",
-	    "service": "soundsoftware"
+            "vcs": "git",
+            "service": "github",
+            "owner": "sonic-visualiser",
+            "branch": "default"
         },
         "checker": {
-            "vcs": "hg",
-	    "service": "soundsoftware",
-	    "repository": "vamp-plugin-load-checker"
+            "vcs": "git",
+            "service": "github",
+            "owner": "sonic-visualiser",
+            "repository": "vamp-plugin-load-checker",
+            "branch": "default"
+        },
+        "sv-dependency-builds": {
+            "vcs": "git",
+            "service": "github",
+            "owner": "sonic-visualiser",
+            "branch": "default"
         },
         "piper-vamp-cpp": {
             "vcs": "git",
-	    "service": "github",
-	    "owner": "piper-audio"
+            "service": "github",
+            "owner": "piper-audio"
         },
         "dataquay": {
             "vcs": "hg",
@@ -48,20 +52,15 @@
             "service": "sourcehut",
             "owner": "breakfastquay"
         },
-        "bqthingfactory": {
-            "vcs": "hg",
-            "service": "sourcehut",
-            "owner": "breakfastquay"
-        },
         "bqaudiostream": {
             "vcs": "hg",
             "service": "sourcehut",
             "owner": "breakfastquay"
         },
-        "sv-dependency-builds": {
+        "bqthingfactory": {
             "vcs": "hg",
-	    "service": "soundsoftware"
+            "service": "sourcehut",
+            "owner": "breakfastquay"
         }
     }
 }
-

@@ -1,1 +1,1 @@
-#define RUNNER_VERSION "@PACKAGE_VERSION@"
+#define RUNNER_VERSION "@version@"

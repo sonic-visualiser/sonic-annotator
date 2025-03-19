@@ -28,11 +28,10 @@
 
 #include "transform/FileFeatureWriter.h"
 
-using std::string;
-using std::map;
-
 class QTextStream;
 class QFile;
+
+namespace sv {
 
 class LabFeatureWriter : public FileFeatureWriter
 {
@@ -40,10 +39,10 @@ public:
     LabFeatureWriter();
     virtual ~LabFeatureWriter();
 
-    virtual string getDescription() const;
+    virtual std::string getDescription() const;
 
     virtual ParameterList getSupportedParameters() const;
-    virtual void setParameters(map<string, string> &params);
+    virtual void setParameters(std::map<std::string, std::string> &params);
 
     virtual void write(QString trackid,
                        const Transform &transform,
@@ -58,8 +57,8 @@ public:
 private:
     bool m_forceEnd;
 
-    typedef pair<QString, Transform> DataId; // track id, transform
-    typedef map<DataId, Vamp::Plugin::Feature> PendingFeatures;
+    typedef std::pair<QString, Transform> DataId; // track id, transform
+    typedef std::map<DataId, Vamp::Plugin::Feature> PendingFeatures;
     PendingFeatures m_pending;
 
     void writeFeature(QTextStream &,
@@ -68,5 +67,7 @@ private:
 
     int m_digits;
 };
+
+}
 
 #endif

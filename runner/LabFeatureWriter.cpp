@@ -21,12 +21,13 @@
 
 #include <iostream>
 
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QTextStream>
-#include <QTextCodec>
 
 using namespace std;
 using namespace Vamp;
+
+namespace sv {
 
 LabFeatureWriter::LabFeatureWriter() :
     FileFeatureWriter(SupportOneFilePerTrackTransform |
@@ -101,7 +102,7 @@ LabFeatureWriter::write(QString trackId,
     TransformId transformId = transform.getIdentifier();
 
     QTextStream *sptr = getOutputStream
-        (trackId, transformId, QTextCodec::codecForName("UTF-8"));
+        (trackId, transformId, QStringConverter::Utf8);
     if (!sptr) {
         throw FailedToOpenOutputStream(trackId, transformId);
     }
@@ -138,8 +139,7 @@ LabFeatureWriter::finish()
         DataId tt = i->first;
         Plugin::Feature f = i->second;
         QTextStream *sptr = getOutputStream
-            (tt.first, tt.second.getIdentifier(),
-             QTextCodec::codecForName("UTF-8"));
+            (tt.first, tt.second.getIdentifier(), QStringConverter::Utf8);
         if (!sptr) {
             throw FailedToOpenOutputStream(tt.first, tt.second.getIdentifier());
         }
@@ -162,7 +162,7 @@ LabFeatureWriter::writeFeature(QTextStream &stream,
     QString sep = "\t";
 
     QString timestamp = f.timestamp.toString().c_str();
-    timestamp.replace(QRegExp("^ +"), "");
+    timestamp.replace(QRegularExpression("^ +"), "");
     stream << timestamp;
 
     Vamp::RealTime endTime;
@@ -178,7 +178,7 @@ LabFeatureWriter::writeFeature(QTextStream &stream,
 
     if (haveEndTime) {
         QString e = endTime.toString().c_str();
-        e.replace(QRegExp("^ +"), "");
+        e.replace(QRegularExpression("^ +"), "");
         stream << sep << e;
     }
     
@@ -193,4 +193,4 @@ LabFeatureWriter::writeFeature(QTextStream &stream,
     stream << "\n";
 }
 
-
+}

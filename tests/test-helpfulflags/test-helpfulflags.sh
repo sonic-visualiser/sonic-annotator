@@ -2,6 +2,12 @@
 
 . ../include.sh
 
+[ -f $r ] || \
+    fail "Executable not found at $r"
+
+[ -x $r ] || \
+    fail "Executable not executable at $r"
+
 $r >/dev/null 2>&1 && \
     fail "Return code 0 when run without args (should be a failure code)"
 

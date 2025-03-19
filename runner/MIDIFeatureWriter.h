@@ -21,6 +21,8 @@
 #include "base/NoteData.h"
 #include "base/NoteExportable.h"
 
+namespace sv {
+
 class MIDIFileWriter;
 
 class MIDIFeatureWriter : public FileFeatureWriter
@@ -29,10 +31,10 @@ public:
     MIDIFeatureWriter();
     virtual ~MIDIFeatureWriter();
 
-    string getDescription() const;
+    std::string getDescription() const;
 
     virtual ParameterList getSupportedParameters() const;
-    virtual void setParameters(map<string, string> &params);
+    virtual void setParameters(std::map<std::string, std::string> &params);
 
     virtual void setTrackMetadata(QString trackid, TrackMetadata metadata);
 
@@ -65,21 +67,23 @@ private:
 	NoteList m_notes;
     };
 
-    typedef map<QString, NoteList> NoteMap; // output filename -> notes
+    typedef std::map<QString, NoteList> NoteMap; // output filename -> notes
     NoteMap m_notes;
     
-    typedef map<QString, set<Transform> > FileTransformMap;
+    typedef std::map<QString, std::set<Transform> > FileTransformMap;
     FileTransformMap m_fileTransforms;
 
-    typedef map<QString, sv_samplerate_t> SampleRateMap; // NoteData uses sample timing
+    typedef std::map<QString, sv_samplerate_t> SampleRateMap; // NoteData uses sample timing
     SampleRateMap m_rates;
 
-    typedef map<Transform, int> ChannelMap;
+    typedef std::map<Transform, int> ChannelMap;
     ChannelMap m_channels;
     
-    typedef map<QString, int> NextChannelMap;
+    typedef std::map<QString, int> NextChannelMap;
     NextChannelMap m_nextChannels;
 };
+
+}
 
 #endif
 

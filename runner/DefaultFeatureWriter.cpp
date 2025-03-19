@@ -18,6 +18,10 @@
 
 #include "DefaultFeatureWriter.h"
 
+using namespace std;
+
+namespace sv {
+
 string
 DefaultFeatureWriter::getDescription() const
 {
@@ -77,4 +81,6 @@ void DefaultFeatureWriter::write(QString,
             std::cout << "</summary>" << std::endl;
         }
     }
+}
+
 }

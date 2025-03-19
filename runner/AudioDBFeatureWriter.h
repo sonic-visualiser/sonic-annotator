@@ -13,16 +13,15 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _AUDIO_DB_FEATURE_WRITER_H_
-#define _AUDIO_DB_FEATURE_WRITER_H_
+#ifndef AUDIO_DB_FEATURE_WRITER_H
+#define AUDIO_DB_FEATURE_WRITER_H
 
 #include <string>
 #include <map>
 
-using std::string;
-using std::map;
-
 #include "transform/FeatureWriter.h"
+
+namespace sv {
 
 class AudioDBFeatureWriter : public FeatureWriter
 {
@@ -30,13 +29,13 @@ public:
     AudioDBFeatureWriter();
     virtual ~AudioDBFeatureWriter();
 
-    virtual string getDescription() const;
+    virtual std::string getDescription() const;
     
     virtual ParameterList getSupportedParameters() const;
-    virtual void setParameters(map<string, string> &params);
+    virtual void setParameters(std::map<std::string, std::string> &params);
 
-    virtual void setCatalogueId(const string &);
-    virtual void setBaseDirectory(const string &);
+    virtual void setCatalogueId(const std::string &);
+    virtual void setBaseDirectory(const std::string &);
 
     virtual void write(QString trackid,
                        const Transform &transform,
@@ -49,17 +48,19 @@ public:
     virtual QString getWriterTag() const { return "audiodb"; }
 
 private:
-    string catalogueId;
-    string baseDir;
+    std::string catalogueId;
+    std::string baseDir;
 
-    static string catalogueIdParam;
-    static string baseDirParam;
+    static std::string catalogueIdParam;
+    static std::string baseDirParam;
     
     struct TrackStream;
-    map<string, TrackStream> dbfiles;
+    std::map<std::string, TrackStream> dbfiles;
     
-    bool openDBFile(QString trackid, const string& identifier);
-    bool replaceDBFile(QString trackid, const string& identifier);
+    bool openDBFile(QString trackid, const std::string& identifier);
+    bool replaceDBFile(QString trackid, const std::string& identifier);
 };
+
+}
 
 #endif

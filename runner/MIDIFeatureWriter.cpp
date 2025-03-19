@@ -15,15 +15,17 @@
 
 #include "MIDIFeatureWriter.h"
 
-using namespace std;
-using Vamp::Plugin;
-using Vamp::PluginBase;
-
 #include "base/Exceptions.h"
 #include "base/Debug.h"
 #include "data/fileio/MIDIFileWriter.h"
 
+using namespace std;
+using Vamp::Plugin;
+using Vamp::PluginBase;
+
 //#define DEBUG_MIDI_FEATURE_WRITER 1
+
+namespace sv {
 
 MIDIFeatureWriter::MIDIFeatureWriter() :
     FileFeatureWriter(SupportOneFilePerTrackTransform |
@@ -178,5 +180,7 @@ MIDIFeatureWriter::finish()
     m_notes.clear();
 
     FileFeatureWriter::finish();
+}
+
 }
 

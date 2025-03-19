@@ -15,18 +15,20 @@
 
 #include "JAMSFeatureWriter.h"
 
-using namespace std;
-using Vamp::Plugin;
-using Vamp::PluginBase;
-
 #include "base/Exceptions.h"
 #include "base/Debug.h"
 #include "rdf/PluginRDFIndexer.h"
 
 #include <QFileInfo>
-#include <QTextCodec>
+#include <QRegularExpression>
 
 #include "version.h"
+
+using namespace std;
+using Vamp::Plugin;
+using Vamp::PluginBase;
+
+namespace sv {
 
 JAMSFeatureWriter::JAMSFeatureWriter() :
     FileFeatureWriter(SupportOneFilePerTrackTransform |
@@ -108,7 +110,7 @@ JAMSFeatureWriter::write(QString trackId,
     QString transformId = transform.getIdentifier();
 
     QTextStream *sptr = getOutputStream
-        (trackId, transformId, QTextCodec::codecForName("UTF-8"));
+        (trackId, transformId, QStringConverter::Utf8);
     if (!sptr) {
         throw FailedToOpenOutputStream(trackId, transformId);
     }
@@ -135,12 +137,12 @@ JAMSFeatureWriter::write(QString trackId,
         Plugin::Feature f(features[i]);
 
         QString timestr = f.timestamp.toString().c_str();
-        timestr.replace(QRegExp("^ +"), "");
+        timestr.replace(QRegularExpression("^ +"), "");
 
         QString durstr = "0.0";
         if (f.hasDuration) {
             durstr = f.duration.toString().c_str();
-            durstr.replace(QRegExp("^ +"), "");
+            durstr.replace(QRegularExpression("^ +"), "");
         }
         
         d += QString("\"time\": %1, \"duration\": %2, \"confidence\": 1.0")
@@ -243,7 +245,7 @@ JAMSFeatureWriter::finish()
             if (m_trackMetadata.find(trackId) != m_trackMetadata.end()) {
 
                 QString durstr = m_trackMetadata[trackId].duration.toString().c_str();
-                durstr.replace(QRegExp("^ +"), "");
+                durstr.replace(QRegularExpression("^ +"), "");
                 stream << QString(",\n  \"duration\": %1").arg(durstr);
 
                 if (m_trackMetadata[trackId].maker != "") {
@@ -504,3 +506,4 @@ JAMSFeatureWriter::writeTransformToObjectContents(const Transform &t)
     return json;
 }
 
+}

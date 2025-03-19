@@ -13,13 +13,15 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _MULTIPLEXED_READER_H_
-#define _MULTIPLEXED_READER_H_
+#ifndef MULTIPLEXED_READER_H
+#define MULTIPLEXED_READER_H
 
 #include "data/fileio/AudioFileReader.h"
 
 #include <QString>
 #include <QList>
+
+namespace sv {
 
 class MultiplexedReader : public AudioFileReader
 {
@@ -51,5 +53,7 @@ protected:
     bool m_quicklySeekable;
     QList<AudioFileReader *> m_readers;
 };
+
+}
 
 #endif

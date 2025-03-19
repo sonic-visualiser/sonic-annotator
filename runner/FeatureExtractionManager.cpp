@@ -26,6 +26,19 @@
 #include "base/Debug.h"
 #include "base/Exceptions.h"
 
+#include "data/fileio/FileSource.h"
+#include "data/fileio/AudioFileReader.h"
+#include "data/fileio/AudioFileReaderFactory.h"
+#include "base/TempDirectory.h"
+#include "base/ProgressPrinter.h"
+#include "transform/TransformFactory.h"
+#include "rdf/RDFTransformFactory.h"
+#include "transform/FeatureWriter.h"
+
+#include <QTextStream>
+#include <QFile>
+#include <QFileInfo>
+
 #include <iostream>
 
 using namespace std;
@@ -39,18 +52,7 @@ using Vamp::HostExt::PluginInputDomainAdapter;
 using Vamp::HostExt::PluginSummarisingAdapter;
 using Vamp::HostExt::PluginWrapper;
 
-#include "data/fileio/FileSource.h"
-#include "data/fileio/AudioFileReader.h"
-#include "data/fileio/AudioFileReaderFactory.h"
-#include "base/TempDirectory.h"
-#include "base/ProgressPrinter.h"
-#include "transform/TransformFactory.h"
-#include "rdf/RDFTransformFactory.h"
-#include "transform/FeatureWriter.h"
-
-#include <QTextStream>
-#include <QFile>
-#include <QFileInfo>
+namespace sv {
 
 FeatureExtractionManager::FeatureExtractionManager(bool verbose) :
     m_verbose(verbose),
@@ -1150,4 +1152,6 @@ void FeatureExtractionManager::finish()
             }
         }
     }
+}
+
 }

@@ -14,23 +14,23 @@
 */
 
 
-#ifndef _FEATURE_WRITER_FACTORY_H_
-#define _FEATURE_WRITER_FACTORY_H_
+#ifndef FEATURE_WRITER_FACTORY_H
+#define FEATURE_WRITER_FACTORY_H
 
 #include <set>
 #include <string>
 
-using std::set;
-using std::string;
+namespace sv {
 
 class FeatureWriter;
 
 class FeatureWriterFactory
 {
 public:
-    static set<string> getWriterTags();
-    static FeatureWriter *createWriter(string tag);
+    static std::set<std::string> getWriterTags();
+    static FeatureWriter *createWriter(std::string tag);
 };
 
+}
 
 #endif

@@ -21,6 +21,8 @@
 
 #include "rdf/PluginRDFDescription.h"
 
+namespace sv {
+
 class JAMSFileWriter;
 
 class JAMSFeatureWriter : public FileFeatureWriter
@@ -29,10 +31,10 @@ public:
     JAMSFeatureWriter();
     virtual ~JAMSFeatureWriter();
 
-    string getDescription() const;
+    std::string getDescription() const;
 
     virtual ParameterList getSupportedParameters() const;
-    virtual void setParameters(map<string, string> &params);
+    virtual void setParameters(std::map<std::string, std::string> &params);
 
     virtual void setTrackMetadata(QString trackid, TrackMetadata metadata);
 
@@ -61,31 +63,31 @@ private:
 	PitchTask,
     };
 
-    typedef map<QString, PluginRDFDescription> RDFDescriptionMap; // by plugin id
+    typedef std::map<QString, PluginRDFDescription> RDFDescriptionMap; // by plugin id
     RDFDescriptionMap m_rdfDescriptions;
 
     typedef QString TrackId;
-    typedef pair<TrackId, Transform> DataId;
+    typedef std::pair<TrackId, Transform> DataId;
 
-    typedef map<TrackId, TrackMetadata> TrackMetadataMap;
+    typedef std::map<TrackId, TrackMetadata> TrackMetadataMap;
     TrackMetadataMap m_trackMetadata;
 
-    typedef set<TrackId> TrackIds;
-    typedef map<QTextStream *, TrackIds> StreamTrackMap;
+    typedef std::set<TrackId> TrackIds;
+    typedef std::map<QTextStream *, TrackIds> StreamTrackMap;
     StreamTrackMap m_streamTracks;
 
-    typedef set<Task> Tasks;
-    typedef map<QTextStream *, Tasks> StreamTaskMap;
+    typedef std::set<Task> Tasks;
+    typedef std::map<QTextStream *, Tasks> StreamTaskMap;
     StreamTaskMap m_streamTasks;
 
-    typedef set<DataId> DataIds;
-    typedef map<QTextStream *, DataIds> StreamDataMap;
+    typedef std::set<DataId> DataIds;
+    typedef std::map<QTextStream *, DataIds> StreamDataMap;
     StreamDataMap m_streamData;
 
-    typedef map<DataId, QString> DataMap;
+    typedef std::map<DataId, QString> DataMap;
     DataMap m_data;
 
-    typedef map<TransformId, Task> TaskMap;
+    typedef std::map<TransformId, Task> TaskMap;
     TaskMap m_tasks;
 
     void loadRDFDescription(const Transform &);
@@ -102,6 +104,8 @@ private:
     int m_m;
     int m_digits;
 };
+
+}
 
 #endif
 

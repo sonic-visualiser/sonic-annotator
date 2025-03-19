@@ -24,12 +24,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QSet>
-
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::vector;
-using std::string;
+#include <QRegularExpression>
 
 #include "../version.h"
 
@@ -111,6 +106,9 @@ using std::string;
 //   - supply file names or URIs on command line
 //   - use all files in a given directory or tree
 
+using namespace std;
+using namespace sv;
+
 static QString
 wrap(QString s, int len, int pfx = 0)
 {
@@ -145,9 +143,9 @@ static QString wrapCol(QString s) {
 static bool
 isVersionNewerThan(QString a, QString b) // from VersionTester in svapp
 {
-    QRegExp re("[._-]");
-    QStringList alist = a.split(re, QString::SkipEmptyParts);
-    QStringList blist = b.split(re, QString::SkipEmptyParts);
+    QRegularExpression re("[._-]");
+    QStringList alist = a.split(re, Qt::SkipEmptyParts);
+    QStringList blist = b.split(re, Qt::SkipEmptyParts);
     int ae = alist.size();
     int be = blist.size();
     int e = std::max(ae, be);
@@ -234,7 +232,7 @@ void printHelp(QString myname, QString w)
     printUsage(myname);
 
     QString extensions = AudioFileReaderFactory::getKnownExtensions();
-    QStringList extlist = extensions.split(" ", QString::SkipEmptyParts);
+    QStringList extlist = extensions.split(" ", Qt::SkipEmptyParts);
     if (!extlist.empty()) {
         cerr << "The following audio file extensions are recognised:" << endl;
         cerr << "  ";
@@ -438,7 +436,7 @@ void
 listTransforms()
 {
     TransformList transforms =
-        TransformFactory::getInstance()->getAllTransformDescriptions();
+        TransformFactory::getInstance()->getInstalledTransformDescriptions();
 
     set<QString> ids;
     for (auto t: transforms) {
@@ -496,7 +494,7 @@ findSourcesRecursive(QString dirname, QStringList &addTo, int &found)
          << " [" << found << " audio file(s)]";
 
     QString extensions = AudioFileReaderFactory::getKnownExtensions();
-    QStringList extlist = extensions.split(" ", QString::SkipEmptyParts);
+    QStringList extlist = extensions.split(" ", Qt::SkipEmptyParts);
 
     QStringList files = dir.entryList
         (extlist, QDir::Files | QDir::Readable);
@@ -576,10 +574,10 @@ readSegmentBoundaries(QString url,
         QString line = in.readLine();
         if (line.startsWith("#")) continue;
 
-        QStringList bits = line.split(",", QString::SkipEmptyParts);
+        QStringList bits = line.split(",", Qt::SkipEmptyParts);
         QString importantBit;
         if (!bits.empty()) {
-            bits = bits[0].split(" ", QString::SkipEmptyParts);
+            bits = bits[0].split(" ", Qt::SkipEmptyParts);
         }
         if (!bits.empty()) {
             importantBit = bits[0];
@@ -861,7 +859,7 @@ int main(int argc, char **argv)
             exit(2);
         }
         QString extensions = AudioFileReaderFactory::getKnownExtensions();
-        QStringList extlist = extensions.split(" ", QString::SkipEmptyParts);
+        QStringList extlist = extensions.split(" ", Qt::SkipEmptyParts);
         bool first = true;
         foreach (QString s, extlist) {
             if (!first) cout << " ";

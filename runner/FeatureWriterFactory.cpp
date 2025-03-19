@@ -26,6 +26,10 @@
 #include "JAMSFeatureWriter.h"
 #include "LabFeatureWriter.h"
 
+using namespace std;
+
+namespace sv {
+
 set<string>
 FeatureWriterFactory::getWriterTags()
 {
@@ -60,4 +64,6 @@ FeatureWriterFactory::createWriter(string tag)
     }
 
     return 0;
+}
+
 }

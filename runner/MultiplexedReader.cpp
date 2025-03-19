@@ -15,6 +15,8 @@
 
 #include "MultiplexedReader.h"
 
+namespace sv {
+
 MultiplexedReader::MultiplexedReader(QList<AudioFileReader *> readers) : 
     m_readers(readers)
 {
@@ -110,5 +112,5 @@ MultiplexedReader::isUpdating() const
     return false;
 }
 
-
+}
     

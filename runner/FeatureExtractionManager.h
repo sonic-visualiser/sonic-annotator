@@ -13,8 +13,8 @@
     COPYING included with this distribution for more information.
 */
 
-#ifndef _FEATURE_EXTRACTION_MANAGER_H_
-#define _FEATURE_EXTRACTION_MANAGER_H_
+#ifndef FEATURE_EXTRACTION_MANAGER_H
+#define FEATURE_EXTRACTION_MANAGER_H
 
 #include <vector>
 #include <set>
@@ -27,12 +27,7 @@
 #include <vamp-hostsdk/PluginSummarisingAdapter.h>
 #include <transform/Transform.h>
 
-using std::vector;
-using std::set;
-using std::string;
-using std::pair;
-using std::map;
-using std::shared_ptr;
+namespace sv {
 
 class FeatureWriter;
 class AudioFileReader;
@@ -47,19 +42,19 @@ public:
     void setDefaultSampleRate(sv_samplerate_t sampleRate);
     void setNormalise(bool normalise);
 
-    bool setSummaryTypes(const set<string> &summaryTypes,
+    bool setSummaryTypes(const std::set<std::string> &summaryTypes,
                          const Vamp::HostExt::PluginSummarisingAdapter::SegmentBoundaries &boundaries);
 
     void setSummariesOnly(bool summariesOnly);
 
     bool addFeatureExtractor(Transform transform,
-                             const vector<FeatureWriter*> &writers);
+                             const std::vector<FeatureWriter*> &writers);
 
     bool addFeatureExtractorFromFile(QString transformXmlFile,
-                                     const vector<FeatureWriter*> &writers);
+                                     const std::vector<FeatureWriter*> &writers);
 
     bool addDefaultFeatureExtractor(TransformId transformId,
-                                    const vector<FeatureWriter*> &writers);
+                                    const std::vector<FeatureWriter*> &writers);
 
     // Make a note of an audio or playlist file which will be passed
     // to extractFeatures later.  Amongst other things, this may
@@ -85,16 +80,16 @@ private:
     // we need to separately retain the originally loaded shared_ptrs
     // so that they don't get auto-deleted. Same goes for any wrappers
     // that may then be re-wrapped. That's what these are for.
-    set<shared_ptr<Vamp::PluginBase>> m_allLoadedPlugins;
-    set<shared_ptr<Vamp::PluginBase>> m_allAdapters;
+    std::set<std::shared_ptr<Vamp::PluginBase>> m_allLoadedPlugins;
+    std::set<std::shared_ptr<Vamp::PluginBase>> m_allAdapters;
     
     // A plugin may have many outputs, so we can have more than one
     // transform requested for a single plugin.  The things we want to
     // run in our process loop are plugins rather than their outputs,
     // so we maintain a map from the plugins to the transforms desired
     // of them and then iterate through this map
-    typedef map<Transform, vector<FeatureWriter *> > TransformWriterMap;
-    typedef map<shared_ptr<Vamp::Plugin>, TransformWriterMap> PluginMap;
+    typedef std::map<Transform, std::vector<FeatureWriter *> > TransformWriterMap;
+    typedef std::map<std::shared_ptr<Vamp::Plugin>, TransformWriterMap> PluginMap;
     PluginMap m_plugins;
 
     // When we run plugins, we want to run them in a known order so as
@@ -105,26 +100,26 @@ private:
     // that the TransformWriterMap is consistently ordered (because
     // the key is a Transform which has a proper ordering) so using
     // this gives us a consistent order across the whole PluginMap
-    vector<shared_ptr<Vamp::Plugin>> m_orderedPlugins;
+    std::vector<std::shared_ptr<Vamp::Plugin>> m_orderedPlugins;
 
     // And a map back from transforms to their plugins.  Note that
     // this is keyed by whole transform structure, not transform ID --
     // two differently configured transforms with the same ID must use
     // different plugin instances.
-    typedef map<Transform, shared_ptr<Vamp::Plugin>> TransformPluginMap;
+    typedef std::map<Transform, std::shared_ptr<Vamp::Plugin>> TransformPluginMap;
     TransformPluginMap m_transformPluginMap;
 
     // Cache the plugin output descriptors, mapping from plugin to a
     // map from output ID to output descriptor.
-    typedef map<string, Vamp::Plugin::OutputDescriptor> OutputMap;
-    typedef map<shared_ptr<Vamp::Plugin>, OutputMap> PluginOutputMap;
+    typedef std::map<std::string, Vamp::Plugin::OutputDescriptor> OutputMap;
+    typedef std::map<std::shared_ptr<Vamp::Plugin>, OutputMap> PluginOutputMap;
     PluginOutputMap m_pluginOutputs;
 
     // Map from plugin output identifier to plugin output index
-    typedef map<string, int> OutputIndexMap;
+    typedef std::map<std::string, int> OutputIndexMap;
     OutputIndexMap m_pluginOutputIndices;
 
-    typedef set<std::string> SummaryNameSet;
+    typedef std::set<std::string> SummaryNameSet;
     SummaryNameSet m_summaries; // requested on command line for all transforms
     bool m_summariesOnly; // command line flag
     Vamp::HostExt::PluginSummarisingAdapter::SegmentBoundaries m_boundaries;
@@ -153,5 +148,7 @@ private:
 
     QMap<QString, AudioFileReader *> m_readyReaders;
 };
+
+}
 
 #endif

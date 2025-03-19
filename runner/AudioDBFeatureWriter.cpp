@@ -22,6 +22,8 @@
 using namespace std;
 using namespace Vamp;
 
+namespace sv {
+
 string
 AudioDBFeatureWriter::catalogueIdParam = "catid";
 
@@ -217,4 +219,4 @@ bool AudioDBFeatureWriter::replaceDBFile(QString trackid,
     return true;
 }
     
-    
+}
