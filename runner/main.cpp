@@ -190,7 +190,7 @@ void printUsage(QString myname)
     cerr << "Sonic Annotator v" << RUNNER_VERSION << endl;
     cerr << "A utility for batch feature extraction from audio files." << endl;
     cerr << "Mark Levy, Chris Sutton, and Chris Cannam, Queen Mary, University of London." << endl;
-    cerr << "Copyright 2007-2020 Queen Mary, University of London." << endl;
+    cerr << "Copyright 2007-2025 Queen Mary, University of London." << endl;
     cerr << endl;
     cerr << "This program is free software.  You may redistribute copies of it under the" << endl;
     cerr << "terms of the GNU General Public License <http://www.gnu.org/licenses/gpl.html>." << endl;
@@ -198,19 +198,20 @@ void printUsage(QString myname)
     cerr << endl;
     cerr << "Usage: " << endl;
     cerr << "  " << myname
-         << " [-mrnf] -t transform.ttl [..] -w <writer> [..] <audio> [..]" << endl;
+         << " [-mrnfq] -d <id> [..] -w <writer> [..] <audio> [...]" << endl;
     cerr << "  " << myname
-         << " [-mrnf] -T translist.txt [..] -w <writer> [..] <audio> [..]" << endl;
+         << " [-mrnfq] -t transform.ttl [..] -w <writer> [..] <audio> [..]" << endl;
     cerr << "  " << myname
-         << " [-mrnf] -d <id> [..] -w <writer> [..] <audio> [...]" << endl;
+         << " [-mrnfq] -T translist.txt [..] -w <writer> [..] <audio> [..]" << endl;
     cerr << "  " << myname
          << " -s <transform>" << endl;
     cerr << "  " << myname
-         << " [-lhv]" << endl;
+         << " [-lvh]" << endl;
     cerr << endl;
     cerr << "Where <audio> is an audio file or URL to use as input: either a local file" << endl;
     cerr << "path, local \"file://\" URL, or remote \"http://\" or \"ftp://\" URL;" << endl;
-    cerr << "and <id> is a transform id of the form vamp:libname:plugin:output." << endl;
+    cerr << "<id> is a transform id of the form \"vamp:libname:plugin:output\"; and" << endl;
+    cerr << "<writer> is one of the supported output writer types, such as \"csv\".";
     cerr << endl;
 }
 
