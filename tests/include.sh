@@ -16,7 +16,7 @@ esac
 testdir=$mypath/..
 r=$testdir/../build/sonic-annotator
 
-version=$(perl -p -e 's/^[^"]*"([^"]*)".*$/$1/' $testdir/../version.h | sed 's/-//g')
+version=$(perl -p -e 's/^[^"]*"([^"]*)".*$/$1/' $testdir/../build/version.h | sed 's/-//g')
 nextversion=$version.1
 
 audiopath=$testdir/audio
