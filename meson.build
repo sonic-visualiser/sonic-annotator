@@ -92,8 +92,6 @@ with_unwind = false
 
 if system == 'linux'
 
-  rc = []
-  
   bzip2_dep = dependency('bzip2', required: false)
 
   if not bzip2_dep.found()
@@ -156,8 +154,6 @@ elif system == 'darwin'
     svdeps_libdir = svdeps_dir / 'lib'
   endif
   
-  rc = []
-
   general_defines += [
     '-mmacosx-version-min=10.15'
   ]
@@ -254,7 +250,6 @@ elif system == 'windows'
   endif # architecture
 
   windows = import('windows')
-  rc = windows.compile_resources('icons/sv.rc')
 
   general_defines += [
     '-DWIN32',
@@ -720,7 +715,6 @@ executable(
   runner_main_name,
   runner_main_files,
   runner_moc_files,
-  rc,
   dependencies: [
     svcore_dep,
     qt_dep,
@@ -736,7 +730,7 @@ executable(
     feature_additional_libs,
     general_link_args,
   ],
-  win_subsystem: 'windows',
+  win_subsystem: 'console',
   install: true,
 )
 
