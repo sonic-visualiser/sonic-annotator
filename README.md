@@ -8,7 +8,7 @@ can write the result features in a selection of formats.
 
 For more information, see
 
-  https://vamp-plugins.org/sonic-annotator
+  https://vamp-plugins.org/sonic-annotator/
 
 More documentation follows further down this README file, after the
 credits.
