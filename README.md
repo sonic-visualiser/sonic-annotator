@@ -8,7 +8,7 @@ can write the result features in a selection of formats.
 
 For more information, see
 
-  http://vamp-plugins.org/sonic-annotator
+  https://vamp-plugins.org/sonic-annotator
 
 More documentation follows further down this README file, after the
 credits.
@@ -19,12 +19,12 @@ credits.
 Sonic Annotator was developed at the Centre for Digital Music,
 Queen Mary, University of London.
 
-  http://c4dm.eecs.qmul.ac.uk/
+  https://c4dm.eecs.qmul.ac.uk/
 
 The main program is by Mark Levy, Chris Cannam, and Chris Sutton.
 Sonic Annotator incorporates library code from the Sonic Visualiser
 application by Chris Cannam.  Code copyright 2005-2007 Chris Cannam,
-copyright 2006-2020 Queen Mary, University of London, except where
+copyright 2006-2025 Queen Mary, University of London, except where
 indicated in the individual source files.
 
 This work was funded by the Engineering and Physical Sciences Research
@@ -38,15 +38,16 @@ included with this distribution for more information.
 
 Sonic Annotator may also make use of the following libraries:
 
- * Qt5 -- Copyright Digia Oyj, distributed under the LGPL
- * Ogg decoder -- Copyright CSIRO Australia, BSD license
- * MAD mp3 decoder -- Copyright Underbit Technologies Inc, GPL
- * libsamplerate -- Copyright Erik de Castro Lopo, GPL
- * libsndfile -- Copyright Erik de Castro Lopo, LGPL
- * FFTW3 -- Copyright Matteo Frigo and MIT, GPL
- * Vamp plugin SDK -- Copyright Chris Cannam and QMUL, BSD license
- * Dataquay -- Copyright Breakfast Quay, BSD license
- * Sord and Serd -- Copyright David Robillard, BSD license
+ * Qt - Copyright Qt Group, distributed under the LGPL
+ * Ogg decoder - Copyright CSIRO Australia, BSD license
+ * MAD mp3 decoder - Copyright Underbit Technologies Inc, GPL
+ * Opus decoder - Copyright Xiph.org and others, BSD license
+ * libsamplerate - Copyright Erik de Castro Lopo, GPL
+ * libsndfile - Copyright Erik de Castro Lopo, LGPL
+ * FFTW3 - Copyright Matteo Frigo and MIT, GPL
+ * Vamp plugin SDK - Copyright Chris Cannam and QMUL, BSD license
+ * Dataquay - Copyright Breakfast Quay, BSD license
+ * Sord and Serd - Copyright David Robillard, BSD license
 
 (Some distributions of Sonic Annotator may have one or more of these
 libraries statically linked.)  Many thanks to their authors.
@@ -69,17 +70,17 @@ will be taken to be the name of an audio file.  Any number of files
 may be listed.
 
 Several common audio file formats are supported, including MP3, Ogg,
-and a number of PCM formats such as WAV and AIFF.  AAC is supported on
-OS/X only, and only if not DRM protected.  WMA is not supported.
+Opus, and a number of PCM formats such as WAV and AIFF.  AAC is
+supported on Mac only and WMA on Windows only.
 
-File paths do not have to be local; you can also provide remote HTTP
-or FTP URLs for Sonic Annotator to retrieve.
+File paths do not have to be local; you can also provide remote HTTP,
+HTTPS, or FTP URLs for Sonic Annotator to retrieve.
 
-Sonic Annotator also accepts the names of playlist files (.m3u
+Sonic Annotator also accepts the names of playlist files (`.m3u`
 extension) and will process every file found in the playlist.
 
 Finally, you can provide a local directory path instead of a file,
-together with the -r (recursive) option, for Sonic Annotator to
+together with the `-r` (recursive) option, for Sonic Annotator to
 process every audio file found in that directory or any of its
 subdirectories.
 
@@ -91,19 +92,19 @@ transform (in this terminology) consists of a Vamp plugin together
 with a certain set of parameters and a specified execution context:
 step and block size, sample rate, etc.
 
-(See http://www.vamp-plugins.org/ for more information about Vamp
+(See https://www.vamp-plugins.org/ for more information about Vamp
 plugins.)
 
 To use a particular transform, specify its filename on the command
-line with the -t option.
+line with the `-t` option.
 
 Transforms are usually described in RDF, following the transform part
-of the Vamp plugin ontology (http://purl.org/ontology/vamp/).  A
+of the Vamp plugin ontology, https://purl.org/ontology/vamp/ .  A
 Transform may use any Vamp plugin that is currently installed and
 available on the system.  You can obtain a list of available plugin
-outputs by running Sonic Annotator with the -l option, and you can
+outputs by running Sonic Annotator with the `-l` option, and you can
 obtain a skeleton transform description for one of these plugins with
-the -s option.
+the `-s` option.
 
 For example, if the example plugins from the Vamp plugin SDK are
 available and no other plugins are installed, you might have an
@@ -149,16 +150,16 @@ exchange like this:
   $
 ```
 
-The output of -s is an RDF/Turtle document describing the default
+The output of `-s` is an RDF/Turtle document describing the default
 settings for the Tempo output of the Fixed Tempo Estimator plugin in
 the Vamp plugin SDK.
 
-(The exact format of the RDF printed may differ -- e.g. if the
+(The exact format of the RDF printed may differ - e.g. if the
 plugin's RDF description is not installed and so its "home" URI is not
-known -- but the result should be functionally equivalent to this.)
+known - but the result should be functionally equivalent to this.)
 
 You could run this transform by saving the RDF to a file and
-specifying that file with -t:
+specifying that file with `-t`:
 
 ```
   $ sonic-annotator -s vamp:vamp-example-plugins:fixedtempo:tempo > test.n3
@@ -171,10 +172,10 @@ specifying that file with -t:
 The single line of output above consists of the audio file name, the
 timestamp and duration for a single feature, the value of that feature
 (the estimated tempo of the given region of time from that file, in
-bpm -- the plugin in question performs a single tempo estimation and
+bpm - the plugin in question performs a single tempo estimation and
 nothing else) and the feature's label.
 
-A quicker way to achieve the above is to use the -d (default) option
+A quicker way to achieve the above is to use the `-d` (default) option
 to tell Sonic Annotator to use directly the default configuration for
 a named transform:
 
@@ -185,7 +186,7 @@ a named transform:
   $
 ```
 
-Although handy for experimentation, the -d option is inadvisable in
+Although handy for experimentation, the `-d` option is inadvisable in
 any "production" situation because the plugin configuration is not
 guaranteed to be the same each time (for example if an updated version
 of a plugin changes some of its defaults).  It's better to save a
@@ -194,10 +195,10 @@ the transform created by the skeleton option.
 
 To run more than one transform on the same audio files, just put more
 than one set of transform RDF descriptions in the same file, or give
-the -t option more than once with separate transform description
+the `-t` option more than once with separate transform description
 files.  Remember that if you want to specify more than one transform
 in the same file, they will need to have distinct URIs (that is, the
-":transform" part of the example above, which may be any arbitrary
+`:transform` part of the example above, which may be any arbitrary
 name, must be distinct for each described transform).
 
 
@@ -205,92 +206,92 @@ name, must be distinct for each described transform).
 
 Sonic Annotator supports various different output modules (and it is
 fairly easy for the developer to add new ones).  You have to choose at
-least one output module; use the -w (writer) option to do so.  Each
+least one output module; use the `-w` (writer) option to do so.  Each
 module has its own set of parameters which can be adjusted on the
 command line, as well as its own default rules about where to write
 the results.
 
-To get help on a specific writer, run Sonic Annotator with the -h
-option followed by the writer name (e.g. "-h csv").
+To get help on a specific writer, run Sonic Annotator with the `-h`
+option followed by the writer name (e.g. `-h csv`).
 
 The following writers are currently supported.  (Others exist, but are
 not properly implemented or not supported.)
 
- * csv
+ * `csv`
 
    Writes the results into comma-separated data files.
 
    One file is created for each transform applied to each input audio
-   file, named after the input audio file and transform name with .csv
-   suffix and ":" replaced by "_" throughout, placed in the same
+   file, named after the input audio file and transform name with `.csv`
+   suffix and `:` replaced by `_` throughout, placed in the same
    directory as the audio file.
 
    To instruct Sonic Annotator to place the output files in another
-   location, use --csv-basedir with a directory name.
+   location, use `--csv-basedir` with a directory name.
 
-   To write a single file with all data in it, use --csv-one-file.
+   To write a single file with all data in it, use `--csv-one-file`.
 
-   To write all data to stdout instead of to a file, use --csv-stdout.
+   To write all data to stdout instead of to a file, use `--csv-stdout`.
 
    Sonic Annotator will not write to an output file that already
-   exists.  If you want to make it do this, use --csv-force to
-   overwrite or --csv-append to append to it.
+   exists.  If you want to make it do this, use `--csv-force` to
+   overwrite or `--csv-append` to append to it.
 
    The data generated consists of one line for each result feature,
    containing the feature timestamp, feature duration if present, all
    of the feature's bin values in order, followed by the feature's
-   label if present.  If the --csv-one-file or --csv-stdout option is
+   label if present.  If the `--csv-one-file` or `--csv-stdout` option is
    specified, then an additional column will appear before any of the
    above, containing the audio file name from which the feature was
    extracted, if it differs from that of the previous row. To suppress
-   this additional column, use the --csv-omit-filenames option.
+   this additional column, use the `--csv-omit-filenames` option.
 
    To make the CSV writer emit the end time instead of the duration
-   (for features with duration) use the --csv-end-times option.
+   (for features with duration) use the `--csv-end-times` option.
 
    To make the writer always emit end time or duration, even when the
    feature lacks duration, by using the time of the following feature
-   as the end time, use the --csv-fill-ends option.
+   as the end time, use the `--csv-fill-ends` option.
 
    The default column separator is a comma; you can specify a
-   different one with the --csv-separator option.
+   different one with the `--csv-separator` option.
 
- * lab
+ * `lab`
 
-   Writes the results into a tab-separated label file (.lab).
+   Writes the results into a tab-separated label file (`.lab`).
 
    This is equivalent to using the CSV writer with a tab separator and
-   the options --csv-end-times --csv-omit-filenames.
+   the options `--csv-end-times` `--csv-omit-filenames`.
 
-   It supports the --lab-basedir, --lab-stdout, --lab-force,
-   --lab-append, and --lab-fill-ends options, which all behave
+   It supports the `--lab-basedir`, `--lab-stdout`, `--lab-force`,
+   `--lab-append`, and `--lab-fill-ends` options, which all behave
    similarly to their CSV writer equivalents.
 
- * rdf
+ * `rdf`
 
    Writes the results into RDF/Turtle documents following the Audio
-   Features ontology (http://purl.org/ontology/af/).
+   Features ontology http://purl.org/ontology/af/ .
 
    One file is created for each input audio file containing the
    features extracted by all transforms applied to that file, named
-   after the input audio file with .n3 extension, placed in the same
+   after the input audio file with `.n3` extension, placed in the same
    directory as the audio file.
 
    To instruct Sonic Annotator to place the output files in another
-   location, use --rdf-basedir with a directory name.
+   location, use `--rdf-basedir` with a directory name.
 
    To write a single file with all data (from all input audio files)
-   in it, use --rdf-one-file.
+   in it, use `--rdf-one-file`.
 
    To write one file for each transform applied to each input audio
    file, named after the input audio file and transform name with .n3
-   suffix and ":" replaced by "_" throughout, use --rdf-many-files.
+   suffix and `:` replaced by `_` throughout, use `--rdf-many-files`.
 
-   To write all data to stdout instead of to a file, use --rdf-stdout.
+   To write all data to stdout instead of to a file, use `--rdf-stdout`.
 
    Sonic Annotator will not write to an output file that already
-   exists.  If you want to make it do this, use --rdf-force to
-   overwrite or --rdf-append to append to it.
+   exists.  If you want to make it do this, use `--rdf-force` to
+   overwrite or `--rdf-append` to append to it.
 
    Sonic Annotator will use plugin description RDF if available to
    enhance its output (for example identifying note onset times as
@@ -299,24 +300,24 @@ not properly implemented or not supported.)
    will be obtained if an RDF document is provided with your plugins
    (for example, vamp-example-plugins.n3) and you have this installed
    in the same location as the plugins.  To override this enhanced
-   output and write plain events for all features, use --rdf-plain.
+   output and write plain events for all features, use `--rdf-plain`.
 
-   The output RDF will include an available_as property linking the
+   The output RDF will include an `available_as` property linking the
    results to the original audio signal URI.  By default, this will
    point to the URI of the file or resource containing the audio that
-   Sonic Annotator processed, such as the file:/// location on disk.
+   Sonic Annotator processed, such as the `file:///` location on disk.
    To override this, for example to process a local copy of a file
    while generating RDF that describes a copy of it available on a
-   network, you can use the --rdf-signal-uri option to specify an
+   network, you can use the `--rdf-signal-uri` option to specify an
    alternative signal URI.
 
- * json
+ * `json`
 
    Writes the results into JSON format following JAMS, the JSON
    Annotated Music Specification. This writer is provisional as of
    Sonic Annotator v1.1.
 
- * midi
+ * `midi`
 
    Writes the results to MIDI files. All features are written as MIDI
    notes.
@@ -336,10 +337,11 @@ not properly implemented or not supported.)
 Sonic Annotator can also calculate and write summaries of features,
 such as mean and median values.
 
-To obtain a summary as well as the feature results, just use the -S
-option, naming the type of summary you want (min, max, mean, median,
-mode, sum, variance, sd or count).  You can also tell it to produce
-only the summary, not the individual features, with --summary-only.
+To obtain a summary as well as the feature results, provide the `-S`
+option naming the type of summary you want (`min`, `max`, `mean`,
+`median`, `mode`, `sum`, `variance`, `sd` or `count`).  You can
+optionally tell it to produce only the summary, not the individual
+features, with `--summary-only`.
 
 Alternatively, you can specify a summary in a transform description.
 The following example tells Sonic Annotator to write both the times of
@@ -363,10 +365,10 @@ plugin, and the variance of the plugin's onset detection function.
      vamp:summary_type "variance" .
 ```
 
-Sonic Annotator can also summarise in segments -- if you provide a
-comma-separated list of times as an argument to the --segments option,
-it will calculate one summary for each segment bounded by the times
-you provided.  For example,
+Sonic Annotator can also summarise in segments - if you provide a
+comma-separated list of times as an argument to the `--segments`
+option, it will calculate one summary for each segment bounded by the
+times you provided.  For example,
 
 ```
   $ sonic-annotator -d vamp:vamp-example-plugins:percussiononsets:detectionfunction -S variance --sumary-only --segments 1,2,3 -w csv --csv-stdout audio.wav
@@ -386,5 +388,6 @@ file.
 Automated build reports
 -----------------------
 
- * Linux and macOS CI build: [![Build Status](https://travis-ci.org/sonic-visualiser/sonic-annotator.svg?branch=default)](https://travis-ci.org/sonic-visualiser/sonic-annotator)
- * Windows CI build: [![Build status](https://ci.appveyor.com/api/projects/status/26pygienkigw39p7?svg=true)](https://ci.appveyor.com/project/cannam/sonic-annotator)
+ * Linux CI build: [![Build Status](https://github.com/sonic-visualiser/sonic-annotator/workflows/Linux%20CI/badge.svg)](https://github.com/sonic-visualiser/sonic-annotator/actions?query=workflow%3A%22Linux+CI%22)
+ * macOS CI build: [![Build Status](https://github.com/sonic-visualiser/sonic-annotator/workflows/macOS%20CI/badge.svg)](https://github.com/sonic-visualiser/sonic-annotator/actions?query=workflow%3A%22macOS+CI%22)
+ * Windows CI build: [![Build Status](https://github.com/sonic-visualiser/sonic-annotator/workflows/Windows%20CI/badge.svg)](https://github.com/sonic-visualiser/sonic-annotator/actions?query=workflow%3A%22Windows+CI%22)
