@@ -1,0 +1,22 @@
+name: macOS CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: deps
+      run: brew install smlnj qt6 meson ninja mercurial
+    - name: repoint
+      run: PATH=$PATH:/usr/local/smlnj/bin ./repoint install
+    - name: configure
+      run: meson setup build --buildtype release
+    - name: make
+      run: ninja -C build
+    - name: test
+      run: meson test -C build
+
