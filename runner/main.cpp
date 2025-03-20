@@ -194,7 +194,7 @@ void printUsage(QString myname)
     cerr << endl;
     cerr << "Sonic Annotator takes audio files, runs feature extraction transforms defined" << endl;
     cerr << "as configurations of Vamp plugins (see https://vamp-plugins.org/), and writes" << endl;
-    cerr << "output to various formats and destinations." << endl << endl;
+    cerr << "the output to various formats and destinations." << endl << endl;
     cerr << "Usage:" << endl;
     cerr << "  " << myname
          << " [-mrnfq] -d <id> [..] -w <writer> [..] <audio> [..]" << endl;
