@@ -17,6 +17,7 @@
 
 #include "base/Exceptions.h"
 #include "base/Debug.h"
+#include "base/UnitDatabase.h"
 #include "data/fileio/MIDIFileWriter.h"
 
 using namespace std;
@@ -98,9 +99,8 @@ MIDIFeatureWriter::write(QString trackId,
 
     NoteList notes = m_notes[filename];
 
-    bool freq = (output.unit == "Hz" || 
-                 output.unit == "hz" || 
-                 output.unit == "HZ");
+    bool freq = (UnitDatabase::asCommonUnit
+                 (QString::fromStdString(output.unit)) == "Hz");
 
     for (int i = 0; i < (int)features.size(); ++i) {
 
