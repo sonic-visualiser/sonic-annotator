@@ -2,7 +2,7 @@
 project(
   'Sonic Annotator',
   'c', 'cpp',
-  version: '2.0',
+  version: '1.7',
   license: 'GPL-2.0-or-later',
   default_options: [
     'cpp_std=c++17',
