@@ -435,8 +435,11 @@ void printHelp(QString myname, QString w)
 void
 listTransforms()
 {
+    suppressStdout();
     TransformList transforms =
-        TransformFactory::getInstance()->getInstalledTransformDescriptions();
+        TransformFactory::getInstance()->
+        getInstalledTransformDescriptions();
+    resumeStdout();
 
     set<QString> ids;
     for (auto t: transforms) {
@@ -453,8 +456,11 @@ listTransforms()
 void
 printSkeleton(QString id)
 {
+    suppressStdout();
     Transform transform =
         TransformFactory::getInstance()->getDefaultTransformFor(id);
+    resumeStdout();
+    
     cout << "@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> ." << endl
          << "@prefix vamp:     <http://purl.org/ontology/vamp/> ." << endl
          << "@prefix :         <#> ." << endl << endl;
@@ -466,8 +472,11 @@ printSkeleton(QString id)
 static int
 checkTransformMinVersion(QString myname, QString id, int version)
 {
+    suppressStdout();
     Transform transform =
         TransformFactory::getInstance()->getDefaultTransformFor(id);
+    resumeStdout();
+    
     QString pvs = transform.getPluginVersion();
     bool ok = false;
     int pv = pvs.toInt(&ok);

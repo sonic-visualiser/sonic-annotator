@@ -54,6 +54,8 @@ using Vamp::HostExt::PluginWrapper;
 
 namespace sv {
 
+
+
 FeatureExtractionManager::FeatureExtractionManager(bool verbose) :
     m_verbose(verbose),
     m_summariesOnly(false),
@@ -261,9 +263,12 @@ bool FeatureExtractionManager::addFeatureExtractor
 
         if (!plugin) {
 
+            StdoutSuppressor suppressor;
+            
             TransformFactory *tf = TransformFactory::getInstance();
 
             shared_ptr<PluginBase> pb = tf->instantiatePluginFor(transform);
+            
             plugin = dynamic_pointer_cast<Vamp::Plugin>(pb);
                 
             if (!plugin) {
@@ -458,6 +463,7 @@ bool FeatureExtractionManager::addFeatureExtractor
 bool FeatureExtractionManager::addDefaultFeatureExtractor
 (TransformId transformId, const vector<FeatureWriter*> &writers)
 {
+    StdoutSuppressor suppressor;
     TransformFactory *tf = TransformFactory::getInstance();
 
     if (m_sampleRate == 0) {
@@ -811,7 +817,9 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
         PluginMap::iterator pi = m_plugins.find(plugin);
 
         SVDEBUG << "FeatureExtractionManager: Calling reset on " << plugin << endl;
+        suppressStdout();
         plugin->reset();
+        resumeStdout();
 
         for (TransformWriterMap::iterator ti = pi->second.begin();
              ti != pi->second.end(); ++ti) {
@@ -964,8 +972,10 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
                 continue;
             }
 
+            suppressStdout();
             Plugin::FeatureSet featureSet =
                 plugin->process(data, timestamp.toVampRealTime());
+            resumeStdout();
 
             if (!m_summariesOnly) {
                 writeFeatures(audioSource, plugin, featureSet);
@@ -984,7 +994,9 @@ FeatureExtractionManager::extractFeaturesFor(AudioFileReader *reader,
         
     for (auto plugin: m_orderedPlugins) {
 
+        suppressStdout();
         Plugin::FeatureSet featureSet = plugin->getRemainingFeatures();
+        resumeStdout();
 
         if (!m_summariesOnly) {
             writeFeatures(audioSource, plugin, featureSet);
