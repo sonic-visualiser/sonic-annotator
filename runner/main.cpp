@@ -190,15 +190,14 @@ void printUsage(QString myname)
     cerr << "Sonic Annotator v" << RUNNER_VERSION << endl;
     cerr << "A utility for batch feature extraction from audio files." << endl;
     cerr << "Mark Levy, Chris Sutton, and Chris Cannam, Queen Mary, University of London." << endl;
-    cerr << "Copyright 2007-2025 Queen Mary, University of London." << endl;
+    cerr << "Copyright 2007-2025 Queen Mary, University of London. Published under the GPL." << endl;
     cerr << endl;
-    cerr << "This program is free software.  You may redistribute copies of it under the" << endl;
-    cerr << "terms of the GNU General Public License <http://www.gnu.org/licenses/gpl.html>." << endl;
-    cerr << "This program is supplied with NO WARRANTY, to the extent permitted by law." << endl;
-    cerr << endl;
-    cerr << "Usage: " << endl;
+    cerr << "Sonic Annotator takes audio files, runs feature extraction transforms defined" << endl;
+    cerr << "as configurations of Vamp plugins (see https://vamp-plugins.org/), and writes" << endl;
+    cerr << "output to various formats and destinations." << endl << endl;
+    cerr << "Usage:" << endl;
     cerr << "  " << myname
-         << " [-mrnfq] -d <id> [..] -w <writer> [..] <audio> [...]" << endl;
+         << " [-mrnfq] -d <id> [..] -w <writer> [..] <audio> [..]" << endl;
     cerr << "  " << myname
          << " [-mrnfq] -t transform.ttl [..] -w <writer> [..] <audio> [..]" << endl;
     cerr << "  " << myname
@@ -208,10 +207,9 @@ void printUsage(QString myname)
     cerr << "  " << myname
          << " [-lvh]" << endl;
     cerr << endl;
-    cerr << "Where <audio> is an audio file or URL to use as input: either a local file" << endl;
-    cerr << "path, local \"file://\" URL, or remote \"http://\" or \"ftp://\" URL;" << endl;
-    cerr << "<id> is a transform id of the form \"vamp:libname:plugin:output\"; and" << endl;
-    cerr << "<writer> is one of the supported output writer types, such as \"csv\".\n";
+    cerr << "where\n  <audio> is an audio file or URL to use as input;" << endl;
+    cerr << "  <id> is a transform id of the form \"vamp:libname:plugin:output\";" << endl;
+    cerr << "  <writer> is one of the supported output writer types, such as \"csv\".\n";
     cerr << endl;
 }
 
@@ -257,11 +255,11 @@ void printHelp(QString myname, QString w)
     cerr << endl;
 
     if (extlist.contains("*.mp3")) {
-        QString warning = "(Note: It's wise to avoid using %1 as a source format, even in cases where lossy compression is not considered problematic: the handling of initial encoder delay can vary between decoders, and possibly even between builds of %2, so feature timings may not be consistent.)";
+        QString warning = "It's wise to avoid %1 as a source format because the handling of initial encoder delay can vary between decoders, so feature timings may not be consistent.";
         if (extlist.contains("*.m4a")) {
-            warning = warning.arg("mp3 or mp4 (aac, m4a)").arg(myname);
+            warning = warning.arg("mp3 or mp4 (aac, m4a)");
         } else {
-            warning = warning.arg("mp3").arg(myname);
+            warning = warning.arg("mp3");
         }
         cerr << wrap(warning, 78, 0) << endl << endl;
     }
@@ -279,7 +277,31 @@ void printHelp(QString myname, QString w)
 
     if (writer == "" || writers.find(writer) == writers.end()) {
 
-        cerr << "Transformation options:" << endl;
+        cerr << "Input options:" << endl;
+        cerr << endl;
+        cerr << "  <audio>             "
+             << wrapCol("One or more audio files, as "
+                        "local file paths or URLs. See the list of supported "
+                        "formats above.")
+             << endl << endl;
+        cerr << "  -r, --recursive     "
+             << wrapCol("If any of the <audio> arguments is found to be a"
+                        " directory, recursivly search that directory"
+                        " for supported audio files and take all of those as"
+                        " input.")
+             << endl << endl;
+        cerr << "  -m, --multiplex     "
+             << wrapCol("If multiple input audio files are given, use mono"
+                        " mixdowns of the files as the input channels for a single"
+                        " invocation of each transform, instead of running the"
+                        " transform against all files separately. The first file"
+                        " will be used for output reference name and sample rate.")
+             << endl << endl;
+        cerr << "  -n, --normalise     "
+             << wrapCol("Normalise each input audio file to signal max of 1.0.")
+             << endl << endl;
+        
+        cerr << "Transform and extraction options:" << endl;
         cerr << endl;
         cerr << "  -t, --transform <T> "
              << wrapCol("Apply transform described in transform file <T> to"
@@ -301,18 +323,12 @@ void printHelp(QString myname, QString w)
              << wrapCol("Apply the default transform for transform id <I>. This"
                         " is equivalent to generating a skeleton transform for the"
                         " id (using the -s option, below) and then applying that,"
-                        " unmodified, with the -t option in the normal way. Note"
-                        " that results may vary, as default"
+                        " unmodified, with the -t option in the normal way."
+                        " Results may vary, as default"
                         " processing parameters may change between releases of "
                         + myname + " as well as of individual plugins. Do not use"
                         " this in production systems. You may supply this option"
                         " multiple times, and mix it with -t and -T.")
-             << endl << endl;
-        cerr << "  -w, --writer <W>    Write output using writer type <W>.\n"
-             << "                      " << writerText << endl
-             << "                      "
-             << wrapCol("You may supply this option multiple times. You must"
-                        " supply this option at least once for any work to be done.")
              << endl << endl;
         cerr << "  -S, --summary <S>   "
              << wrapCol("In addition to the result features, write summary feature"
@@ -335,25 +351,28 @@ void printHelp(QString myname, QString w)
                         " at times read from the text file <F>. (one time per"
                         " line, in seconds).")
              << endl << endl;
-        cerr << "  -m, --multiplex     "
-             << wrapCol("If multiple input audio files are given, use mono"
-                        " mixdowns of the files as the input channels for a single"
-                        " invocation of each transform, instead of running the"
-                        " transform against all files separately. The first file"
-                        " will be used for output reference name and sample rate.")
-             << endl << endl;
-        cerr << "  -r, --recursive     "
-             << wrapCol("If any of the <audio> arguments is found to be a local"
-                        " directory, search the tree starting at that directory"
-                        " for all supported audio files and take all of those as"
-                        " input in place of it.")
-             << endl << endl;
-        cerr << "  -n, --normalise     "
-             << wrapCol("Normalise each input audio file to signal abs max = 1.f.")
-             << endl << endl;
         cerr << "  -f, --force         "
              << wrapCol("Continue with subsequent files following an error.")
              << endl << endl;
+
+        cerr << "Output options:" << endl;
+        cerr << endl;
+
+        cerr << "  -w, --writer <W>    Write output using writer type <W>.\n"
+             << "                      " << writerText << endl
+             << "                      "
+             << wrapCol("You may supply this option multiple times to write more "
+                        "than one format. You must supply this option at least once "
+                        "for any work to be done.")
+             << endl << endl;
+
+        cerr << "  <writer options>    "
+             << wrapCol("Most writers support further options to control "
+                        "the destination and formatting used. Run " + myname +
+                        " with the \"--help <writer>\" option for details about a "
+                        "specific writer.")
+             << endl << endl;
+        
         cerr << "  -q, --quiet         "
              << wrapCol("Suppress informational output that would otherwise be printed to stderr and to a log file. Sonic Annotator may run faster with this option, especially if the application data directory is on a shared storage resource, but no diagnostic information will be available except for the application's return code.")
              << endl << endl;
