@@ -211,7 +211,7 @@ void printUsage(QString myname)
     cerr << "Where <audio> is an audio file or URL to use as input: either a local file" << endl;
     cerr << "path, local \"file://\" URL, or remote \"http://\" or \"ftp://\" URL;" << endl;
     cerr << "<id> is a transform id of the form \"vamp:libname:plugin:output\"; and" << endl;
-    cerr << "<writer> is one of the supported output writer types, such as \"csv\".";
+    cerr << "<writer> is one of the supported output writer types, such as \"csv\".\n";
     cerr << endl;
 }
 
