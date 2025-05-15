@@ -2,17 +2,15 @@
 
 set -eu
 
-current=$(hg id | awk '{ print $1; }')
-
-case "$current" in
-    *+) echo "ERROR: Current working copy has been modified - not proceeding";exit 2;;
-    *);;
+case $(git status --porcelain --untracked-files=no) in
+    "") ;;
+    *) echo "ERROR: Current working copy has been modified - not proceeding"; exit 2;;
 esac
-
-version=`perl -p -e 's/^[^"]*"([^"]*)".*$/$1/' version.h`
 
 mkdir -p packages
 echo
+
+. deploy/metadata.sh
 
 if [ -d /Applications ]; then
 
