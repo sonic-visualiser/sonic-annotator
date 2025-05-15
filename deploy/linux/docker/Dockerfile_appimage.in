@@ -1,6 +1,5 @@
 # Note 22.04 was the first LTS with Qt6
 FROM ubuntu:22.04
-MAINTAINER Chris Cannam <cannam@all-day-breakfast.com>
 RUN apt-get update && \
     apt-get install -y \
     software-properties-common \

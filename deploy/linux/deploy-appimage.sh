@@ -31,7 +31,7 @@ mkdir "$targetdir"
 mkdir -p "$targetdir"/usr/bin
 mkdir -p "$targetdir"/usr/lib
 
-cp "$program" "$targetdir"/usr/bin/
+cp "build/$program" "$targetdir"/usr/bin/
 
 add_dependencies() {
 
