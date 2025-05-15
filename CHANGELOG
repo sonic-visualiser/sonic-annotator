@@ -1,4 +1,20 @@
 
+Changes in Sonic Annotator 1.7 since the previous release 1.6:
+
+Front-end changes:
+
+ - Reinstate the ability to read mp3 files without file extensions.
+   This was present (for all file types) up to v1.5. Support for
+   reading mp3s in this way was removed in v1.6 because it caused
+   problems with some other file formats but has now been restored
+   with better checks.
+
+General updates:
+
+ - Update the code to use Qt 6 and the current Sonic Visualiser
+   libraries.
+ 
+
 Changes in Sonic Annotator 1.6 (9 June 2020) since the previous release 1.5:
 
 Front-end changes:
