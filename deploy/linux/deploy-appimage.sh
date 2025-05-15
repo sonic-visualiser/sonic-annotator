@@ -65,7 +65,7 @@ add_dependencies() {
     done
 }
 
-add_dependencies "$program"
+add_dependencies "build/$program"
 
 cp "$program.desktop" "$targetdir/"
 
