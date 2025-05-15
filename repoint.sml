@@ -9,7 +9,7 @@
 
     A simple manager for third-party source code dependencies
 
-    Copyright 2018 Chris Cannam, Particular Programs Ltd,
+    Copyright 2017-2021 Chris Cannam, Particular Programs Ltd,
     and Queen Mary, University of London
 
     Permission is hereby granted, free of charge, to any person
@@ -38,7 +38,7 @@
     authorization.
 *)
 
-val repoint_version = "1.2"
+val repoint_version = "1.5"
 
 
 datatype vcs =
@@ -72,7 +72,7 @@ datatype localstate =
          CLEAN
 
 datatype branch =
-         BRANCH of string |
+         BRANCH of string |  (* Non-empty *)
          DEFAULT_BRANCH
              
 (* If we can recover from an error, for example by reporting failure
@@ -115,12 +115,20 @@ type account = {
     service : string,
     login : string
 }
-                    
+
+type status_rec = {
+    libname : libname,
+    status : string
+}
+
+type status_cache = status_rec list ref
+                  
 type context = {
     rootpath : string,
     extdir : string,
     providers : provider list,
-    accounts : account list
+    accounts : account list,
+    cache : status_cache
 }
 
 type userconfig = {
@@ -183,8 +191,9 @@ signature VCS_CONTROL = sig
         local copy of the library already exists *)
     val update : context -> libname * source * branch -> unit result
 
-    (** Update the library to the given specific id or tag *)
-    val update_to : context -> libname * source * id_or_tag -> unit result
+    (** Update the library to the given specific id or tag,
+        understanding that we are expected to be on the given branch *)
+    val update_to : context -> libname * source * branch * id_or_tag -> unit result
 
     (** Return a URL from which the library can be cloned, given that
         the local copy already exists. For a DVCS this can be the
@@ -199,6 +208,37 @@ signature LIB_CONTROL = sig
     val update : context -> libspec -> unit result
     val id_of : context -> libspec -> id_or_tag result
     val is_working : context -> vcs -> bool result
+end
+
+structure StatusCache = struct
+
+    val empty : status_cache = ref []
+
+    fun lookup (lib : libname) (cache : status_cache) : string option =
+        let fun lookup' [] = NONE
+              | lookup' ({ libname, status } :: rs) =
+                if libname = lib
+                then SOME status
+                else lookup' rs
+        in
+            lookup' (! cache)
+        end
+
+    fun drop (lib : libname) (cache : status_cache) : unit =
+        let fun drop' [] = []
+              | drop' ((r as { libname, status }) :: rs) =
+                if libname = lib
+                then rs
+                else r :: drop' rs
+        in
+            cache := drop' (! cache)
+        end
+            
+    fun add (status_rec : status_rec) (cache : status_cache) : unit =
+        let val () = drop (#libname status_rec) cache
+        in
+            cache := status_rec :: (! cache)
+        end
 end
 
 structure FileBits :> sig
@@ -218,13 +258,27 @@ structure FileBits :> sig
     val project_lock_path : string -> string
     val project_completion_path : string -> string
     val verbose : unit -> bool
+    val insecure : unit -> bool
 end = struct
 
     fun verbose () =
         case OS.Process.getEnv "REPOINT_VERBOSE" of
             SOME "0" => false
-          | SOME _ => true
           | NONE => false
+          | _ => true
+
+    val insecure_warned = ref false
+			
+    fun insecure () =
+        case OS.Process.getEnv "REPOINT_INSECURE" of
+            SOME "0" => false
+          | NONE => false
+          | _ =>
+	    (if ! insecure_warned (* deref not negate, so "if we have warned" *)
+	     then ()
+	     else (print "Warning: Insecure mode active in environment, skipping security checks\n";
+		   insecure_warned := true);
+	     true)
 
     fun split_relative path desc =
         case OS.Path.fromString path of
@@ -580,7 +634,7 @@ functor LibControlFn (V: VCS_CONTROL) :> LIB_CONTROL = struct
                 case V.is_at context (libname, target) of
                     ERROR e => ERROR e
                   | OK true => OK ()
-                  | OK false => V.update_to context (libname, source, target)
+                  | OK false => V.update_to context (libname, source, branch, target)
             fun update' () =
                 case lock_pin of
                     PINNED target => update_pinned target
@@ -607,7 +661,7 @@ functor LibControlFn (V: VCS_CONTROL) :> LIB_CONTROL = struct
 end
 
 (* Simple Standard ML JSON parser
-   https://bitbucket.org/cannam/sml-simplejson
+   https://hg.sr.ht/~cannam/sml-simplejson
    Copyright 2017 Chris Cannam. BSD licence.
    Parts based on the JSON parser in the Ponyo library by Phil Eaton.
 *)
@@ -915,7 +969,16 @@ structure Json :> JSON = struct
         in
             implode (escape' [] (explode s))
         end
-        
+
+    fun serialiseNumber n =
+        implode (map (fn #"~" => #"-" | c => c)
+                     (explode
+                          (if Real.isFinite n andalso
+                              Real.== (n, Real.realRound n) andalso
+                              Real.<= (Real.abs n, 1e6)
+                           then Int.toString (Real.round n)
+                           else Real.toString n)))
+            
     fun serialise json =
         case json of
             OBJECT pp => "{" ^ String.concatWith
@@ -924,8 +987,7 @@ structure Json :> JSON = struct
                                                 serialise value) pp) ^
                          "}"
           | ARRAY arr => "[" ^ String.concatWith "," (map serialise arr) ^ "]"
-          | NUMBER n => implode (map (fn #"~" => #"-" | c => c) 
-                                     (explode (Real.toString n)))
+          | NUMBER n => serialiseNumber n
           | STRING s => "\"" ^ stringEscape s ^ "\""
           | BOOL b => Bool.toString b
           | NULL => "null"
@@ -1200,6 +1262,10 @@ structure HgControl :> VCS_CONTROL = struct
                         
     val hg_args = [ "--config", "ui.interactive=true",
                     "--config", "ui.merge=:merge" ]
+
+    val hg_extra_clone_pull_args = if FileBits.insecure ()
+				   then [ "--insecure" ]
+				   else []
                         
     fun hg_command context libname args =
         FileBits.command context libname (hg_program :: hg_args @ args)
@@ -1220,12 +1286,14 @@ structure HgControl :> VCS_CONTROL = struct
     fun remote_for context (libname, source) =
         Provider.remote_url context HG source libname
 
-    fun current_state context libname : vcsstate result =
+    val default_branch_name = "default"
+                            
+    fun current_state (context : context) libname : vcsstate result =
         let fun is_branch text = text <> "" andalso #"(" = hd (explode text)
             and extract_branch b =
                 if is_branch b     (* need to remove enclosing parens *)
                 then (implode o rev o tl o rev o tl o explode) b
-                else "default"
+                else default_branch_name
             and is_modified id = id <> "" andalso #"+" = hd (rev (explode id))
             and extract_id id =
                 if is_modified id  (* need to remove trailing "+" *)
@@ -1237,8 +1305,19 @@ structure HgControl :> VCS_CONTROL = struct
                      modified = is_modified id,
                      branch = extract_branch branch,
                      tags = split_tags tags }
+                   
+            val status =
+                case StatusCache.lookup libname (#cache context) of
+                    SOME status => OK status
+                  | NONE =>
+                    case hg_command_output context libname ["id"] of
+                        ERROR e => ERROR e
+                      | OK status =>
+                        (StatusCache.add { libname = libname, status = status }
+                                         (#cache context);
+                         OK status)
         in        
-            case hg_command_output context libname ["id"] of
+            case status of
                 ERROR e => ERROR e
               | OK out =>
                 case String.tokens (fn x => x = #" ") out of
@@ -1251,8 +1330,7 @@ structure HgControl :> VCS_CONTROL = struct
         end
 
     fun branch_name branch = case branch of
-                                 DEFAULT_BRANCH => "default"
-                               | BRANCH "" => "default"
+                                 DEFAULT_BRANCH => default_branch_name
                                | BRANCH b => b
 
     fun id_of context libname =
@@ -1281,13 +1359,26 @@ structure HgControl :> VCS_CONTROL = struct
             ERROR e => OK false (* desired branch does not exist *)
           | OK newest_in_repo => is_at context (libname, newest_in_repo)
 
+    fun is_modified_locally context libname =
+        case current_state context libname of
+            ERROR e => ERROR e
+          | OK { modified, ... } => OK modified
+
+    (* Actions below this line may in theory modify the repo, and
+       so must invalidate the status cache *)
+
+    fun invalidate (context : context) libname : unit =
+        StatusCache.drop libname (#cache context)        
+            
     fun pull context (libname, source) =
-        let val url = remote_for context (libname, source)
+        let val () = invalidate context libname
+            val url = remote_for context (libname, source)
         in
             hg_command context libname
-                       (if FileBits.verbose ()
-                        then ["pull", url]
-                        else ["pull", "-q", url])
+                       ((if FileBits.verbose ()
+                         then ["pull", url]
+                         else ["pull", "-q", url])
+			@ hg_extra_clone_pull_args)
         end
 
     fun is_newest context (libname, source, branch) =
@@ -1295,17 +1386,15 @@ structure HgControl :> VCS_CONTROL = struct
             ERROR e => ERROR e
           | OK false => OK false
           | OK true =>
+            (* only this branch needs to invalidate the status cache,
+               and pull does that *)
             case pull context (libname, source) of
                 ERROR e => ERROR e
               | _ => is_newest_locally context (libname, branch)
-
-    fun is_modified_locally context libname =
-        case current_state context libname of
-            ERROR e => ERROR e
-          | OK { modified, ... } => OK modified
                 
     fun checkout context (libname, source, branch) =
-        let val url = remote_for context (libname, source)
+        let val () = invalidate context libname
+            val url = remote_for context (libname, source)
         in
             (* make the lib dir rather than just the ext dir, since
                the lib dir might be nested and hg will happily check
@@ -1313,25 +1402,31 @@ structure HgControl :> VCS_CONTROL = struct
             case FileBits.mkpath (FileBits.libpath context libname) of
                 ERROR e => ERROR e
               | _ => hg_command context ""
-                                ["clone", "-u", branch_name branch,
-                                 url, libname]
+                                (["clone", "-u", branch_name branch,
+                                  url, libname] @ hg_extra_clone_pull_args)
         end
                                                     
     fun update context (libname, source, branch) =
-        let val pull_result = pull context (libname, source)
+        let (* pull invalidates the cache, as we must here *)
+            val pull_result = pull context (libname, source)
         in
             case hg_command context libname ["update", branch_name branch] of
                 ERROR e => ERROR e
               | _ =>
                 case pull_result of
                     ERROR e => ERROR e
-                  | _ => OK ()
+                  | _ =>
+                    let val () = StatusCache.drop libname (#cache context)
+                    in
+                        OK ()
+                    end
         end
 
-    fun update_to context (libname, _, "") =
+    fun update_to context (libname, _, _, "") =
         ERROR "Non-empty id (tag or revision id) required for update_to"
-      | update_to context (libname, source, id) = 
-        let val pull_result = pull context (libname, source)
+      | update_to context (libname, source, _, id) = 
+        let (* pull invalidates the cache, as we must here *)
+            val pull_result = pull context (libname, source)
         in
             case hg_command context libname ["update", "-r", id] of
                 OK _ => OK ()
@@ -1348,12 +1443,13 @@ end
 
 structure GitControl :> VCS_CONTROL = struct
 
-    (* With Git repos we always operate in detached HEAD state. Even
-       the master branch is checked out using a remote reference
-       (repoint/master). The remote we use is always named repoint, and we
-       update it to the expected URL each time we fetch, in order to
-       ensure we update properly if the location given in the project
-       file changes. The origin remote is unused. *)
+    (* With Git repos we are intentionally careless about the state of
+       the local branch whose name we are given - we work by checking
+       out either a specific commit (perhaps in detached HEAD state)
+       or resetting our local branch based on the remote. The remote
+       we use is always named repoint, and we update it to the
+       expected URL each time we fetch, in order to ensure we update
+       properly if the location given in the project file changes. *)
 
     val git_program = "git"
                       
@@ -1376,29 +1472,57 @@ structure GitControl :> VCS_CONTROL = struct
     fun remote_for context (libname, source) =
         Provider.remote_url context GIT source libname
 
-    fun branch_name branch = case branch of
-                                 DEFAULT_BRANCH => "master"
-                               | BRANCH "" => "master"
-                               | BRANCH b => b
-
     val our_remote = "repoint"
-                                                 
-    fun remote_branch_name branch = our_remote ^ "/" ^ branch_name branch
-
-    fun checkout context (libname, source, branch) =
-        let val url = remote_for context (libname, source)
+    val fallback_default_branch = "master" (* only if it can't be determined *)
+                                        
+    fun default_branch_name context libname =
+        let fun return_fallback msg =
+                (if FileBits.verbose ()
+                 then print ("\n" ^ msg ^ "\n")
+                 else ();
+                 fallback_default_branch)
         in
-            (* make the lib dir rather than just the ext dir, since
-               the lib dir might be nested and git will happily check
-               out into an existing empty dir anyway *)
-            case FileBits.mkpath (FileBits.libpath context libname) of
-                OK () => git_command context ""
-                                     ["clone", "--origin", our_remote,
-                                      "--branch", branch_name branch,
-                                      url, libname]
-              | ERROR e => ERROR e
+            let val headfile = FileBits.subpath
+                                   context libname
+                                   (".git/refs/remotes/" ^ our_remote ^ "/HEAD")
+                val () = if FileBits.verbose ()
+                         then print ("\n=== " ^
+                                     FileBits.libpath context libname ^
+                                     "\n<<< cat \"" ^ headfile ^ "\"\n")
+                         else ()
+                val headspec = FileBits.file_contents headfile
+            in
+                case String.tokens (fn c => c = #" ") headspec of
+                    ["ref:", refpath] =>
+                    (case String.fields (fn c => c = #"/") refpath of
+                         "refs" :: "remotes" :: _ :: rest =>
+                         let val branch = String.concatWith "/" rest
+                             val () = if FileBits.verbose ()
+                                      then print (">>> \"" ^ branch ^ "\"\n")
+                                      else ()
+                         in
+                             branch
+                         end
+                       | _ =>
+                         return_fallback
+                             ("Unable to extract default branch from "
+                              ^ "HEAD ref \"" ^ refpath ^ "\""))
+                  | _ =>
+                    return_fallback ("Unable to extract HEAD ref from \""
+                                     ^ headspec ^ "\"")
+            end
+            handle IO.Io _ =>
+                   return_fallback "Unable to read HEAD ref file"
         end
 
+    fun local_branch_name context (libname, branch) =
+        case branch of
+            BRANCH b => b
+          | DEFAULT_BRANCH => default_branch_name context libname
+
+    fun remote_branch_for branch_name =
+        our_remote ^ "/" ^ branch_name
+                                                  
     fun add_our_remote context (libname, source) =
         (* When we do the checkout ourselves (above), we add the
            remote at the same time. But if the repo was cloned by
@@ -1419,17 +1543,11 @@ structure GitControl :> VCS_CONTROL = struct
 
     fun id_of context libname =
         git_command_output context libname ["rev-parse", "HEAD"]
-            
-    fun is_at context (libname, id_or_tag) =
-        case id_of context libname of
-            ERROR e => OK false (* HEAD nonexistent, expected in empty repo *)
-          | OK id =>
-            if String.isPrefix id_or_tag id orelse
-               String.isPrefix id id_or_tag
-            then OK true
-            else is_at_tag context (libname, id, id_or_tag)
 
-    and is_at_tag context (libname, id, tag) =
+    fun symbolic_id_of context libname =
+        git_command_output context libname ["rev-parse", "--abbrev-ref", "HEAD"]
+
+    fun is_at_tag context (libname, id, tag) =
         (* For annotated tags (with message) show-ref returns the tag
            object ref rather than that of the revision being tagged;
            we need the subsequent rev-list to chase that up. In fact
@@ -1449,8 +1567,22 @@ structure GitControl :> VCS_CONTROL = struct
                     OK tagged => OK (id = tagged)
                   | ERROR _ => OK false
             end
+
+    fun ids_match id1 id2 =
+        String.isPrefix id1 id2 orelse
+        String.isPrefix id2 id1
+
+    fun is_commit_at context (libname, id_or_tag) id =
+        if ids_match id_or_tag id
+        then OK true
+        else is_at_tag context (libname, id, id_or_tag)
+                        
+    fun is_at context (libname, id_or_tag) =
+        case id_of context libname of
+            ERROR e => OK false (* HEAD nonexistent, expected in empty repo *)
+          | OK id => is_commit_at context (libname, id_or_tag) id
                            
-    fun branch_tip context (libname, branch) =
+    fun branch_tip context (libname, branch_name) =
         (* We don't have access to the source info or the network
            here, as this is used by status (e.g. via is_on_branch) as
            well as review. It's possible the remote branch won't exist,
@@ -1460,81 +1592,187 @@ structure GitControl :> VCS_CONTROL = struct
            instead could produce the wrong result. *)
         git_command_output context libname
                            ["rev-list", "-1",
-                            remote_branch_name branch, "--"]
-                       
-    fun is_newest_locally context (libname, branch) =
-        case branch_tip context (libname, branch) of
-            ERROR e => OK false
-          | OK rev => is_at context (libname, rev)
+                            remote_branch_for branch_name,
+                            "--"]
 
-    fun is_on_branch context (libname, branch) =
-        case branch_tip context (libname, branch) of
+    fun is_branch_ancestor context (libname, branch_name) commit =
+        case git_command context libname
+                         ["merge-base", "--is-ancestor",
+                          commit,
+                          remote_branch_for branch_name
+                         ] of
+            ERROR e => OK false  (* cmd returns non-zero for no *)
+          | _ => OK true
+                            
+    fun is_tip_or_ancestor_by_name context (libname, branch_name) =
+        case branch_tip context (libname, branch_name) of
             ERROR e => OK false
           | OK rev =>
             case is_at context (libname, rev) of
                 ERROR e => ERROR e
               | OK true => OK true
               | OK false =>
-                case git_command context libname
-                                 ["merge-base", "--is-ancestor",
-                                  "HEAD", remote_branch_name branch] of
-                    ERROR e => OK false  (* cmd returns non-zero for no *)
-                  | _ => OK true
+                is_branch_ancestor context (libname, branch_name) "HEAD"
+                            
+    fun is_commit_tip_or_ancestor_by_name context (libname, branch_name) id =
+        case branch_tip context (libname, branch_name) of
+            ERROR e => OK false
+          | OK rev =>
+            case is_commit_at context (libname, rev) id of
+                ERROR e => ERROR e
+              | OK true => OK true
+              | OK false =>
+                is_branch_ancestor context (libname, branch_name) id
+                            
+    fun is_on_branch context (libname, branch) =
+        let val branch_name = local_branch_name context (libname, branch)
+        in
+            is_tip_or_ancestor_by_name context (libname, branch_name)
+        end
+                       
+    fun is_newest_locally_by_name context (libname, branch_name) =
+        case branch_tip context (libname, branch_name) of
+            ERROR e => OK false
+          | OK rev => is_at context (libname, rev)
+                            
+    fun is_newest_locally context (libname, branch) =
+        let val branch_name = local_branch_name context (libname, branch)
+        in
+            is_newest_locally_by_name context (libname, branch_name)
+        end
 
     fun fetch context (libname, source) =
         case add_our_remote context (libname, source) of
             ERROR e => ERROR e
           | _ => git_command context libname ["fetch", our_remote]
                             
-    fun is_newest context (libname, source, branch) =
+    fun is_newest_by_name context (libname, source, branch_name) =
         case add_our_remote context (libname, source) of
             ERROR e => ERROR e
           | OK () => 
-            case is_newest_locally context (libname, branch) of
+            case is_newest_locally_by_name context (libname, branch_name) of
                 ERROR e => ERROR e
               | OK false => OK false
               | OK true =>
                 case fetch context (libname, source) of
                     ERROR e => ERROR e
-                  | _ => is_newest_locally context (libname, branch)
+                  | _ =>
+                    is_newest_locally_by_name context (libname, branch_name)
+
+    fun is_newest context (libname, source, branch) =
+        let val branch_name = local_branch_name context (libname, branch)
+        in
+            is_newest_by_name context (libname, source, branch_name)
+        end
 
     fun is_modified_locally context libname =
-        case git_command_output context libname ["status", "--porcelain"] of
+        case git_command_output context libname
+                                ["status", "--porcelain",
+                                 "--untracked-files=no" ] of
             ERROR e => ERROR e
           | OK "" => OK false
           | OK _ => OK true
 
+    fun checkout context (libname, source, branch) =
+        let val url = remote_for context (libname, source)
+        in
+            (* make the lib dir rather than just the ext dir, since
+               the lib dir might be nested and git will happily check
+               out into an existing empty dir anyway *)
+            case FileBits.mkpath (FileBits.libpath context libname) of
+                ERROR e => ERROR e
+              | OK () =>
+                git_command context ""
+                            (case branch of
+                                 DEFAULT_BRANCH =>
+                                 ["clone", "--origin", our_remote,
+                                  url, libname]
+                               | BRANCH b => 
+                                 ["clone", "--origin", our_remote,
+                                  "--branch", b,
+                                  url, libname])
+        end
+
+    (* Generally speaking, when updating to a new commit from a remote
+       branch, we can reset the local branch to that commit only if it
+       was previously pointing at an ancestor of it. Otherwise it's
+       possible the user has made some unpushed commits locally that
+       we would lose, and we should avoid moving the local branch. *)
+
+    fun can_reset_for context (libname, branch_name) =
+        case git_command_output context libname ["rev-parse", branch_name] of
+            ERROR _ => true
+          | OK id => 
+            case is_commit_tip_or_ancestor_by_name
+                     context (libname, branch_name) id of
+                ERROR _ => true
+              | OK result => result
+            
     (* This function updates to the latest revision on a branch rather
        than to a specific id or tag. We can't just checkout the given
-       branch, as that will succeed even if the branch isn't up to
-       date. We could checkout the branch and then fetch and merge,
-       but it's perhaps cleaner not to maintain a local branch at all,
-       but instead checkout the remote branch as a detached head. *)
+       local branch, as that will succeed even if it isn't up to
+       date. Instead fetch and check out the commit identified by the
+       remote branch, resetting the local branch if can_reset_for says
+       we can. *)
 
     fun update context (libname, source, branch) =
-        case fetch context (libname, source) of
-            ERROR e => ERROR e
-          | _ =>
-            case git_command context libname ["checkout", "--detach",
-                                              remote_branch_name branch] of
+        let val branch_name = local_branch_name context (libname, branch)
+            val remote_branch_name = remote_branch_for branch_name
+            val fetch_result = fetch context (libname, source)
+            (* NB it matters that we do the fetch before can_reset_for *)
+            val should_reset = can_reset_for context (libname, branch_name)
+        in
+            case fetch_result of
                 ERROR e => ERROR e
-              | _ => OK ()
+              | _ =>
+                case git_command context libname
+                                 (if should_reset
+                                  then ["checkout",
+                                        "-B", branch_name, "--track",
+                                        remote_branch_name]
+                                  else ["checkout",
+                                        "--detach",
+                                        remote_branch_name]
+                                 ) of
+                    ERROR e => ERROR e
+                  | _ => OK ()
+        end
 
     (* This function is dealing with a specific id or tag, so if we
-       can successfully check it out (detached) then that's all we
-       need to do, regardless of whether fetch succeeded or not. We do
-       attempt the fetch first, though, purely in order to avoid ugly
-       error messages in the common case where we're being asked to
-       update to a new pin (from the lock file) that hasn't been
-       fetched yet. *)
+       can successfully check it out then that's all we strictly need
+       to do. As with update, we reset the local branch if
+       can_reset_for says we can, but with the extra condition that
+       the commit we're resetting to is also on the given branch. *)
 
-    fun update_to context (libname, _, "") = 
+    fun update_to context (libname, _, _, "") = 
         ERROR "Non-empty id (tag or revision id) required for update_to"
-      | update_to context (libname, source, id) =
-        let val fetch_result = fetch context (libname, source)
+      | update_to context (libname, source, branch, id) =
+        let val branch_name = local_branch_name context (libname, branch)
+            val fetch_result = fetch context (libname, source)
+            (* NB it matters that we do the fetch before can_reset_for *)
+            val should_reset =
+                if can_reset_for context (libname, branch_name)
+                then case branch_tip context (libname, branch_name) of
+                         ERROR _ => true
+                       | OK tip_id =>
+                         if ids_match tip_id id
+                         then true
+                         else case is_branch_ancestor
+                                       context (libname, branch_name) id of
+                                  ERROR _ => true
+                                | OK result => result 
+                else false
         in
-            case git_command context libname ["checkout", "--detach", id] of
-                OK _ => OK ()
+            case git_command context libname
+                             (if should_reset
+                              then ["checkout",
+                                    "-B", branch_name,
+                                    id]
+                              else ["checkout",
+                                    "--detach",
+                                    id]
+                             ) of
+                OK _ => OK()
               | ERROR e =>
                 case fetch_result of
                     ERROR e' => ERROR e' (* this was the ur-error *)
@@ -1547,24 +1785,38 @@ structure GitControl :> VCS_CONTROL = struct
 end
 
 (* SubXml - A parser for a subset of XML
-   https://bitbucket.org/cannam/sml-subxml
-   Copyright 2018 Chris Cannam. BSD licence.
+   https://hg.sr.ht/~cannam/sml-subxml
+   Copyright 2018-2021 Chris Cannam. BSD licence.
 *)
 
+(** Parser and serialiser for a format resembling XML. This can be
+    used as a minimal parser for small XML configuration or
+    interchange files. The format supported consists of the element,
+    attribute, text, CDATA, and comment syntax from XML, and is always
+    UTF-8 encoded.
+*)
 signature SUBXML = sig
 
+    (** Node type, akin to XML DOM node. *)
     datatype node = ELEMENT of { name : string, children : node list }
                   | ATTRIBUTE of { name : string, value : string }
                   | TEXT of string
                   | CDATA of string
                   | COMMENT of string
 
+    (** Document type, akin to XML DOM. *)
     datatype document = DOCUMENT of { name : string, children : node list }
 
     datatype 'a result = OK of 'a
                        | ERROR of string
 
+    (** Parse a UTF-8 encoded XML-like document and return a document
+        structure, or an error message if the document could not be
+        parsed. *)
     val parse : string -> document result
+
+    (** Serialise a document structure into a UTF-8 encoded XML-like
+        document. *)
     val serialise : document -> string
                                   
 end
@@ -1614,7 +1866,66 @@ structure SubXml :> SUBXML = struct
         fun tokenError pos token =
             error pos ("Unexpected token '" ^ Char.toString token ^ "'")
 
-        val nameEnd = explode " \t\n\r\"'</>!=?"
+        val nameEnd = explode " \t\n\r\"'</>!=?&"
+
+        fun numChar n =
+            let open Word
+                infix 6 orb andb >>
+                fun chars ww = SOME (map (Char.chr o toInt) ww)
+                val c = fromInt n
+            in
+                if c < 0wx80 then
+                    chars [c]
+                else if c < 0wx800 then
+                    chars [0wxc0 orb (c >> 0w6),
+                           0wx80 orb (c andb 0wx3f)]
+                else if c < 0wx10000 then
+                    chars [0wxe0 orb (c >> 0w12),
+                           0wx80 orb ((c >> 0w6) andb 0wx3f),
+                           0wx80 orb (c andb 0wx3f)]
+                else if c < 0wx10ffff then
+	            chars [0wxf0 orb (c >> 0w18),
+	                   0wx80 orb ((c >> 0w12) andb 0wx3f),
+                           0wx80 orb ((c >> 0w6) andb 0wx3f),
+                           0wx80 orb (c andb 0wx3f)]
+                else NONE
+            end
+
+        fun hexChar h =
+            Option.mapPartial numChar
+                              (StringCvt.scanString (Int.scan StringCvt.HEX) h)
+
+        fun decChar d =
+            Option.mapPartial numChar
+                              (Int.fromString d)
+                
+        fun entity pos cc =
+            let fun entity' decoder pos text [] =
+                    error pos "Document ends during character entity"
+                  | entity' decoder pos text (c :: rest) =
+                    if c <> #";"
+                    then entity' decoder (pos+1) (c :: text) rest
+                    else case decoder (implode (rev text)) of
+                             NONE => error pos "Invalid character entity"
+                           | SOME chars => OK (chars, rest, pos+1)
+            in
+                case cc of
+                    #"q" :: #"u" :: #"o" :: #"t" :: #";" :: rest =>
+                    OK ([#"\""], rest, pos+5)
+                  | #"a" :: #"m" :: #"p" :: #";" :: rest =>
+                    OK ([#"&"], rest, pos+4)
+                  | #"a" :: #"p" :: #"o" :: #"s" :: #";" :: rest =>
+                    OK ([#"'"], rest, pos+5)
+                  | #"l" :: #"t" :: #";" :: rest =>
+                    OK ([#"<"], rest, pos+3)
+                  | #"g" :: #"t" :: #";" :: rest => 
+                    OK ([#">"], rest, pos+3)
+                  | #"#" :: #"x" :: rest =>
+                    entity' hexChar (pos+2) [] rest
+                  | #"#" :: rest =>
+                    entity' decChar (pos+1) [] rest
+                  | _ => error pos "Invalid entity"
+            end
                               
         fun quoted quote pos acc cc =
             let fun quoted' pos text [] =
@@ -1622,6 +1933,11 @@ structure SubXml :> SUBXML = struct
                   | quoted' pos text (x::xs) =
                     if x = quote
                     then OK (rev text, xs, pos+1)
+                    else if x = #"&"
+                    then case entity (pos+1) xs of
+                             ERROR e => ERROR e
+                           | OK (chars, rest, newpos) =>
+                             quoted' newpos (rev chars @ text) rest
                     else quoted' (pos+1) (x::text) xs
             in
                 case quoted' pos [] cc of
@@ -1723,6 +2039,10 @@ structure SubXml :> SUBXML = struct
                         #"<" => if text = []
                                 then left (pos+1) acc xs
                                 else left (pos+1) (textOf text :: acc) xs
+                      | #"&" => (case entity (pos+1) xs of
+                                     ERROR e => ERROR e
+                                   | OK (chars, rest, newpos) =>
+                                     outside' newpos (rev chars @ text) acc rest)
                       | x => outside' (pos+1) (x::text) acc xs
             in
                 outside' pos [] acc cc
@@ -1851,17 +2171,25 @@ structure SubXml :> SUBXML = struct
                 (map node (List.filter
                                (fn ATTRIBUTE _ => false | _ => true)
                                nodes))
+
+        and encode text =
+            String.translate (fn #"\"" => "&quot;"
+                             | #"&" => "&amp;"
+                             | #"'" => "&apos;"
+                             | #"<" => "&lt;"
+                             | #">" => "&gt;"
+                             | c => str c) text
                 
         and node n =
             case n of
                 TEXT string =>
-                string
+                encode string
               | CDATA string =>
                 "<![CDATA[" ^ string ^ "]]>"
               | COMMENT string =>
-                "<!-- " ^ string ^ "-->"
+                "<!--" ^ string ^ "-->"
               | ATTRIBUTE { name, value } =>
-                name ^ "=" ^ "\"" ^ value ^ "\"" (*!!!*)
+                name ^ "=" ^ "\"" ^ encode value ^ "\""
               | ELEMENT { name, children } =>
                 "<" ^ name ^
                 (case (attributes children) of
@@ -2006,7 +2334,7 @@ structure SvnControl :> VCS_CONTROL = struct
         OK true (* no local history *)
 
     fun is_modified_locally context libname =
-        case svn_command_output context libname ["status"] of
+        case svn_command_output context libname ["status", "-q"] of
             ERROR e => ERROR e
           | OK "" => OK false
           | OK _ => OK true
@@ -2038,9 +2366,9 @@ structure SvnControl :> VCS_CONTROL = struct
                 ERROR e => ERROR e
               | _ => OK ()
 
-    fun update_to context (libname, _, "") =
+    fun update_to context (libname, _, _, "") =
         ERROR "Non-empty id (tag or revision id) required for update_to"
-      | update_to context (libname, source, id) = 
+      | update_to context (libname, source, _, id) = 
         case check_remote context (libname, source) of
             ERROR e => ERROR e
           | OK () => 
@@ -2066,10 +2394,10 @@ structure AnyLibControl :> LIB_CONTROL = struct
     fun status context (spec as { vcs, ... } : libspec) =
         (fn HG => H.status | GIT => G.status | SVN => S.status) vcs context spec
 
-    fun update context (spec as { vcs, ... } : libspec) =
+    fun update context (spec as { libname, vcs, ... } : libspec) =
         (fn HG => H.update | GIT => G.update | SVN => S.update) vcs context spec
-
-    fun id_of context (spec as { vcs, ... } : libspec) =
+            
+    fun id_of context (spec as { libname, vcs, ... } : libspec) =
         (fn HG => H.id_of | GIT => G.id_of | SVN => S.id_of) vcs context spec
 
     fun is_working context vcs =
@@ -2135,7 +2463,8 @@ end = struct
                 rootpath = dir,
                 extdir = ".",
                 providers = [],
-                accounts = []
+                accounts = [],
+                cache = StatusCache.empty
             }
             val vcs_maybe = 
                 case [HgControl.exists context ".",
@@ -2194,7 +2523,8 @@ end = struct
                 rootpath = archive_root,
                 extdir = ".",
                 providers = [],
-                accounts = []
+                accounts = [],
+                cache = StatusCache.empty
             }
             val synthetic_library = {
                 libname = target_name,
@@ -2221,7 +2551,8 @@ end = struct
                 rootpath = archive_path archive_root target_name,
                 extdir = #extdir context,
                 providers = #providers context,
-                accounts = #accounts context
+                accounts = #accounts context,
+                cache = StatusCache.empty
             }
         in
             foldl (fn (lib, acc) =>
@@ -2262,7 +2593,8 @@ end = struct
                 rootpath = archive_root,
                 extdir = ".",
                 providers = [],
-                accounts = []
+                accounts = [],
+                cache = StatusCache.empty
             } "" ([
                      "tar",
                      case packer of
@@ -2356,6 +2688,7 @@ fun load_libspec spec_json lock_json libname : libspec =
           lock_pin = lock_pin,
           branch = case branch of
                        NONE => DEFAULT_BRANCH
+                     | SOME "" => DEFAULT_BRANCH
                      | SOME b => 
                        case vcs of
                            "svn" => raise Fail ("Branches not supported for " ^
@@ -2424,23 +2757,54 @@ fun load_project (userconfig : userconfig) rootpath pintype : project =
             rootpath = rootpath,
             extdir = extdir,
             providers = providers,
-            accounts = #accounts userconfig
+            accounts = #accounts userconfig,
+            cache = StatusCache.empty
           },
           libs = map (load_libspec spec_json lock_json) libnames
         }
     end
 
-fun save_lock_file rootpath locks =
+fun make_lock_properties locks = 
+    map (fn { libname, id_or_tag } =>
+            (libname, Json.OBJECT [ ("pin", Json.STRING id_or_tag) ]))
+        locks
+
+fun make_lock_json_from_properties properties =
+    Json.OBJECT [ (libobjname, Json.OBJECT properties) ]
+
+fun make_lock_json locks =
+    make_lock_json_from_properties (make_lock_properties locks)
+        
+fun save_lock_file_afresh rootpath locks =
     let val lock_file = FileBits.project_lock_path rootpath
-        open Json
+        val lock_json = make_lock_json locks
+    in
+        JsonBits.save_json_to lock_file lock_json
+    end
+
+fun save_lock_file_updating rootpath locks =
+    let val lock_file = FileBits.project_lock_path rootpath
+        val prior_lock_json = JsonBits.load_json_from lock_file
+                              handle IO.Io _ => Json.OBJECT []
+        val new_lock_properties = make_lock_properties locks
+        val updated_prior_properties =
+            case prior_lock_json of
+                Json.OBJECT [ (_, Json.OBJECT properties) ] =>
+                map (fn (entry as (lib, _)) =>
+                        case List.find (fn (lib', _) => lib = lib')
+                                       new_lock_properties of
+                            NONE => entry
+                          | SOME updated => updated)
+                    properties
+              | _ => []
+        val filtered_new_properties =
+            List.filter (fn (lib, _) =>
+                            not (List.exists (fn (lib', _) => lib = lib')
+                                             updated_prior_properties))
+                        new_lock_properties
         val lock_json =
-            OBJECT [
-                (libobjname,
-                 OBJECT (map (fn { libname, id_or_tag } =>
-                                 (libname,
-                                  OBJECT [ ("pin", STRING id_or_tag) ]))
-                             locks))
-            ]
+            make_lock_json_from_properties
+                (updated_prior_properties @ filtered_new_properties)
     in
         JsonBits.save_json_to lock_file lock_json
     end
@@ -2537,11 +2901,15 @@ fun print_problem_summary context lines =
             foldl (fn (({ vcs, ... } : libspec, ERROR _), acc) => vcs::acc
                   | (_, acc) => acc) [] lines
         fun report_nonworking vcs error =
-            print ((if error = "" then "" else error ^ "\n\n") ^
-                   "Error: The project uses the " ^ (#1 (vcs_name vcs)) ^
-                   " version control system, but its\n" ^
-                   "executable program (" ^ (#2 (vcs_name vcs)) ^
-                   ") does not appear to be installed in the program path\n\n")
+            (print ((if error = "" then "" else error ^ "\n\n") ^
+                    "Error: The project uses the " ^ (#1 (vcs_name vcs)) ^
+                    " version control system, but its\n" ^
+                    "executable program (" ^ (#2 (vcs_name vcs)) ^
+                    ") does not appear to be installed or cannot be run.\n\n");
+             case (FileBits.verbose (), OS.Process.getEnv "PATH") of
+                 (true, SOME path) =>
+                 print ("The PATH variable is: " ^ path ^ "\n\n")
+               | _ => ())
         fun check_working [] checked = ()
           | check_working (vcs::rest) checked =
             if List.exists (fn v => vcs = v) checked
@@ -2586,12 +2954,14 @@ fun review_project ({ context, libs } : project) =
                                    print_status_header (print_status true)
                                    context libs)
 
-fun lock_project ({ context, libs } : project) =
+fun lock_project (update_only : libspec list option)
+                 ({ context, libs } : project) =
     let val _ = if FileBits.verbose ()
                 then print ("Scanning IDs for lock file...\n")
                 else ()
+        val to_update = Option.getOpt (update_only, libs)
         val outcomes = map (fn lib => (lib, AnyLibControl.id_of context lib))
-                           libs
+                           to_update
         val locks =
             List.concat
                 (map (fn (lib : libspec, result) =>
@@ -2604,7 +2974,9 @@ fun lock_project ({ context, libs } : project) =
         val _ = print clear_line
     in
         if OS.Process.isSuccess return_code
-        then save_lock_file (#rootpath context) locks
+        then (if Option.isSome update_only
+              then save_lock_file_updating
+              else save_lock_file_afresh) (#rootpath context) locks
         else ();
         return_code
     end
@@ -2614,9 +2986,11 @@ fun update_project (project as { context, libs }) =
                            (AnyLibControl.update context)
                            print_outcome_header print_update_outcome
                            context libs
-        val _ = if List.exists (fn (_, OK _) => true | _ => false) outcomes
-                then lock_project project
-                else OS.Process.success
+        val successes = List.filter (fn (_, OK _) => true | _ => false)
+                                    outcomes
+        val _ = if null successes
+                then OS.Process.success (* ignored, not the return value *)
+                else lock_project (SOME (map #1 successes)) project
         val return_code = return_code_for outcomes
     in
         if OS.Process.isSuccess return_code
@@ -2650,7 +3024,7 @@ fun with_local_project pintype f =
 fun review () = with_local_project USE_LOCKFILE review_project
 fun status () = with_local_project USE_LOCKFILE status_of_project
 fun update () = with_local_project NO_LOCKFILE update_project
-fun lock () = with_local_project NO_LOCKFILE lock_project
+fun lock () = with_local_project NO_LOCKFILE (lock_project NONE)
 fun install () = with_local_project USE_LOCKFILE update_project
 
 fun version () =
@@ -2661,7 +3035,7 @@ fun usage () =
     (print "\nRepoint ";
      version ();
      print ("\n  A simple manager for third-party source code dependencies.\n"
-            ^ "  http://all-day-breakfast.com/repoint/\n\n"
+            ^ "  https://all-day-breakfast.com/repoint/\n\n"
             ^ "Usage:\n\n"
             ^ "  repoint <command> [<options>]\n\n"
             ^ "where <command> is one of:\n\n"
@@ -2701,7 +3075,7 @@ fun handleSystemArgs args =
         handle e => ERROR (exnMessage e)
     end
                    
-fun repoint args =
+fun repoint args : unit =
     case handleSystemArgs args of
         ERROR e => (print ("Error: " ^ e ^ "\n");
                     OS.Process.exit OS.Process.failure)
