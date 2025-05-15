@@ -69,4 +69,4 @@ RUN ninja -C build
 
 RUN deploy/linux/deploy-appimage.sh
 RUN cp build/sonic-annotator .
-RUN tar cvf output-appimage.tar sonic-annotator *.AppImage && cp output-appimage.tar ..
+RUN tar cvf output-appimage.tar sonic-annotator *.AppImage && cp output-appimage.tar /tmp/
