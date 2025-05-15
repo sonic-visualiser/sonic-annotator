@@ -52,6 +52,8 @@ else
 
     squashedversion=$(echo "$version" | sed 's/_-//g')
 
+    current=$(git rev-parse --short HEAD)
+
     dir="sonic-annotator-$version-linux64-static"
 
     (
