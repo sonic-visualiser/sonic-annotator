@@ -27,14 +27,21 @@ RUN apt-get update && \
     qt6-base-dev-tools \
     libqt6svg6-dev \
     libgl1-mesa-dev \
-    raptor-utils \
+    raptor2-utils \
     librubberband-dev \
     yajl-tools \
     git \
     mercurial \
     curl wget \
-    mlton \
-    autoconf automake libtool lintian
+    unzip \
+    smlnj \
+    autoconf \
+    automake \
+    libtool \
+    lintian \
+    ninja-build \
+    libglib2.0-dev \
+    python3-pip
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
