@@ -8,6 +8,8 @@ tmpfile2=$mypath/tmp_2_$$
 
 trap "rm -f $tmpfile1 $tmpfile2" 0
 
+# Files with extensions
+
 for extension in wav ogg mp3 opus ; do
 
     transform=$mypath/transforms/percussiononsets.n3 
@@ -30,6 +32,27 @@ for extension in wav ogg mp3 opus ; do
 
     csvcompare $tmpfile2 $expected || \
 	faildiff "Output mismatch for transform $transform for format $extension with audio file $infile" $tmpfile2 $expected
+done
+
+# The same files, but without extensions: do we recognise them correctly?
+
+for extension in wav ogg mp3 opus ; do
+
+    transform=$mypath/transforms/percussiononsets.n3 
+    expected=$mypath/expected/percussiononsets-$extension.csv
+
+    infile=$inbase.$extension
+    if [ "$extension" = "wav" ]; then infile=${inbase}8.$extension; fi
+
+    cp $infile mystery
+    
+    $r -t $transform -w csv --csv-stdout mystery > $tmpfile1 2>/dev/null || \
+	fail "Fails to run transform $transform against audio file $infile when renamed without an extension"
+
+    cat $tmpfile1 | sed 's,mystery,'"$infile"',' > $tmpfile2
+    
+    csvcompare $tmpfile2 $expected || \
+	faildiff "Output mismatch for transform $transform for format $extension with audio file $infile when renamed without an extension" $tmpfile2 $expected
 done
 
 # Check the normalise flag
