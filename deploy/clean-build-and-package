@@ -33,11 +33,11 @@ if [ -d /Applications ]; then
     ninja -C "$builddir"
 
     deploy/osx/sign.sh "$builddir"/sonic-annotator
-    deploy/osx/notarize.sh sonic-annotator
+    deploy/osx/notarize.sh "$builddir"/sonic-annotator
 
     dir="sonic-annotator-$version-macos"
     mkdir -p "$dir"
-    cp sonic-annotator "$dir/"
+    cp "$builddir"/sonic-annotator "$dir/"
     cp README.md CHANGELOG COPYING CITATION "$dir/"
     tar cvzf "$dir.tar.gz" "$dir"
     rm -rf "$dir"
