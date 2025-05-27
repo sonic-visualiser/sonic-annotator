@@ -1,5 +1,5 @@
 
-Changes in Sonic Annotator 1.7 since the previous release 1.6:
+Changes in Sonic Annotator 1.7 (27 May 2025) since the previous release 1.6:
 
 Front-end changes:
 
@@ -13,7 +13,7 @@ General updates:
 
  - Update the code to use Qt 6 and the current Sonic Visualiser
    libraries.
- 
+
 
 Changes in Sonic Annotator 1.6 (9 June 2020) since the previous release 1.5:
 

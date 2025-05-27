@@ -5,16 +5,26 @@ echo on
 
 set STARTPWD=%CD%
 
-set QTDIR=C:\Qt\5.13.2\msvc2017_64
+rem The first paths are for workstation builds, the last for CI
+set QTDIR=C:\QtOpenSource\6.7.2\msvc2019_64
 if not exist %QTDIR% (
-@   echo Could not find 64-bit Qt in %QTDIR%
+    set QTDIR=C:\Qt\6.6.1\msvc2019_64
+)
+if not exist %QTDIR% (
+    set QTDIR=%QT_ROOT_DIR%
+)
+if not exist %QTDIR% (
+@   echo Could not find Qt in %QTDIR%
 @   exit /b 2
 )
 
+rem Similarly, the first path is for workstation builds, the second for CI
 set vcvarsall="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat"
-
 if not exist %vcvarsall% (
-@   echo "Could not find MSVC vars batch file"
+    set vcvarsall="C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat"
+)
+if not exist %vcvarsall% (
+@   echo Could not find MSVC vars batch file in %vcvarsall%
 @   exit /b 2
 )
 
@@ -28,27 +38,35 @@ cd %STARTPWD%
 call .\repoint install
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-mkdir build_win64
-cd build_win64
+set BUILDDIR=build_win64
 
-qmake -spec win32-msvc -r -tp vc ..\sonic-annotator.pro
+if not exist %BUILDDIR%\build.ninja (
+  meson setup %BUILDDIR% --buildtype release -Db_lto=true
+  if %errorlevel% neq 0 exit /b %errorlevel%
+)
+
+ninja -C %BUILDDIR%
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-msbuild sonic-annotator.sln /t:Build /p:Configuration=Release
+copy %QTDIR%\bin\Qt6Core.dll .\%BUILDDIR%
+copy %QTDIR%\bin\Qt6Network.dll .\%BUILDDIR%
+copy %QTDIR%\bin\Qt6Xml.dll .\%BUILDDIR%
+copy %QTDIR%\bin\Qt6Test.dll .\%BUILDDIR%
+
+mkdir .\%BUILDDIR%\plugins
+mkdir .\%BUILDDIR%\plugins\platforms
+mkdir .\%BUILDDIR%\plugins\tls
+
+copy %QTDIR%\plugins\platforms\qminimal.dll .\%BUILDDIR%\plugins\platforms
+copy %QTDIR%\plugins\platforms\qwindows.dll .\%BUILDDIR%\plugins\platforms
+copy %QTDIR%\plugins\tls\qopensslbackend.dll .\%BUILDDIR%\plugins\tls
+
+copy sv-dependency-builds\win64-msvc\lib\libsndfile-1.dll .\%BUILDDIR%
+
+meson test -C %BUILDDIR%
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-copy %QTDIR%\bin\Qt5Core.dll .\release
-copy %QTDIR%\bin\Qt5Network.dll .\release
-copy %QTDIR%\bin\Qt5Xml.dll .\release
-copy %QTDIR%\bin\Qt5Test.dll .\release
-copy %QTDIR%\plugins\platforms\qminimal.dll .\release
-copy %QTDIR%\plugins\platforms\qwindows.dll .\release
-copy ..\sv-dependency-builds\win64-msvc\lib\libsndfile-1.dll .\release
-
-.\release\test-svcore-base
-.\release\test-svcore-system
-
-.\release\sonic-annotator -v
+%BUILDDIR%\sonic-annotator -v
 
 set PATH=%ORIGINALPATH%
-cd %STARTPWD%
+
