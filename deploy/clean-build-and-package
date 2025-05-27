@@ -25,9 +25,11 @@ if [ -d /Applications ]; then
     ./repoint install
 
     builddir="build"
-	
+
+    arch=arm64
+    
     rm -rf "$builddir"
-    PATH="$qtdir/bin:$PATH" arch -$arch meson setup "$builddir" --cross-file=deploy/cross/macos-arm64.txt --buildtype release
+    PATH="$qtdir/bin:$PATH" arch -$arch meson setup "$builddir" --cross-file=deploy/cross/macos-$arch.txt --buildtype release
     ninja -C "$builddir"
 
     deploy/osx/sign.sh "$builddir"/sonic-annotator
