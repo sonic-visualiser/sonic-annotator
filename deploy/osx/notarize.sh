@@ -33,7 +33,7 @@ echo
 echo "Uploading for notarization..."
 
 xcrun notarytool submit \
-    "$bundle.zip" \
+    bundle.zip \
     --apple-id "$user" \
     --team-id "$team_id" \
     --keychain-profile notarytool-cannam \
