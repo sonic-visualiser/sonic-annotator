@@ -32,6 +32,7 @@ qt_dep = dependency(
     'Network',
     'Test',
   ],
+  method: 'qmake',
   main: true
 )
 
