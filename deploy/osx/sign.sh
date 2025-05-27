@@ -14,5 +14,7 @@ set -u
 
 entitlements=deploy/osx/Entitlements.plist
 
-codesign -s "Developer ID Application: Chris Cannam" -fv --options runtime --entitlements "$entitlements" "$exe"
+gatekeeper_key="Developer ID Application: Particular Programs Ltd (73F996B92S)"
+
+codesign -s "$gatekeeper_key" -fv --options runtime --entitlements "$entitlements" "$exe"
 
