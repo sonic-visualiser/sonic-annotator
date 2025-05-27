@@ -13,23 +13,24 @@ echo
 . deploy/metadata.sh
 
 if [ -d /Applications ]; then
-
-    qmake="$HOME/code/qt-builds/qt-5.14.2-static-nogui/bin/qmake"
+    
+    qtdir="/Users/cannam/Qt/6.7.2/macos"
 
     echo "Proceed to rebuild, package, and sign version $version using"
-    echo -n "qmake path \"$qmake\" [Yn] ? "
+    echo -n "Qt path \"$qtdir\" [Yn] ? "
     read yn
     case "$yn" in "") ;; [Yy]) ;; *) exit 3;; esac
     echo "Proceeding"
 
     ./repoint install
 
-    rm -rf .qmake.stash
-    "$qmake" -r
-    make clean
-    make -j3
+    builddir="build"
+	
+    rm -rf "$builddir"
+    PATH="$qtdir/bin:$PATH" arch -$arch meson setup "$builddir" --cross-file=deploy/cross/macos-arm64.txt --buildtype release
+    ninja -C "$builddir"
 
-    deploy/osx/sign.sh sonic-annotator
+    deploy/osx/sign.sh "$builddir"/sonic-annotator
     deploy/osx/notarize.sh sonic-annotator
 
     dir="sonic-annotator-$version-macos"
