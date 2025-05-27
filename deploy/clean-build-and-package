@@ -14,7 +14,7 @@ echo
 
 if [ -d /Applications ]; then
     
-    qtdir="/Users/cannam/Qt/6.7.2/macos"
+    qtdir="/Users/cannam/Qt/6.6.3-static/macos"
 
     echo "Proceed to rebuild, package, and sign version $version using"
     echo -n "Qt path \"$qtdir\" [Yn] ? "
