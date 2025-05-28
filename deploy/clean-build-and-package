@@ -14,35 +14,14 @@ echo
 
 if [ -d /Applications ]; then
     
-    qtdir="/Users/cannam/Qt/6.6.3-static"
-
-    echo "Proceed to rebuild, package, and sign version $version using"
-    echo -n "Qt path \"$qtdir\" [Yn] ? "
+    echo "Proceed to rebuild, package, and sign version $version [Yn] ? "
     read yn
     case "$yn" in "") ;; [Yy]) ;; *) exit 3;; esac
     echo "Proceeding"
 
     ./repoint install
 
-    builddir="build"
-
-    arch=arm64
-    
-    rm -rf "$builddir"
-    QTDIR="$qtdir" PATH="$qtdir/bin:$PATH" arch -$arch meson setup "$builddir" --cross-file=deploy/cross/macos-$arch.txt --buildtype release
-    ninja -C "$builddir"
-
-    deploy/osx/sign.sh "$builddir"/sonic-annotator
-    deploy/osx/notarize.sh "$builddir"/sonic-annotator
-
-    dir="sonic-annotator-$version-macos"
-    mkdir -p "$dir"
-    cp "$builddir"/sonic-annotator "$dir/"
-    cp README.md CHANGELOG COPYING CITATION "$dir/"
-    tar cvzf "$dir.tar.gz" "$dir"
-    rm -rf "$dir"
-
-    mv "$dir.tar.gz" packages/
+    deploy/osx/build-and-package.sh "$version"
 
 else
 

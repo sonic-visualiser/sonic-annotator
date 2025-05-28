@@ -1,0 +1,6 @@
+
+option('static_qtdir',
+       type: 'string',
+       value: '',
+       description: 'Provides the QTDIR value when linking Qt statically. Without this some of the required static dependencies may be lost.')
+

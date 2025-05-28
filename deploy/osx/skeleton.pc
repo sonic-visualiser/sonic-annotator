@@ -1,0 +1,13 @@
+prefix=@qtdir@
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+bindir=${prefix}/bin
+libexecdir=${prefix}/libexec
+
+Name: Qt Something
+Description: A Qt module
+Version: @version@
+Libs: -L${libdir} -l@library@ 
+Cflags: -I${includedir}/Qt@module@ -I${includedir}
+

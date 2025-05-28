@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ## The following assumes we have generated an app password at
-## appleid.apple.com and then stored it to keychain id "altool" using
-## e.g.
-## security add-generic-password -a "cannam+apple@all-day-breakfast.com" \
-##   -w "generated-app-password" -s "altool"
+## appleid.apple.com, then
+## xcrun notarytool store-credentials notarytool-cannam --apple-id X --team-id Y
+## Note! if the machine is locked when this gets run, it will fail as if no
+## credentials had ever been stored. Don't be deceived
 
 set -e
 

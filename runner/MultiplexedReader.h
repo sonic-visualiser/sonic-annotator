@@ -38,8 +38,8 @@ public:
     virtual QString getTitle() const override { return ""; }
     virtual QString getMaker() const override { return ""; }
 
-    virtual QString getLocation() const { return ""; }
-    virtual QString getLocalFilename() const { return ""; }
+    virtual QString getLocation() const override { return ""; }
+    virtual QString getLocalFilename() const override { return ""; }
     
     virtual floatvec_t getInterleavedFrames
     (sv_frame_t start, sv_frame_t count) const override;

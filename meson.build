@@ -32,7 +32,6 @@ qt_dep = dependency(
     'Network',
     'Test',
   ],
-  method: 'qmake',
   main: true
 )
 
@@ -233,6 +232,22 @@ elif system == 'darwin'
     '-framework', 'CoreServices',
     '-framework', 'Accelerate',
   ]
+
+  static_qtdir = get_option('static_qtdir')
+  if static_qtdir != ''
+    feature_additional_libs += [
+      '-L' + static_qtdir / 'lib',
+      '-lQt6BundledPcre2',
+      '-framework', 'ApplicationServices',
+      '-framework', 'Cocoa',
+      '-framework', 'IOKit',
+      '-framework', 'Security',
+      '-framework', 'SystemConfiguration',
+      '-framework', 'GSS',
+      '-lresolv',
+      '-lz',
+    ]
+  endif
   
   if architecture != 'aarch64'
     # See comments when setting up feature_defines above
