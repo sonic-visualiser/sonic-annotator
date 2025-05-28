@@ -1,31 +1,33 @@
 #!/bin/bash
 
-tag=`hg tags | grep '^sonic-annotator-' | head -1 | awk '{ print $1; }'`
+set -eu
 
-v=`echo "$tag" |sed 's/sonic-annotator-//'`
+tag=`git tag --list --sort=creatordate | grep '^sonic-annotator-' | tail -1 | awk '{ print $1; }'`
+
+v=`echo "$tag" | sed 's/sonic-annotator-//' | sed 's/_.*$//'`
 
 echo -n "Package up source code for version $v from tag $tag [Yn] ? "
 read yn
 case "$yn" in "") ;; [Yy]) ;; *) exit 3;; esac
 echo "Proceeding"
 
-current=$(hg id | awk '{ print $1; }')
-
-case "$current" in
-    *+) echo "ERROR: Current working copy has been modified - unmodified copy required so we can update to tag and back again safely"; exit 2;;
-    *);;
+case $(git status --porcelain --untracked-files=no) in
+    "") ;;
+    *) echo "ERROR: Current working copy has been modified - unmodified copy required so we can update to tag and back again safely"; exit 2;;
 esac
-          
+
 echo
 echo -n "Packaging up version $v from tag $tag... "
 
+current=$(git rev-parse --short HEAD)
+
 mkdir -p packages
 
-hg update -r"$tag"
+git checkout "$tag"
 
-./repoint archive "$(pwd)"/packages/sonic-annotator-"$v".tar.gz --exclude sv-dependency-builds repoint.pri
+./repoint archive "$(pwd)"/packages/sonic-annotator-"$v".tar.gz --exclude sv-dependency-builds .gitignore .github .hgignore .appveyor.yml .hgtags
 
-hg update -r"$current"
+git checkout "$current"
 
 echo Done
 echo
